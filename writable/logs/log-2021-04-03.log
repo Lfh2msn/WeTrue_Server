@@ -1,0 +1,117 @@
+CRITICAL - 2021-04-03 00:08:50 --> print_r() expects parameter 2 to be bool, array given
+#0 [internal function]: CodeIgniter\Debug\Exceptions->errorHandler(2, 'print_r() expec...', '/volume1/team/W...', 20, Array)
+#1 /volume1/team/WeTrueServer/app/Models/CommentModel.php(20): print_r(NULL, Array)
+#2 /volume1/team/WeTrueServer/app/Models/PagesModel.php(94): App\Models\CommentModel->txComment(NULL, Array)
+#3 /volume1/team/WeTrueServer/app/Controllers/Comment.php(26): App\Models\PagesModel->Alone(NULL, Array)
+#4 /volume1/team/WeTrueServer/system/CodeIgniter.php(914): App\Controllers\Comment->tx()
+#5 /volume1/team/WeTrueServer/system/CodeIgniter.php(400): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\Comment))
+#6 /volume1/team/WeTrueServer/system/CodeIgniter.php(308): CodeIgniter\CodeIgniter->handleRequest(NULL, Object(Config\Cache), false)
+#7 /volume1/team/WeTrueServer/public/index.php(45): CodeIgniter\CodeIgniter->run()
+#8 {main}
+CRITICAL - 2021-04-03 00:11:36 --> Cannot call constructor
+#0 /volume1/team/WeTrueServer/system/CodeIgniter.php(886): App\Controllers\Comment->__construct()
+#1 /volume1/team/WeTrueServer/system/CodeIgniter.php(395): CodeIgniter\CodeIgniter->createController()
+#2 /volume1/team/WeTrueServer/system/CodeIgniter.php(308): CodeIgniter\CodeIgniter->handleRequest(NULL, Object(Config\Cache), false)
+#3 /volume1/team/WeTrueServer/public/index.php(45): CodeIgniter\CodeIgniter->run()
+#4 {main}
+CRITICAL - 2021-04-03 06:30:12 --> syntax error, unexpected 'return' (T_RETURN)
+#0 /volume1/team/WeTrueServer/system/Autoloader/Autoloader.php(296): CodeIgniter\Autoloader\Autoloader->requireFile('/volume1/team/W...')
+#1 /volume1/team/WeTrueServer/system/Autoloader/Autoloader.php(258): CodeIgniter\Autoloader\Autoloader->loadInNamespace('App\\Models\\Page...')
+#2 [internal function]: CodeIgniter\Autoloader\Autoloader->loadClass('App\\Models\\Page...')
+#3 /volume1/team/WeTrueServer/app/Controllers/BaseController.php(50): spl_autoload_call('App\\Models\\Page...')
+#4 /volume1/team/WeTrueServer/system/CodeIgniter.php(887): App\Controllers\BaseController->initController(Object(CodeIgniter\HTTP\IncomingRequest), Object(CodeIgniter\HTTP\Response), Object(CodeIgniter\Log\Logger))
+#5 /volume1/team/WeTrueServer/system/CodeIgniter.php(395): CodeIgniter\CodeIgniter->createController()
+#6 /volume1/team/WeTrueServer/system/CodeIgniter.php(308): CodeIgniter\CodeIgniter->handleRequest(NULL, Object(Config\Cache), false)
+#7 /volume1/team/WeTrueServer/public/index.php(45): CodeIgniter\CodeIgniter->run()
+#8 {main}
+CRITICAL - 2021-04-03 06:30:28 --> syntax error, unexpected 'return' (T_RETURN)
+#0 /volume1/team/WeTrueServer/system/Autoloader/Autoloader.php(296): CodeIgniter\Autoloader\Autoloader->requireFile('/volume1/team/W...')
+#1 /volume1/team/WeTrueServer/system/Autoloader/Autoloader.php(258): CodeIgniter\Autoloader\Autoloader->loadInNamespace('App\\Models\\Page...')
+#2 [internal function]: CodeIgniter\Autoloader\Autoloader->loadClass('App\\Models\\Page...')
+#3 /volume1/team/WeTrueServer/app/Controllers/BaseController.php(50): spl_autoload_call('App\\Models\\Page...')
+#4 /volume1/team/WeTrueServer/system/CodeIgniter.php(887): App\Controllers\BaseController->initController(Object(CodeIgniter\HTTP\IncomingRequest), Object(CodeIgniter\HTTP\Response), Object(CodeIgniter\Log\Logger))
+#5 /volume1/team/WeTrueServer/system/CodeIgniter.php(395): CodeIgniter\CodeIgniter->createController()
+#6 /volume1/team/WeTrueServer/system/CodeIgniter.php(308): CodeIgniter\CodeIgniter->handleRequest(NULL, Object(Config\Cache), false)
+#7 /volume1/team/WeTrueServer/public/index.php(45): CodeIgniter\CodeIgniter->run()
+#8 {main}
+CRITICAL - 2021-04-03 08:56:15 --> syntax error, unexpected ''focus'' (T_CONSTANT_ENCAPSED_STRING), expecting ']'
+#0 /volume1/team/WeTrueServer/system/Router/Router.php(192): CodeIgniter\Router\Router->autoRoute('User/info')
+#1 /volume1/team/WeTrueServer/system/CodeIgniter.php(789): CodeIgniter\Router\Router->handle('User/info')
+#2 /volume1/team/WeTrueServer/system/CodeIgniter.php(360): CodeIgniter\CodeIgniter->tryToRouteIt(Object(CodeIgniter\Router\RouteCollection))
+#3 /volume1/team/WeTrueServer/system/CodeIgniter.php(308): CodeIgniter\CodeIgniter->handleRequest(NULL, Object(Config\Cache), false)
+#4 /volume1/team/WeTrueServer/public/index.php(45): CodeIgniter\CodeIgniter->run()
+#5 {main}
+CRITICAL - 2021-04-03 08:57:39 --> syntax error, unexpected ''focus'' (T_CONSTANT_ENCAPSED_STRING), expecting ']'
+#0 /volume1/team/WeTrueServer/system/Router/Router.php(192): CodeIgniter\Router\Router->autoRoute('User/info')
+#1 /volume1/team/WeTrueServer/system/CodeIgniter.php(789): CodeIgniter\Router\Router->handle('User/info')
+#2 /volume1/team/WeTrueServer/system/CodeIgniter.php(360): CodeIgniter\CodeIgniter->tryToRouteIt(Object(CodeIgniter\Router\RouteCollection))
+#3 /volume1/team/WeTrueServer/system/CodeIgniter.php(308): CodeIgniter\CodeIgniter->handleRequest(NULL, Object(Config\Cache), false)
+#4 /volume1/team/WeTrueServer/public/index.php(45): CodeIgniter\CodeIgniter->run()
+#5 {main}
+CRITICAL - 2021-04-03 08:57:57 --> syntax error, unexpected ''focus'' (T_CONSTANT_ENCAPSED_STRING), expecting ']'
+#0 /volume1/team/WeTrueServer/system/Router/Router.php(192): CodeIgniter\Router\Router->autoRoute('User/info')
+#1 /volume1/team/WeTrueServer/system/CodeIgniter.php(789): CodeIgniter\Router\Router->handle('User/info')
+#2 /volume1/team/WeTrueServer/system/CodeIgniter.php(360): CodeIgniter\CodeIgniter->tryToRouteIt(Object(CodeIgniter\Router\RouteCollection))
+#3 /volume1/team/WeTrueServer/system/CodeIgniter.php(308): CodeIgniter\CodeIgniter->handleRequest(NULL, Object(Config\Cache), false)
+#4 /volume1/team/WeTrueServer/public/index.php(45): CodeIgniter\CodeIgniter->run()
+#5 {main}
+CRITICAL - 2021-04-03 08:59:18 --> syntax error, unexpected ''focus'' (T_CONSTANT_ENCAPSED_STRING), expecting ']'
+#0 /volume1/team/WeTrueServer/system/Router/Router.php(192): CodeIgniter\Router\Router->autoRoute('User/info')
+#1 /volume1/team/WeTrueServer/system/CodeIgniter.php(789): CodeIgniter\Router\Router->handle('User/info')
+#2 /volume1/team/WeTrueServer/system/CodeIgniter.php(360): CodeIgniter\CodeIgniter->tryToRouteIt(Object(CodeIgniter\Router\RouteCollection))
+#3 /volume1/team/WeTrueServer/system/CodeIgniter.php(308): CodeIgniter\CodeIgniter->handleRequest(NULL, Object(Config\Cache), false)
+#4 /volume1/team/WeTrueServer/public/index.php(45): CodeIgniter\CodeIgniter->run()
+#5 {main}
+CRITICAL - 2021-04-03 08:59:58 --> syntax error, unexpected ''focus'' (T_CONSTANT_ENCAPSED_STRING), expecting ']'
+#0 /volume1/team/WeTrueServer/system/Router/Router.php(192): CodeIgniter\Router\Router->autoRoute('User/info')
+#1 /volume1/team/WeTrueServer/system/CodeIgniter.php(789): CodeIgniter\Router\Router->handle('User/info')
+#2 /volume1/team/WeTrueServer/system/CodeIgniter.php(360): CodeIgniter\CodeIgniter->tryToRouteIt(Object(CodeIgniter\Router\RouteCollection))
+#3 /volume1/team/WeTrueServer/system/CodeIgniter.php(308): CodeIgniter\CodeIgniter->handleRequest(NULL, Object(Config\Cache), false)
+#4 /volume1/team/WeTrueServer/public/index.php(45): CodeIgniter\CodeIgniter->run()
+#5 {main}
+CRITICAL - 2021-04-03 09:00:26 --> syntax error, unexpected ''focus'' (T_CONSTANT_ENCAPSED_STRING), expecting ']'
+#0 /volume1/team/WeTrueServer/system/Router/Router.php(192): CodeIgniter\Router\Router->autoRoute('User/info')
+#1 /volume1/team/WeTrueServer/system/CodeIgniter.php(789): CodeIgniter\Router\Router->handle('User/info')
+#2 /volume1/team/WeTrueServer/system/CodeIgniter.php(360): CodeIgniter\CodeIgniter->tryToRouteIt(Object(CodeIgniter\Router\RouteCollection))
+#3 /volume1/team/WeTrueServer/system/CodeIgniter.php(308): CodeIgniter\CodeIgniter->handleRequest(NULL, Object(Config\Cache), false)
+#4 /volume1/team/WeTrueServer/public/index.php(45): CodeIgniter\CodeIgniter->run()
+#5 {main}
+CRITICAL - 2021-04-03 09:00:28 --> syntax error, unexpected ''focus'' (T_CONSTANT_ENCAPSED_STRING), expecting ']'
+#0 /volume1/team/WeTrueServer/system/Router/Router.php(192): CodeIgniter\Router\Router->autoRoute('User/info')
+#1 /volume1/team/WeTrueServer/system/CodeIgniter.php(789): CodeIgniter\Router\Router->handle('User/info')
+#2 /volume1/team/WeTrueServer/system/CodeIgniter.php(360): CodeIgniter\CodeIgniter->tryToRouteIt(Object(CodeIgniter\Router\RouteCollection))
+#3 /volume1/team/WeTrueServer/system/CodeIgniter.php(308): CodeIgniter\CodeIgniter->handleRequest(NULL, Object(Config\Cache), false)
+#4 /volume1/team/WeTrueServer/public/index.php(45): CodeIgniter\CodeIgniter->run()
+#5 {main}
+CRITICAL - 2021-04-03 09:01:02 --> syntax error, unexpected ''focus'' (T_CONSTANT_ENCAPSED_STRING), expecting ']'
+#0 /volume1/team/WeTrueServer/system/Router/Router.php(192): CodeIgniter\Router\Router->autoRoute('User/info')
+#1 /volume1/team/WeTrueServer/system/CodeIgniter.php(789): CodeIgniter\Router\Router->handle('User/info')
+#2 /volume1/team/WeTrueServer/system/CodeIgniter.php(360): CodeIgniter\CodeIgniter->tryToRouteIt(Object(CodeIgniter\Router\RouteCollection))
+#3 /volume1/team/WeTrueServer/system/CodeIgniter.php(308): CodeIgniter\CodeIgniter->handleRequest(NULL, Object(Config\Cache), false)
+#4 /volume1/team/WeTrueServer/public/index.php(45): CodeIgniter\CodeIgniter->run()
+#5 {main}
+CRITICAL - 2021-04-03 09:02:31 --> syntax error, unexpected ''focus'' (T_CONSTANT_ENCAPSED_STRING), expecting ']'
+#0 /volume1/team/WeTrueServer/system/Router/Router.php(192): CodeIgniter\Router\Router->autoRoute('User/info')
+#1 /volume1/team/WeTrueServer/system/CodeIgniter.php(789): CodeIgniter\Router\Router->handle('User/info')
+#2 /volume1/team/WeTrueServer/system/CodeIgniter.php(360): CodeIgniter\CodeIgniter->tryToRouteIt(Object(CodeIgniter\Router\RouteCollection))
+#3 /volume1/team/WeTrueServer/system/CodeIgniter.php(308): CodeIgniter\CodeIgniter->handleRequest(NULL, Object(Config\Cache), false)
+#4 /volume1/team/WeTrueServer/public/index.php(45): CodeIgniter\CodeIgniter->run()
+#5 {main}
+CRITICAL - 2021-04-03 09:02:46 --> syntax error, unexpected ''focus'' (T_CONSTANT_ENCAPSED_STRING), expecting ']'
+#0 /volume1/team/WeTrueServer/system/Router/Router.php(192): CodeIgniter\Router\Router->autoRoute('User/info/ak_2k...')
+#1 /volume1/team/WeTrueServer/system/CodeIgniter.php(789): CodeIgniter\Router\Router->handle('User/info/ak_2k...')
+#2 /volume1/team/WeTrueServer/system/CodeIgniter.php(360): CodeIgniter\CodeIgniter->tryToRouteIt(Object(CodeIgniter\Router\RouteCollection))
+#3 /volume1/team/WeTrueServer/system/CodeIgniter.php(308): CodeIgniter\CodeIgniter->handleRequest(NULL, Object(Config\Cache), false)
+#4 /volume1/team/WeTrueServer/public/index.php(45): CodeIgniter\CodeIgniter->run()
+#5 {main}
+CRITICAL - 2021-04-03 09:27:58 --> You must set the database table to be used with your query.
+#0 /volume1/team/WeTrueServer/system/Model.php(1206): CodeIgniter\Database\BaseConnection->table(NULL)
+#1 /volume1/team/WeTrueServer/system/Model.php(1714): CodeIgniter\Model->builder()
+#2 /volume1/team/WeTrueServer/app/Models/FocusModel.php(56): CodeIgniter\Model->__call('userAllInfo', Array)
+#3 /volume1/team/WeTrueServer/app/Models/FocusModel.php(45): App\Models\FocusModel->cycle(1, 5, 'SELECT count(fo...', 'SELECT followin...', Array)
+#4 /volume1/team/WeTrueServer/app/Controllers/User.php(57): App\Models\FocusModel->limit(1, 5, Array)
+#5 /volume1/team/WeTrueServer/system/CodeIgniter.php(914): App\Controllers\User->focusList()
+#6 /volume1/team/WeTrueServer/system/CodeIgniter.php(400): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\User))
+#7 /volume1/team/WeTrueServer/system/CodeIgniter.php(308): CodeIgniter\CodeIgniter->handleRequest(NULL, Object(Config\Cache), false)
+#8 /volume1/team/WeTrueServer/public/index.php(45): CodeIgniter\CodeIgniter->run()
+#9 {main}
