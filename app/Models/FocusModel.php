@@ -2,9 +2,29 @@
 
 use CodeIgniter\Model;
 use App\Models\UserModel;
+use App\Models\DisposeModel;
 
 class FocusModel extends Model {
 //关注Model
+
+	public function __construct(){
+		parent::__construct();
+		$this->tablename    = "wet_focus";
+		$this->userModel    = new UserModel();
+		$this->DisposeModel = new DisposeModel();
+	}
+
+	public function isFocus($focus,$my_id)
+	{//获取关注状态
+		$sql="SELECT focus, fans FROM $this->tablename WHERE fans = '$my_id' AND focus = '$focus' LIMIT 1";
+        $query = $this->db->query($sql);
+		$row = $query->getRow();
+		if($row) {
+			return true;
+        }else{
+			return false;
+		}
+	}
 
     public function limit($page, $size, $opt=[])
 	{/*分页
@@ -19,24 +39,31 @@ class FocusModel extends Model {
 			];*/
 		$page = max(1, (int)$page);
 		$size = max(1, (int)$size);
-		$opt['userLogin'] = $_SERVER['HTTP_AK_TOKEN'];
+		$akToken   = $_SERVER['HTTP_AK_TOKEN'];
+		$isAkToken = $this->DisposeModel-> checkAddress($akToken);
+		if(!$isAkToken){
+			$data['code'] = 200;
+			$data['data']['data'] = [];
+			$data['msg']  = 'error_login';
+			return json_encode($data);
+		}
+		$opt['userLogin'] = $akToken;
 
 		if($opt['type'] == 'userFocusUserList'){
 			//关注、被关注列表
-			$this->tablename = "wet_follow";
-			$my_id    = $opt['userLogin'];
+			$akToken    = $opt['userLogin'];
 
 			if($opt['focus'] == "myFocus"){
-				$field	  = "followers";
-				$contrary = "following";
+				$field	  = "fans";
+				$contrary = "focus";
 			}
 
 			if($opt['focus'] == "focusMy"){
-				$field	  = "following";
-				$contrary = "followers";
+				$field	  = "focus";
+				$contrary = "fans";
 			}
-			$countSql = "SELECT count($field) FROM $this->tablename WHERE $field = '$my_id'";
-			$limitSql = "SELECT $contrary AS contrary FROM $this->tablename WHERE $field='$my_id' 
+			$countSql = "SELECT count($field) FROM $this->tablename WHERE $field = '$akToken'";
+			$limitSql = "SELECT $contrary AS contrary FROM $this->tablename WHERE $field='$akToken' 
 						ORDER BY uid DESC LIMIT $size OFFSET ".($page-1)*$size;
 		}
 
@@ -52,7 +79,7 @@ class FocusModel extends Model {
 		$data['data']['data'] = [];
 			foreach ($query-> getResult() as $row){
 				$userAddress  = $row -> contrary;
-				$userInfo[]	  = (new UserModel())-> userAllInfo($userAddress, $opt);
+				$userInfo[]	  = $this->userModel-> userAllInfo($userAddress, $opt);
 				$data['data']['data'] = $userInfo;
 			}
 		$data['msg'] = 'success';
@@ -72,6 +99,39 @@ class FocusModel extends Model {
 		];
 		return $data;
 	}
+
+
+	public function focus($userAddress)
+	{//关注
+		$data['code'] = 200;
+		$akToken = $_SERVER['HTTP_AK_TOKEN'];
+		$isAkToken = $this->DisposeModel-> checkAddress($akToken);
+		if(!$isAkToken){
+			$data['msg']  = 'error_login';
+			return json_encode($data);
+		}
+
+		$verify = $this->isFocus($userAddress, $akToken);
+		if(!$verify){
+			$focusSql = "INSERT INTO $this->tablename(focus, fans) VALUES ('$userAddress', '$akToken')";
+			$e = true;
+		}else{
+			$focusSql = "DELETE FROM $this->tablename WHERE focus = '$userAddress' AND fans = '$akToken'";
+			$e = false;
+		}
+		$this->db-> query($focusSql);
+		$this->userModel-> userFocus($userAddress, $akToken, $e);
+		//入库行为记录
+		$focusBehaviorSql = "INSERT INTO wet_behavior(address,thing,toaddress) 
+								VALUES ('$akToken', 'isFocus', '$userAddress')";
+		$this->db->query($focusBehaviorSql);
+		$isFocus = $this->isFocus($userAddress, $akToken);
+		$data['data']['isFocus'] = $isFocus;
+		$data['msg'] = 'success';
+		
+		return json_encode($data);
+	}
+
 
 }
 

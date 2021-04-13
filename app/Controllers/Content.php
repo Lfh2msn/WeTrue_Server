@@ -15,9 +15,16 @@ class Content extends BaseController
 	public function tx()
     {//主贴详情
         $hash = $this->request->getPost('hash');
-        $opt  = ['select' => 'content'];
-		$data = $this->pagesModel-> Alone($hash, $opt);
-		echo $data;
+        $isHash = $this->DisposeModel-> checkAddress($hash);
+		if($isHash){
+            $opt  = ['select' => 'content'];
+            $data = $this->pagesModel-> Alone($hash, $opt);
+            echo $data;
+        }else{
+			$data['code'] = 406;
+			$data['msg']  = 'error_hash';
+            echo json_encode($data);
+		}
     }
 
     public function hotRec()

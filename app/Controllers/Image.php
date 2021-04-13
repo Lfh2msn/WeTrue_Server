@@ -1,6 +1,8 @@
 <?php
 namespace App\Controllers;
 
+use App\Models\DisposeModel;
+
 class Image extends BaseController
 {
 	public function list()

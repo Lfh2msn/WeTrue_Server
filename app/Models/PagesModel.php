@@ -5,6 +5,8 @@ use App\Models\BloomModel;
 use App\Models\ContentModel;
 use App\Models\CommentModel;
 use App\Models\ReplyModel;
+use App\Models\configModel;
+use App\Models\DisposeModel;
 
 class PagesModel extends Model {
 //分页列表模型
@@ -14,7 +16,9 @@ class PagesModel extends Model {
 		$this->bloom   		= new BloomModel();
 		$this->content 		= new ContentModel();
 		$this->comment 		= new CommentModel();
-		//$this->reply 		= new ReplyModel();
+		$this->reply 		= new ReplyModel();
+		$this->configModel 	= new configModel();
+		$this->DisposeModel = new DisposeModel();
     }
 
     public function limit($page, $size, $opt=[])
@@ -29,8 +33,13 @@ class PagesModel extends Model {
 			];*/
 		$page = max(1, (int)$page);
 		$size = max(1, (int)$size);
-		$opt['userLogin'] = $_SERVER['HTTP_AK_TOKEN'];
-		$opt['substr']	  = 160;
+		$akToken   = $_SERVER['HTTP_AK_TOKEN'];
+		$isAkToken = $this->DisposeModel-> checkAddress($akToken);
+		if($isAkToken){
+			$opt['userLogin'] = $akToken;
+		}
+		
+		$opt['substr']	  = 160; //限制输出
 
 		if($opt['type'] == 'contentList'){
 			//主贴列表
@@ -62,8 +71,8 @@ class PagesModel extends Model {
 		if($opt['type'] == 'imageList'){
 			//图片列表
 			$this->tablename = "wet_content";
-			$countSql		 = "SELECT count(hash) FROM $this->tablename WHERE imgtx <> ''";
-			$limitSql		 = "SELECT hash FROM $this->tablename WHERE imgtx <> '' 
+			$countSql		 = "SELECT count(hash) FROM $this->tablename WHERE img_tx <> ''";
+			$limitSql		 = "SELECT hash FROM $this->tablename WHERE img_tx <> '' 
 									ORDER BY utctime DESC LIMIT $size OFFSET ".($page-1)*$size;
 			$select 		 = "content";
 		}
@@ -71,10 +80,12 @@ class PagesModel extends Model {
 		if($opt['type'] == 'hotRecList'){
 			//热点推荐
 			$this->tablename = "wet_content";
-			$FifteenTime 	 = (time()-60 * 60 *24 * 30 )*1000;//86400秒*x天*1000毫秒
+			$backendConfig   = $this->configModel-> backendConfig();
+			$hotRecDay  	 = $backendConfig['hotRecDay'];
+			$FifteenTime 	 = (time()-60 * 60 *24 * $hotRecDay )*1000;//86400秒*x天*1000毫秒
 			$countSql		 = "SELECT count(hash) FROM $this->tablename WHERE utctime >= $FifteenTime";
 			$limitSql		 = "SELECT hash FROM $this->tablename WHERE utctime >= $FifteenTime 
-									ORDER BY (love+commsum+star) DESC LIMIT $size OFFSET ".($page-1)*$size;
+									ORDER BY (praise+comment_sum+star) DESC LIMIT $size OFFSET ".($page-1)*$size;
 			$select 		 = "content";
 		}
 
@@ -89,14 +100,14 @@ class PagesModel extends Model {
 
 		if($opt['type'] == 'userFocusContentList'){
 			//被关注主贴列表
-			$my_id	  = $opt['userLogin'];
+			$akToken	  = $opt['userLogin'];
 			$countSql = "SELECT count(wet_content.hash) FROM wet_content 
-							INNER JOIN wet_follow 
-							ON wet_content.sender_id = wet_follow.following 
-							AND wet_follow.followers = '$my_id'";
+							INNER JOIN wet_focus 
+							ON wet_content.sender_id = wet_focus.focus 
+							AND wet_focus.fans = '$akToken'";
 			$limitSql = "SELECT wet_content.hash FROM wet_content 
-							INNER JOIN wet_follow ON wet_content.sender_id = wet_follow.following 
-							AND wet_follow.followers = '$my_id' 
+							INNER JOIN wet_focus ON wet_content.sender_id = wet_focus.focus 
+							AND wet_focus.fans = '$akToken' 
 							ORDER BY wet_content.uid DESC LIMIT $size OFFSET ".($page-1)*$size;
 			$select	  = "content";
 		}
@@ -107,8 +118,13 @@ class PagesModel extends Model {
 
 	public function Alone($hash, $opt=[])
 	{//内容单页
-		$opt['userLogin'] = $_SERVER['HTTP_AK_TOKEN'];
 		$data['code'] = 200;
+		$akToken = $_SERVER['HTTP_AK_TOKEN'];
+		$isAkToken = $this->DisposeModel-> checkAddress($akToken);
+		if($isAkToken){
+			$opt['userLogin'] = $akToken;
+		}
+		
 		$data['data'] = '';
 
 		if($opt['select'] == 'content'){
@@ -133,7 +149,7 @@ class PagesModel extends Model {
 	{//列表循环
 		$data['code'] = 200;
 		$data['data'] = $this->pages($page, $size, $countSql);
-		$query = $this-> db-> query($limitSql);
+		$query = $this->db-> query($limitSql);
 		$data['data']['data'] = [];
 			foreach ($query-> getResult() as $row){
 				$hash  = $row -> hash;
@@ -148,7 +164,7 @@ class PagesModel extends Model {
 					}
 
 					if($select == 'reply'){
-						$detaila[] = (new ReplyModel())-> txReply($hash, $opt);
+						$detaila[] = $this->reply-> txReply($hash, $opt);
 					}
 				}
 				$data['data']['data'] = $detaila;

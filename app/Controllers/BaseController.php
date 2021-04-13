@@ -16,6 +16,8 @@ namespace App\Controllers;
 
 use CodeIgniter\Controller;
 use App\Models\PagesModel;
+use App\Models\FocusModel;
+use App\Models\DisposeModel;
 
 class BaseController extends Controller {
 
@@ -47,7 +49,9 @@ class BaseController extends Controller {
 		header("Access-Control-Allow-Origin: *");
 		header("Access-Control-Allow-Headers: ak-token");
 		$this->request = service('request');
-		$this->pagesModel = new PagesModel();
+		$this->pagesModel   = new PagesModel();
+		$this->FocusModel   = new FocusModel();
+		$this->DisposeModel = new DisposeModel();
 	}
 
 }

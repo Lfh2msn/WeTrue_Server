@@ -24,8 +24,8 @@ class CommentModel extends Model {
 					sender_id,
 					payload,
 					utctime,
-					commsum,
-					love
+					reply_sum,
+					praise
 				FROM $this->tablename WHERE hash='$hash' LIMIT 1";
         $query = $this->db->query($sql);
 		$row   = $query-> getRow();
@@ -35,13 +35,13 @@ class CommentModel extends Model {
 			$sender_id       = $row-> sender_id;
 			$bloom           = $this->bloom-> txBloom($hash);
 			if($bloom){
-				$data['payload'] = htmlentities($row-> payload);
+				$data['payload'] = stripslashes($row-> payload);
 			}else{
 				$data['payload'] = $hash;
 			}
 			$data['utcTime']		= (int) $row-> utctime;
-			$data['commentNumber']  = (int) $row-> commsum;
-			$data['praise']			= (int) $row-> love;
+			$data['replyNumber']  = (int) $row-> reply_sum;
+			$data['praise']			= (int) $row-> praise;
 			if($opt['userLogin']){
 				$data['isPraise']	= $this->praise-> isPraise($hash, $opt['userLogin']);
 			}else{

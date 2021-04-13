@@ -12,7 +12,7 @@ class ConfigModel extends Model {
 			'contentAmount'      => (int)'1e14', //发帖费用 1e17 = 0.1ae
 			'commentAmount'      => (int)'1e14', //评论费用
 			'replyAmount'        => (int)'1e14', //回复费用
-			'nickNameAmount'     => (int)'1e14', //昵称金额
+			'nicknameAmount'     => (int)'1e14', //昵称金额
 			'portraitAmount'     => (int)'1e14', //头像费用
 			'articleSendNode'    => PUBLIC_NODE, //内容发送节点
 			'backendServiceNode' => PUBLIC_NODE, //内容发送节点
@@ -26,14 +26,14 @@ class ConfigModel extends Model {
 			'AeasyAmount'        => '0.1', //活动金额
 			'AeasySecretKey'     => '', //私钥
 			'airdropWttRatio'    => (int)'3', //WTT空投比例
-			'hotRecDay'          => (int)'3', //热点推荐天数
+			'hotRecDay'          => (int)'30', //热点推荐天数
 
-			'contentActive'      => (int)'5', //发帖增加活跃度
-			'commentActive'      => (int)'2', //评论增加活跃度
-			'praiseActive'       => (int)'1', //点赞增加活跃度
-			'nickNameActive'     => (int)'1', //昵称增加活跃度
-			'portraitActive'     => (int)'1', //头像增加活跃度
-			'reportActive'       => (int)'30',//举报扣除活跃度
+			'contentActive'      => (int)'5', //发帖 +活跃度
+			'commentActive'      => (int)'2', //评论 +活跃度
+			'praiseActive'       => (int)'1', //点赞 +活跃度
+			'nicknameActive'     => (int)'1', //昵称 +活跃度
+			'portraitActive'     => (int)'1', //头像 +活跃度
+			'reportActive'       => (int)'30',//举报 -活跃度
 		);
     }
 
@@ -47,13 +47,13 @@ class ConfigModel extends Model {
 			'contentAmount'    => $backendConfig['contentAmount'],
 			'commentAmount'    => $backendConfig['commentAmount'],
 			'replyAmount'      => $backendConfig['replyAmount'],
-			'nickNameAmount'   => $backendConfig['nickNameAmount'],
+			'nicknameAmount'   => $backendConfig['nicknameAmount'],
 			'portraitAmount'   => $backendConfig['portraitAmount'],
 			'receivingAccount' => $backendConfig['receivingAccount'],
 			'contentActive'    => $backendConfig['contentActive'],
 			'commentActive'    => $backendConfig['commentActive'],
 			'praiseActive'     => $backendConfig['praiseActive'],
-			'nickNameActive'   => $backendConfig['nickNameActive'],
+			'nicknameActive'   => $backendConfig['nicknameActive'],
 			'portraitActive'   => $backendConfig['portraitActive'],
 			'reportActive'     => $backendConfig['reportActive'],
 		);

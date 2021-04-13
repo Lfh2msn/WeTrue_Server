@@ -37,7 +37,7 @@ class ReplyModel extends Model {
 			$to_address			 = $row-> to_address;
 			$bloom	= $this->bloom-> txBloom($hash);
 			if($bloom){
-				$data['payload'] = htmlentities($row-> payload);
+				$data['payload'] = stripslashes($row-> payload);
 			}else{
 				$data['payload'] = $hash;
 			}

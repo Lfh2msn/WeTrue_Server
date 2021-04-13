@@ -21,8 +21,15 @@ class Comment extends BaseController {
 	public function tx()
     {//评论详情
         $hash = $this->request->getPost('hash');
-        $opt  = ['select' => 'comment'];
-		$data = $this->pagesModel-> Alone($hash, $opt);
-		echo $data;
+        $isHash = $this->DisposeModel-> checkAddress($hash);
+		if($isHash){
+            $opt  = ['select' => 'comment'];
+            $data = $this->pagesModel-> Alone($hash, $opt);
+            echo $data;
+        }else{
+			$data['code'] = 406;
+			$data['msg']  = 'error_hash';
+            echo json_encode($data);
+		}
     }
 }

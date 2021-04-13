@@ -2,21 +2,26 @@
 namespace App\Controllers;
 
 use App\Models\UserModel;
-use App\Models\FocusModel;
 
 class User extends BaseController {
 
 	public function info()
 	{//获取用户完整信息
         $userAddress  = $this->request->getPost('userAddress');
-		$data['code'] = 200;
-		$userInfo	  = (new UserModel())-> userAllInfo($userAddress);
-		$data['data'] = '';
-		if($userInfo && $userAddress){
-			$data['data'] = $userInfo;
-			$data['msg']  = 'success';
+		$isUserAddress = $this->DisposeModel-> checkAddress($userAddress);
+		if($isUserAddress){
+			$data['code'] = 200;
+			$userInfo	  = (new UserModel())-> userAllInfo($userAddress);
+			$data['data'] = '';
+			if($userInfo){
+				$data['data'] = $userInfo;
+				$data['msg']  = 'success';
+			}else{
+				$data['msg']  = 'error_address';
+			}
 		}else{
-			$data['msg']  = 'error_address';
+			$data['code'] = 406;
+			$data['msg']  = 'error';
 		}
 		echo json_encode($data);
     }
@@ -26,13 +31,20 @@ class User extends BaseController {
 		$page = $this->request->getPost('currentPage');
 		$size = $this->request->getPost('perPage');
 		$userAddress = $this->request->getPost('userAddress');
-		$type = 'userContentList';
-		$opt  =	[
-				'type' 		=> $type,
-				'publicKey' => $userAddress
-			];
-		$data = $this->pagesModel-> limit($page, $size, $opt);
-		echo $data;
+		$isUserAddress = $this->DisposeModel-> checkAddress($userAddress);
+		if($isUserAddress){
+			$type = 'userContentList';
+			$opt  =	[
+					'type' 		=> $type,
+					'publicKey' => $userAddress
+				];
+			$data = $this->pagesModel-> limit((int)$page, (int)$size, $opt);
+			echo $data;
+		}else{
+			$data['code'] = 406;
+			$data['msg']  = 'error';
+			echo json_encode($data);
+		}
 	}
 
 	public function focusContent()
@@ -51,11 +63,18 @@ class User extends BaseController {
 		$size  = $this->request->getPost('perPage');
 		$focus = $this->request->getPost('focus');
 		$type  = 'userFocusUserList';
-		$opt   =	[
+		if($focus == 'myFocus' || $focus == 'focusMy'){
+			$opt = [
 				'type'  => $type,
 				'focus' => $focus //focus => 可选类型 myFocus\focusMy
 			];
-		$data  = (new FocusModel())-> limit($page, $size, $opt);
-		echo $data;
+			$data  = $this->FocusModel-> limit($page, $size, $opt);
+			echo $data;
+		}else{
+			$data['code'] = 406;
+			$data['msg']  = 'error';
+			echo json_encode($data);
+		}
 	}
+
 }
