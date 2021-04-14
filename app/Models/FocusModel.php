@@ -50,9 +50,8 @@ class FocusModel extends Model {
 		$opt['userLogin'] = $akToken;
 
 		if($opt['type'] == 'userFocusUserList'){
-			//关注、被关注列表
+		//关注、被关注列表
 			$akToken    = $opt['userLogin'];
-
 			if($opt['focus'] == "myFocus"){
 				$field	  = "fans";
 				$contrary = "focus";
@@ -71,8 +70,8 @@ class FocusModel extends Model {
 		return json_encode($data);
     }
 
-	private function cycle($page, $size, $countSql, $limitSql, $opt){
-		//用户列表循环
+	private function cycle($page, $size, $countSql, $limitSql, $opt)
+	{//用户列表循环
 		$data['code'] = 200;
 		$data['data'] = $this->pages($page, $size, $countSql);
 		$query = $this-> db-> query($limitSql);
@@ -86,7 +85,8 @@ class FocusModel extends Model {
 		return $data;
 	}
 
-	private function pages($page, $size, $sql){
+	private function pages($page, $size, $sql)
+	{
 		$query  = $this->db-> query($sql);
 		$row	= $query-> getRow();
         $count	= $row->count;//总数量

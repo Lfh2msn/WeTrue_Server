@@ -16,7 +16,7 @@ class DisposeModel extends Model {
         if(substr($hex, 64, 72)!==$checksum){
             return false;
         }
-        return (bool)$a=true;
+        return true;
     }
 
     public function addressToHex($address)
@@ -87,5 +87,53 @@ class DisposeModel extends Model {
         return (string) $output;
     }
 
+    public function decodePayload($payload)
+	{//解码Payload内容
+        $hex  = bin2hex(base64_decode(str_replace("ba_","",$payload)));
+        $bin  = hex2bin(substr($hex,0,strlen($hex)-8));
+		$json = (array) json_decode($bin,true);
+        return $json;
+    }
+
+	public function versionCompare($versionA,$versionB)
+	{/*版本号比较
+	*    @param $version1 版本A 如:5.3.2 
+	*    @param $version2 版本B 如:5.3.0 
+	*    @return int -1版本A小于版本B , 0版本A等于版本B, 1版本A大于版本B
+	*
+	*    版本号格式注意：
+	*        1.要求只包含:点和大于等于0小于等于2147483646的整数 的组合
+	*        2.boole型 true置1，false置0
+	*        3.不设位默认补0计算，如：版本号5等于版号5.0.0
+	*        4.不包括数字 或 负数 的版本号 ,统一按0处理 */
+		if ($versionA>2147483646 || $versionB>2147483646) {
+			return false;
+		}
+		$verListA = explode('.', (string) $versionA);
+		$verListB = explode('.', (string) $versionB);
+
+		$len = max(count($verListA),count($verListB));
+		$i = -1;
+		while ($i++<$len) {
+			$verListA[$i] = intval(@$verListA[$i]);
+			if ($verListA[$i] < 0 ) {
+				$verListA[$i] = 0;
+			}
+			$verListB[$i] = intval(@$verListB[$i]);
+			if ($verListB[$i] < 0 ) {
+				$verListB[$i] = 0;
+			}
+
+			if ($verListA[$i]>$verListB[$i]) {
+                return true;
+			}
+			if ($verListA[$i]<$verListB[$i]) {
+                return false;
+			}
+			if ($i==($len-1)) {
+                return true;
+			}
+		}
+	}
 }
 

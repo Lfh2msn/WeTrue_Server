@@ -2,27 +2,32 @@
 
 use CodeIgniter\Model;
 use App\Models\ConfigModel;
+use App\Models\DisposeModel;
 
 class hashReadModel extends Model {
 
 	public function __construct(){
         parent::__construct();
-        $this->tablename   = 'wet_temporary';
-		$this->ConfigModel = new ConfigModel();
+		$this->ConfigModel  = new ConfigModel();
+		$this->DisposeModel = new DisposeModel();
+		$this->Temporary    = 'wet_temporary';
     }
 
 	public function split($hash)
-	{//获取用户完整信息
-		//写入临时数据库
-		$insertTempSql="INSERT INTO $this->tablename(tp_hash) VALUES ('$hash')";
-		$this->db->query($insertTempSql);
+	{//上链内容入库
+		$isHashSql = "SELECT tp_hash FROM $this->Temporary WHERE tp_hash = '$hash' LIMIT 1";
+		$query = $this->db-> query($isHashSql)-> getRow();
+		if(!$query){//写入临时缓存
+			$insertTempSql = "INSERT INTO $this->Temporary(tp_hash) VALUES ('$hash')";
+			$this->db->query($insertTempSql);
+		}
 
 		$bsConfig = $this->ConfigModel-> backendConfig();
 		$url = $bsConfig['backendServiceNode'].'v2/transactions/'.$hash;
-		$i   = 0;
-		while ( !$get && $i < 10 ) {
+		$num = 0;
+		while ( !$get && $num < 10 ) {
 			@$get = file_get_contents($url);
-			$i++;
+			$num++;
 			//sleep(1);
 		}
 
@@ -40,45 +45,35 @@ class hashReadModel extends Model {
 			$json['tx']['payload']==="ba_Xfbg4g=="
 			)){
         	//删除临时缓存
-	        $deleteTempSql = "DELETE FROM $this->tablename WHERE tp_hash='$hash'";
+	        $deleteTempSql = "DELETE FROM $this->Temporary WHERE tp_hash='$hash'";
 	        $this->db->query($deleteTempSql);
-	        echo '非法提交';
-        return;
+        	return;
         }
 
-
 		$data = $this->decodeContent($json);
-
 		return $data ;
-	print_r(json_encode($json, true));
-	echo '<br><br><br>';
-	print_r(json_encode($data, true));
-    return;
 	}
 
 	public function decodeContent($json)
-	{//解码以及分配内同
-		$bsConfig = $this->ConfigModel-> backendConfig();
-        //TX获取UTC时间
+	{//重构及内容分配
+		$bsConfig 		 = $this->ConfigModel-> backendConfig();
         $microBlock      = $json['block_hash'];
         $microBlockUrl   = $bsConfig['backendServiceNode'].'v2/micro-blocks/hash/'.$microBlock.'/header';
         @$microBlockJson = file_get_contents($microBlockUrl);
         $microBlockArray = (array) json_decode($microBlockJson, true);
 		$json['mb_time'] = $microBlockArray['time'];
 
-		$payload		 = $this->decodePayload($json['tx']['payload']);
-		$hash			 = $json['hash'];
-
-		//版本检测
+		$payload = $this->DisposeModel ->decodePayload($json['tx']['payload']);
+		$hash	 = $json['hash'];
 		$WeTrue  = $payload['WeTrue'];
 		$require = $bsConfig['requireVersion'];
-		$version = $this->versionCompare($WeTrue, $require);
-		/*if(!$version){
+		$version = $this->DisposeModel ->versionCompare($WeTrue, $require); //版本检测
+		if(!$version){
 			$versionLow = "versionLow";
-			$updateSql  = "UPDATE $this->tablename SET tp_source = '$versionLow' WHERE tp_hash = '$hash'";
+			$updateSql  = "UPDATE $this->Temporary SET tp_source = '$versionLow' WHERE tp_hash = '$hash'";
 	        $this->db-> query($updateSql);
 			return;
-		}*/
+		}
 		$type 			 = $payload['type'];
 		$data['WeTrue']  = $WeTrue;
 		$data['type']    = $type;
@@ -86,84 +81,83 @@ class hashReadModel extends Model {
 		$data['receipt'] = $json['tx']['recipient_id'];
 		$data['sender']  = $json['tx']['sender_id'];
 		$data['amount']  = $json['tx']['amount'];
-		$data['mb_time'] = $json['mb_time'];
+		$data['mbTime']  = $json['mb_time'];
 		$data['content'] = $payload['wet_content'];
 		//内容分配
-		if($type == 'topic' ){  //主贴
+		if( $type == 'topic' ){  //主贴
 			$data['imgList'] = $payload['img_list'];
+			$this->tablename = 'wet_content';
+			$insertSql = "INSERT INTO $this->tablename(
+								hash,sender_id,recipient_id,utctime,amount,type,payload,img_tx
+							) VALUES (   
+								'$data[hash]', '$data[sender]', '$data[receipt]', '$data[mbTime]', '$data[amount]', '$data[type]', '$data[content]', '$data[imgList]'
+							)";
+			$active = $bsConfig['contentActive'];
 		}
 
-		if($type == 'comment' ){  //评论
-			
+		if( $type == 'comment' ){  //评论
+			$data['toHash'] = $payload['toHash'];
+			$this->tablename = 'wet_comment';
+			$insertSql = "INSERT INTO $this->tablename(
+								hash, to_hash, sender_id, recipient_id, utctime, amount, type, payload
+							) VALUES (
+								'$data[hash]', '$data[toHash]', '$data[sender]', '$data[receipt]', '$data[mbTime]', '$data[amount]', '$data[type]', '$data[content]'
+							)";
+			$active = $bsConfig['commentActive'];
 		}
 
-		if($type == 'reply' ){  //回复
-			$data['reply_type'] = $payload['reply_type'];
-			$data['to_hash']    = $payload['to_hash'];
-			$data['reply_hash'] = $payload['reply_hash'];
+		if( $type == 'reply' ){  //回复
+			$data['replyType'] = $payload['reply_type'];
+			$data['toHash']    = trim($payload['to_hash']);
+			$data['toAddress'] = trim($payload['to_address']);
+			$data['replyHash'] = trim($payload['reply_hash']);
+			$this->tablename = 'wet_reply';
+			$insertSql = "INSERT INTO $this->tablename(
+								hash, to_hash, reply_hash, reply_type, to_address, sender_id, recipient_id, utctime, amount, payload
+							) VALUES (
+								'$data[hash]', '$data[toHash]', '$data[replyHash]', '$data[replyType]', '$data[toAddress]', 
+								'$data[sender]', '$data[receipt]', '$data[mbTime]', '$data[amount]', '$data[content]'
+							)";
+			$active = $bsConfig['replyActive'];
 		}
 
-		if($type == 'nickname' ){  //昵称
-			
+		if( $type == 'nickname' ){  //昵称
+			$data['content'] = trim($payload['wet_content']);
+			$this->tablename = 'wet_users';
+			$insertSql = "INSERT INTO $this->tablename(
+								address, username
+							) VALUES (
+								'$data[sender]', '$data[content]'
+							)";
+			$active = $bsConfig['nicknameActive'];
 		}
 
-		if($type == 'portrait' ){  //头像
-			
+		if( $type == 'portrait' ){  //头像
+			$this->tablename = 'wet_users';
+			$insertSql = "INSERT INTO $this->tablename(
+								address, portrait, maxportrait
+							) VALUES (
+								'$data[sender]', '$data[content]', '$data[hash]'
+							)";
+			$active = $bsConfig['portraitActive'];
+		}else{
+			return;
 		}
 
-		print_r(json_encode($data));
-		return;
-		
+		$this->db->query($insertSql);
+
+		//入库行为记录
+		$insetrBehaviorSql = "INSERT INTO wet_behavior(
+									address, hash, thing, influence, toaddress
+								) VALUES (
+									'$data[sender]', '$data[hash]', '$data[type]', '$active', '$data[receipt]'
+								)";
+		$this->db->query($insetrBehaviorSql);
+
+		//删除临时缓存
+		$sql_del_tp = "DELETE FROM $this->Temporary WHERE tp_hash='$data[hash]'";
+		$this->db->query($sql_del_tp);
     }
-
-	public function decodePayload($payload)
-	{//解码Payload内容
-        $hex  = bin2hex(base64_decode(str_replace("ba_","",$payload)));
-        $bin  = hex2bin(substr($hex,0,strlen($hex)-8));
-		$json = (array) json_decode($bin,true);
-        return $json;
-    }
-
-	public function versionCompare($versionA,$versionB)
-	{/*版本号比较
-	*    @param $version1 版本A 如:5.3.2 
-	*    @param $version2 版本B 如:5.3.0 
-	*    @return int -1版本A小于版本B , 0版本A等于版本B, 1版本A大于版本B
-	*
-	*    版本号格式注意：
-	*        1.要求只包含:点和大于等于0小于等于2147483646的整数 的组合
-	*        2.boole型 true置1，false置0
-	*        3.不设位默认补0计算，如：版本号5等于版号5.0.0
-	*        4.不包括数字 或 负数 的版本号 ,统一按0处理 */
-		if ($versionA>2147483646 || $versionB>2147483646) {
-			return false;
-		}
-		$verListA = explode('.', (string) $versionA);
-		$verListB = explode('.', (string) $versionB);
-
-		$len = max(count($verListA),count($verListB));
-		$i = -1;
-		while ($i++<$len) {
-			$verListA[$i] = intval(@$verListA[$i]);
-			if ($verListA[$i] < 0 ) {
-				$verListA[$i] = 0;
-			}
-			$verListB[$i] = intval(@$verListB[$i]);
-			if ($verListB[$i] < 0 ) {
-				$verListB[$i] = 0;
-			}
-
-			if ($verListA[$i]>$verListB[$i]) {
-                return true;
-			}
-			if ($verListA[$i]<$verListB[$i]) {
-                return false;
-			}
-			if ($i==($len-1)) {
-                return true;
-			}
-		}
-	}
 
 }
 

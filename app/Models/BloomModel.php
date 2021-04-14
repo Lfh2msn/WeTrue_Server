@@ -7,8 +7,8 @@ class BloomModel extends Model {
    public function ipBloom($ip)
    {//过滤IP
         $sql="SELECT bf_ip FROM wet_bloom WHERE bf_ip='$ip' LIMIT 1";
-        //查询hash是否存在
         $query = $this->db->query($sql);
+        
         if($query->getRow()){
             $hash_filter = true;
         }else{
@@ -20,8 +20,8 @@ class BloomModel extends Model {
 	public function txBloom($txhash)
     {//过滤TX
         $sql="SELECT bf_hash FROM wet_bloom WHERE bf_hash='$txhash' LIMIT 1";
-        //查询hash是否存在
         $query = $this->db->query($sql);
+
         if(!$query->getRow()){
             $hash_filter = true;
         }else{

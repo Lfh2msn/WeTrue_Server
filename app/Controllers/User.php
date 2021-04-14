@@ -66,7 +66,7 @@ class User extends BaseController {
 		if($focus == 'myFocus' || $focus == 'focusMy'){
 			$opt = [
 				'type'  => $type,
-				'focus' => $focus //focus => 可选类型 myFocus\focusMy
+				'focus' => $focus  //focus => 可选类型 myFocus\focusMy
 			];
 			$data  = $this->FocusModel-> limit($page, $size, $opt);
 			echo $data;

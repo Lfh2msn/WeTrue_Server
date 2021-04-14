@@ -50,8 +50,7 @@ class PagesModel extends Model {
 			$select			 = "content";
 		}
 
-		if($opt['type'] == 'commentList'){
-			//评论列表
+		if($opt['type'] == 'commentList'){  //评论列表
 			$this->tablename = "wet_comment";
 			$countSql		 = "SELECT count(to_hash) FROM $this->tablename WHERE to_hash='$opt[hash]'";
 			$limitSql		 = "SELECT hash FROM $this->tablename WHERE to_hash = '$opt[hash]' 
@@ -59,8 +58,7 @@ class PagesModel extends Model {
 			$select			 = "comment";
 		}
 
-		if($opt['type'] == 'replyList'){
-			//回复列表
+		if($opt['type'] == 'replyList'){  //回复列表
 			$this->tablename = "wet_reply";
 			$countSql		 = "SELECT count(to_hash) FROM $this->tablename WHERE to_hash='$opt[hash]'";
 			$limitSql		 = "SELECT hash FROM $this->tablename WHERE to_hash = '$opt[hash]' 
@@ -68,8 +66,7 @@ class PagesModel extends Model {
 			$select			 = "reply";
 		}
 
-		if($opt['type'] == 'imageList'){
-			//图片列表
+		if($opt['type'] == 'imageList'){  //图片列表
 			$this->tablename = "wet_content";
 			$countSql		 = "SELECT count(hash) FROM $this->tablename WHERE img_tx <> ''";
 			$limitSql		 = "SELECT hash FROM $this->tablename WHERE img_tx <> '' 
@@ -77,8 +74,7 @@ class PagesModel extends Model {
 			$select 		 = "content";
 		}
 
-		if($opt['type'] == 'hotRecList'){
-			//热点推荐
+		if($opt['type'] == 'hotRecList'){  //热点推荐
 			$this->tablename = "wet_content";
 			$backendConfig   = $this->configModel-> backendConfig();
 			$hotRecDay  	 = $backendConfig['hotRecDay'];
@@ -89,8 +85,7 @@ class PagesModel extends Model {
 			$select 		 = "content";
 		}
 
-		if($opt['type'] == 'userContentList'){
-			//用户发帖列表
+		if($opt['type'] == 'userContentList'){  //用户发帖列表
 			$this->tablename = "wet_content";
 			$countSql		 = "SELECT count(sender_id) FROM $this->tablename WHERE sender_id='$opt[publicKey]'";
 			$limitSql		 = "SELECT hash FROM $this->tablename WHERE sender_id='$opt[publicKey]' 
@@ -98,8 +93,7 @@ class PagesModel extends Model {
 			$select			 = "content";
 		}
 
-		if($opt['type'] == 'userFocusContentList'){
-			//被关注主贴列表
+		if($opt['type'] == 'userFocusContentList'){  //被关注主贴列表
 			$akToken	  = $opt['userLogin'];
 			$countSql = "SELECT count(wet_content.hash) FROM wet_content 
 							INNER JOIN wet_focus 
@@ -173,7 +167,8 @@ class PagesModel extends Model {
 		return $data;
 	}
 
-	private function pages($page, $size, $sql){
+	private function pages($page, $size, $sql)
+	{
 		$query  = $this->db-> query($sql);
 		$row	= $query-> getRow();
         $count	= $row->count;//总数量

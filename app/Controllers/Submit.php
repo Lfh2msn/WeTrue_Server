@@ -51,7 +51,7 @@ class Submit extends BaseController {
 		}
 	}
 
-	public function tx($hash)
+	public function hash($hash)
 	{//发布hash
 		//$hash  = $this->request->getPost('hash');
 		$isHash = $this->DisposeModel-> checkAddress($hash);
