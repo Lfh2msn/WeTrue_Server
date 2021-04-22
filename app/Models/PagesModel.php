@@ -113,7 +113,7 @@ class PagesModel extends Model {
 	public function Alone($hash, $opt=[])
 	{//内容单页
 		$data['code'] = 200;
-		$akToken = $_SERVER['HTTP_AK_TOKEN'];
+		$akToken   = $_SERVER['HTTP_AK_TOKEN'];
 		$isAkToken = $this->DisposeModel-> checkAddress($akToken);
 		if($isAkToken){
 			$opt['userLogin'] = $akToken;
@@ -145,24 +145,24 @@ class PagesModel extends Model {
 		$data['data'] = $this->pages($page, $size, $countSql);
 		$query = $this->db-> query($limitSql);
 		$data['data']['data'] = [];
-			foreach ($query-> getResult() as $row){
-				$hash  = $row -> hash;
-				$bloom = $this->bloom-> txBloom($hash);
-				if($bloom){
-					if($select  == 'content'){
-						$detaila[] = $this->content-> txContent($hash, $opt);
-					}
-
-					if($select  == 'comment'){
-						$detaila[] = $this->comment-> txComment($hash, $opt);
-					}
-
-					if($select == 'reply'){
-						$detaila[] = $this->reply-> txReply($hash, $opt);
-					}
+		foreach ($query-> getResult() as $row){
+			$hash  = $row -> hash;
+			$bloom = $this->bloom-> txBloom($hash);
+			if($bloom){
+				if($select  == 'content'){
+					$detaila[] = $this->content-> txContent($hash, $opt);
 				}
-				$data['data']['data'] = $detaila;
+
+				if($select  == 'comment'){
+					$detaila[] = $this->comment-> txComment($hash, $opt);
+				}
+
+				if($select == 'reply'){
+					$detaila[] = $this->reply-> txReply($hash, $opt);
+				}
 			}
+			$data['data']['data'] = $detaila;
+		}
 		$data['msg'] = 'success';
 		return $data;
 	}

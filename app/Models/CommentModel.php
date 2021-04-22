@@ -39,22 +39,20 @@ class CommentModel extends Model {
 			}else{
 				$data['payload'] = $hash;
 			}
-			$data['utcTime']		= (int) $row-> utctime;
-			$data['replyNumber']  = (int) $row-> reply_sum;
-			$data['praise']			= (int) $row-> praise;
+			$data['utcTime']	 = (int) $row-> utctime;
+			$data['replyNumber'] = (int) $row-> reply_sum;
+			$data['praise']		 = (int) $row-> praise;
+			$data['isPraise']	 = false;
 			if($opt['userLogin']){
 				$data['isPraise']	= $this->praise-> isPraise($hash, $opt['userLogin']);
-			}else{
-				$data['isPraise']	= false;
 			}
 			$data['users']			= $this->user-> getUser($sender_id);
 			if($opt['replyLimit']){
 				$data['commentList'] = [];
+				$limit = 'LIMIT 0';
 				if((int) $opt['replyLimit']){
 					$replyLimit = max(0, (int)$opt['replyLimit']);
 					$limit = 'LIMIT '.$replyLimit;
-				}else{
-					$limit = 'LIMIT 0';
 				}
 				$replySql = "SELECT hash FROM wet_reply WHERE to_hash='$hash' ORDER BY uid DESC ".$limit;
 				$query = $this-> db-> query($replySql);

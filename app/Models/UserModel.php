@@ -5,6 +5,18 @@ use App\Models\ConfigModel;
 
 class UserModel extends Model {
 
+	public function isUser($address)
+	{//验证用户是否存在
+		$sql   = "SELECT address FROM wet_users WHERE address = '$address' LIMIT 1";
+        $query = $this->db->query($sql);
+		$row   = $query->getRow();
+		if ($row) {
+			return TRUE;
+        }else{
+			return FALSE;
+		}
+	}
+
     public function getUser($address)
 	{//获取用户头像、昵称、等级
 		$sql="SELECT 
@@ -12,25 +24,23 @@ class UserModel extends Model {
 					uactive,
 					last_active,
 					portrait
-				FROM wet_users WHERE address='$address' LIMIT 1";
+				FROM wet_users WHERE address = '$address' LIMIT 1";
         $query = $this->db->query($sql);
 		$row = $query->getRow();
 		if ($row) {
 			$data['userAddress'] = $address;
 			$nickname = $row->nickname;
-			if(!$nickname){
-				$data['nickname'] = "";
-			}else{
+			$data['nickname'] = "";
+			if($nickname){
 				$data['nickname'] = stripslashes($nickname);
 			}
 			$userActive = (int)$row->uactive;
             $data['active'] = $userActive;
 			$data['userActive'] = $this->getActiveGrade($userActive);
 			$portrait = $row->portrait;
+			$data['portrait'] = "";
 			if($portrait){
 				$data['portrait'] = stripslashes($portrait);
-			}else{
-				$data['portrait'] = "";
 			}
         }else{
 			return FALSE;
@@ -49,30 +59,28 @@ class UserModel extends Model {
 					topic_sum,
 					focus_sum,
 					fans_sum
-				FROM wet_users WHERE address='$address' LIMIT 1";
+				FROM wet_users WHERE address = '$address' LIMIT 1";
         $query = $this->db->query($sql);
 		$row = $query->getRow();
 		if ($row) {
 			$data['userAddress'] = $address;
 			$nickname = $row->nickname;
+			$data['nickname'] = "";
 			if($nickname){
 				$data['nickname'] = stripslashes($nickname);
-			}else{
-				$data['nickname'] = "";
 			}
 			$userActive = (int)$row->uactive;
-            $data['active'] = $userActive;
+            $data['active'] 	= $userActive;
 			$data['userActive'] = $this->getActiveGrade($userActive);
-			$backendConfig = (new ConfigModel())-> backendConfig();
-			$data['lastActive'] = ($userActive - $row->last_active) * $backendConfig['airdropWttRatio'];
+			$bsConfig = (new ConfigModel())-> backendConfig();
+			$data['lastActive'] = ($userActive - $row->last_active) * $bsConfig['airdropWttRatio'];
 			$portrait 	  = $row->portrait;
 			$portraitHash = $row->portrait_hash;
+			$data['portrait']	  = "";
+			$data['portraitHash'] = "";
 			if($portrait){
 				$data['portrait']	  = stripslashes($portrait);
 				$data['portraitHash'] = stripslashes($portraitHash);
-			}else{
-				$data['portrait']	  = "";
-				$data['portraitHash'] = "";
 			}
 			$data['topic'] = (int)$row->topic_sum;
 			$data['focus'] = (int)$row->focus_sum;
@@ -85,15 +93,14 @@ class UserModel extends Model {
 
 	public function getName($address)
 	{//获取用户昵称
-		$sql   = "SELECT nickname FROM wet_users WHERE address='$address' LIMIT 1";
+		$sql   = "SELECT nickname FROM wet_users WHERE address = '$address' LIMIT 1";
         $query = $this->db->query($sql);
 		$row   = $query->getRow();
 		if ($row) {
 			$nickname = $row->nickname;
+			$data = "";
 			if($nickname){
 				$data = stripslashes($nickname);
-			}else{
-				$data = "";
 			}
         }else{
 			return FALSE;
@@ -107,7 +114,7 @@ class UserModel extends Model {
 		$active  = 数量
 		$e       = true增 或 false减
 	*/
-		$selectSql = "SELECT address FROM wet_users WHERE address='$address' LIMIT 1";
+		$selectSql = "SELECT address FROM wet_users WHERE address = '$address' LIMIT 1";
 		$query	   = $this->db->query($selectSql);
 		$row	   = $query-> getRow();
 		if(!$row){
@@ -116,9 +123,9 @@ class UserModel extends Model {
 		}
 
 		if($e){
-			$updateSql="UPDATE wet_users SET uactive = uactive + '$active' WHERE address='$address'";
+			$updateSql="UPDATE wet_users SET uactive = uactive + '$active' WHERE address = '$address'";
 		}else{
-			$updateSql="UPDATE wet_users SET uactive = uactive - '$active' WHERE address='$address'";
+			$updateSql="UPDATE wet_users SET uactive = uactive - '$active' WHERE address = '$address'";
 		}
 		$this->db->query($updateSql);
 	}
@@ -129,7 +136,7 @@ class UserModel extends Model {
 			$fans  = 粉丝地址
 			$e     = isFocus
 	*/
-		$selectSql = "SELECT address FROM wet_users WHERE address='$fans' LIMIT 1";
+		$selectSql = "SELECT address FROM wet_users WHERE address = '$fans' LIMIT 1";
 		$query	   = $this->db->query($selectSql);
 		$row	   = $query-> getRow();
 		if(!$row){

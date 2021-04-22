@@ -76,11 +76,11 @@ class FocusModel extends Model {
 		$data['data'] = $this->pages($page, $size, $countSql);
 		$query = $this-> db-> query($limitSql);
 		$data['data']['data'] = [];
-			foreach ($query-> getResult() as $row){
-				$userAddress  = $row -> contrary;
-				$userInfo[]	  = $this->userModel-> userAllInfo($userAddress, $opt);
-				$data['data']['data'] = $userInfo;
-			}
+		foreach ($query-> getResult() as $row){
+			$userAddress  = $row -> contrary;
+			$userInfo[]	  = $this->userModel-> userAllInfo($userAddress, $opt);
+			$data['data']['data'] = $userInfo;
+		}
 		$data['msg'] = 'success';
 		return $data;
 	}
@@ -89,12 +89,12 @@ class FocusModel extends Model {
 	{
 		$query  = $this->db-> query($sql);
 		$row	= $query-> getRow();
-        $count	= $row->count;//总数量
+        $count	= $row->count;  //总数量
 		$data	= [
-			'currentPage'	=> $page, //当前页
-			'perPage'		=> $size, //每页数量
-			'totalPage'		=> (int)ceil($count/$size), //总页数
-			'lastPage'		=> (int)ceil($count/$size), //总页数
+			'currentPage'	=> $page,  //当前页
+			'perPage'		=> $size,  //每页数量
+			'totalPage'		=> (int)ceil($count/$size),  //总页数
+			'lastPage'		=> (int)ceil($count/$size),  //总页数
 			'totalSize'		=> (int)$count  //总数量
 		];
 		return $data;
