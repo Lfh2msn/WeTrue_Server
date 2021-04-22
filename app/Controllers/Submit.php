@@ -4,6 +4,7 @@ namespace App\Controllers;
 use App\Models\PraiseModel;
 use App\Models\StarModel;
 use App\Models\hashReadModel;
+use App\Models\ComplainModel;
 
 class Submit extends BaseController {
 
@@ -51,13 +52,26 @@ class Submit extends BaseController {
 		}
 	}
 
-	public function hash($hash)
+	public function hash()
 	{//发布hash
-		//$hash  = $this->request->getPost('hash');
+		$hash  = $this->request->getPost('hash');
 		$isHash = $this->DisposeModel-> checkAddress($hash);
-
 		if($isHash){
             $data = (new hashReadModel())-> split($hash);
+			echo $data;
+        }else{
+			$data['code'] = 406;
+			$data['msg']  = 'error_hash';
+            echo json_encode($data);
+		}
+	}
+
+	public function complain()
+	{//投诉hash
+		$hash  = $this->request->getPost('hash');
+		$isHash = $this->DisposeModel-> checkAddress($hash);
+		if($isHash){
+            $data = (new ComplainModel())-> txHash($hash);
 			echo $data;
         }else{
 			$data['code'] = 406;

@@ -13,7 +13,7 @@ class StarModel extends Model {
 
     public function isStar($hash, $address)
 	{//获取收藏状态
-		$sql   ="SELECT hash FROM $this->tablename WHERE hash='$hash' AND sender_id='$address' LIMIT 1";
+		$sql   ="SELECT hash FROM $this->tablename WHERE hash = '$hash' AND sender_id = '$address' LIMIT 1";
         $query = $this->db-> query($sql);
 		$row   = $query-> getRow();
 		if ($row) {

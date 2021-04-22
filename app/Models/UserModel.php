@@ -4,10 +4,16 @@ use CodeIgniter\Model;
 use App\Models\ConfigModel;
 
 class UserModel extends Model {
+//用户模块
+	public function __construct(){
+        parent::__construct();
+        $this->tablename   = 'wet_users';
+		$this->ConfigModel = new ConfigModel();
+    }
 
 	public function isUser($address)
 	{//验证用户是否存在
-		$sql   = "SELECT address FROM wet_users WHERE address = '$address' LIMIT 1";
+		$sql   = "SELECT address FROM $this->tablename WHERE address = '$address' LIMIT 1";
         $query = $this->db->query($sql);
 		$row   = $query->getRow();
 		if ($row) {
@@ -24,7 +30,7 @@ class UserModel extends Model {
 					uactive,
 					last_active,
 					portrait
-				FROM wet_users WHERE address = '$address' LIMIT 1";
+				FROM $this->tablename WHERE address = '$address' LIMIT 1";
         $query = $this->db->query($sql);
 		$row = $query->getRow();
 		if ($row) {
@@ -59,7 +65,7 @@ class UserModel extends Model {
 					topic_sum,
 					focus_sum,
 					fans_sum
-				FROM wet_users WHERE address = '$address' LIMIT 1";
+				FROM $this->tablename WHERE address = '$address' LIMIT 1";
         $query = $this->db->query($sql);
 		$row = $query->getRow();
 		if ($row) {
@@ -72,7 +78,7 @@ class UserModel extends Model {
 			$userActive = (int)$row->uactive;
             $data['active'] 	= $userActive;
 			$data['userActive'] = $this->getActiveGrade($userActive);
-			$bsConfig = (new ConfigModel())-> backendConfig();
+			$bsConfig = $this->ConfigModel-> backendConfig();
 			$data['lastActive'] = ($userActive - $row->last_active) * $bsConfig['airdropWttRatio'];
 			$portrait 	  = $row->portrait;
 			$portraitHash = $row->portrait_hash;
@@ -93,7 +99,7 @@ class UserModel extends Model {
 
 	public function getName($address)
 	{//获取用户昵称
-		$sql   = "SELECT nickname FROM wet_users WHERE address = '$address' LIMIT 1";
+		$sql   = "SELECT nickname FROM $this->tablename WHERE address = '$address' LIMIT 1";
         $query = $this->db->query($sql);
 		$row   = $query->getRow();
 		if ($row) {
@@ -114,18 +120,18 @@ class UserModel extends Model {
 		$active  = 数量
 		$e       = true增 或 false减
 	*/
-		$selectSql = "SELECT address FROM wet_users WHERE address = '$address' LIMIT 1";
+		$selectSql = "SELECT address FROM $this->tablename WHERE address = '$address' LIMIT 1";
 		$query	   = $this->db->query($selectSql);
 		$row	   = $query-> getRow();
 		if(!$row){
-			$insertSql = "INSERT INTO wet_users(address) VALUES ('$address')";
+			$insertSql = "INSERT INTO $this->tablename(address) VALUES ('$address')";
 			$this->db->query($insertSql);
 		}
 
 		if($e){
-			$updateSql="UPDATE wet_users SET uactive = uactive + '$active' WHERE address = '$address'";
+			$updateSql="UPDATE $this->tablename SET uactive = uactive + '$active' WHERE address = '$address'";
 		}else{
-			$updateSql="UPDATE wet_users SET uactive = uactive - '$active' WHERE address = '$address'";
+			$updateSql="UPDATE $this->tablename SET uactive = uactive - '$active' WHERE address = '$address'";
 		}
 		$this->db->query($updateSql);
 	}
@@ -136,20 +142,20 @@ class UserModel extends Model {
 			$fans  = 粉丝地址
 			$e     = isFocus
 	*/
-		$selectSql = "SELECT address FROM wet_users WHERE address = '$fans' LIMIT 1";
+		$selectSql = "SELECT address FROM $this->tablename WHERE address = '$fans' LIMIT 1";
 		$query	   = $this->db->query($selectSql);
 		$row	   = $query-> getRow();
 		if(!$row){
-			$insertSql = "INSERT INTO wet_users(address) VALUES ('$fans')";
+			$insertSql = "INSERT INTO $this->tablename(address) VALUES ('$fans')";
 			$this->db->query($insertSql);
 		}
 
 		if($e){
-			$focusSql = "UPDATE wet_users SET focus_sum = focus_sum + 1 WHERE address='$fans'";
-			$fansSql  = "UPDATE wet_users SET fans_sum = fans_sum + 1 WHERE address='$focus'";
+			$focusSql = "UPDATE $this->tablename SET focus_sum = focus_sum + 1 WHERE address = '$fans'";
+			$fansSql  = "UPDATE $this->tablename SET fans_sum = fans_sum + 1 WHERE address = '$focus'";
 		}else{
-			$focusSql = "UPDATE wet_users SET focus_sum = focus_sum - 1 WHERE address='$fans'";
-			$fansSql  = "UPDATE wet_users SET fans_sum = fans_sum - 1 WHERE address='$focus'";
+			$focusSql = "UPDATE $this->tablename SET focus_sum = focus_sum - 1 WHERE address = '$fans'";
+			$fansSql  = "UPDATE $this->tablename SET fans_sum = fans_sum - 1 WHERE address = '$focus'";
 		}
 		$this->db->query($focusSql);
 		$this->db->query($fansSql);

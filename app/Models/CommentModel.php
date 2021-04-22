@@ -10,7 +10,7 @@ class CommentModel extends Model {
 
 	public function __construct(){
         parent::__construct();
-        $this->tablename   = 'wet_comment';
+        $this->wet_comment = 'wet_comment';
 		$this->wet_reply   = 'wet_reply';
 		$this->bloom	   = new BloomModel();
 		$this->user	   	   = new UserModel();
@@ -26,7 +26,7 @@ class CommentModel extends Model {
 					utctime,
 					reply_sum,
 					praise
-				FROM $this->tablename WHERE hash='$hash' LIMIT 1";
+				FROM $this->wet_comment WHERE hash='$hash' LIMIT 1";
         $query = $this->db->query($sql);
 		$row   = $query-> getRow();
         if($row){
@@ -54,7 +54,7 @@ class CommentModel extends Model {
 					$replyLimit = max(0, (int)$opt['replyLimit']);
 					$limit = 'LIMIT '.$replyLimit;
 				}
-				$replySql = "SELECT hash FROM wet_reply WHERE to_hash='$hash' ORDER BY uid DESC ".$limit;
+				$replySql = "SELECT hash FROM $this->wet_reply WHERE to_hash='$hash' ORDER BY uid DESC ".$limit;
 				$query = $this-> db-> query($replySql);
 				foreach ($query-> getResult() as $row){
 					$hash  = $row -> hash;

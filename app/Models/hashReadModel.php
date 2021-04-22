@@ -29,20 +29,10 @@ class hashReadModel extends Model {
 			$this->db->query($insertTempSql);
 		}
 
-		$bsConfig = $this->ConfigModel-> backendConfig();
-		$url = $bsConfig['backendServiceNode'].'v2/transactions/'.$hash;
-		$num = 0;
-		while ( !$get && $num < 10 ) {
-			@$get = file_get_contents($url);
-			$num++;
-			sleep(1);
-		}
-
-        if(empty($get)){
+		$json = $this->getTxDetails($hash);
+        if(empty($json)){
         	return;
         }
-
-        $json = (array) json_decode($get, true);
 		
         //过滤无效预设钱包
         if(empty(
@@ -94,7 +84,7 @@ class hashReadModel extends Model {
 		if( $type == 'topic' ){  //主贴
 			$data['imgList'] = $payload['img_list'];
 			$insertSql = "INSERT INTO $this->wet_content(
-								hash,sender_id,recipient_id,utctime,amount,type,payload,img_tx
+								hash, sender_id, recipient_id, utctime, amount, type, payload, img_tx
 							) VALUES (   
 								'$data[hash]', '$data[sender]', '$data[receipt]', '$data[mbTime]', '$data[amount]', '$data[type]', '$data[content]', '$data[imgList]'
 							)";
@@ -176,6 +166,35 @@ class hashReadModel extends Model {
 		$sql_del_tp = "DELETE FROM $this->wet_temporary WHERE tp_hash='$data[hash]'";
 		$this->db->query($sql_del_tp);
     }
+
+	public function getSenderId($hash)
+	{//获取tx 发送人
+        $json = $this->getTxDetails($hash);
+		if(empty($json)){
+        	return;
+        }
+		return $json['tx']['sender_id'];
+	}
+
+	public function getTxDetails($hash)
+	{//获取tx 详情
+		$bsConfig = $this->ConfigModel-> backendConfig();
+		$url = $bsConfig['backendServiceNode'].'v2/transactions/'.$hash;
+		$num = 0;
+		while ( !$get && $num < 10 ) {
+			@$get = file_get_contents($url);
+			$num++;
+			sleep(1);
+		}
+
+        if(empty($get)){
+        	return;
+        }
+
+        $json = (array) json_decode($get, true);
+
+		return $json ;
+	}
 
 }
 

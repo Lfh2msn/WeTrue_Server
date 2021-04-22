@@ -16,9 +16,9 @@ class FocusModel extends Model {
 
 	public function isFocus($focus,$my_id)
 	{//获取关注状态
-		$sql="SELECT focus, fans FROM $this->tablename WHERE fans = '$my_id' AND focus = '$focus' LIMIT 1";
+		$sql   = "SELECT focus, fans FROM $this->tablename WHERE fans = '$my_id' AND focus = '$focus' LIMIT 1";
         $query = $this->db->query($sql);
-		$row = $query->getRow();
+		$row   = $query->getRow();
 		if($row) {
 			return true;
         }else{

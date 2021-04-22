@@ -26,7 +26,7 @@ class ConfigModel extends Model {
 			'AeasyAmount'        => '0.1',  //活动金额
 			'AeasySecretKey'     => '',  //私钥
 			'airdropWttRatio'    => (int)'3',  //WTT空投比例
-			'hotRecDay'          => (int)'30',  //热点推荐天数
+			'hotRecDay'          => (int)'365',  //热点推荐天数
 
 			'contentActive'      => (int)'5',  //发帖 +活跃度
 			'commentActive'      => (int)'2',  //评论 +活跃度
@@ -34,7 +34,7 @@ class ConfigModel extends Model {
 			'praiseActive'       => (int)'1',  //点赞 +活跃度
 			'nicknameActive'     => (int)'1',  //昵称 +活跃度
 			'portraitActive'     => (int)'1',  //头像 +活跃度
-			'reportActive'       => (int)'30'  //举报 -活跃度
+			'complainActive'     => (int)'30'  //举报 -活跃度
 		);
     }
 
@@ -56,7 +56,7 @@ class ConfigModel extends Model {
 			'praiseActive'     => $backendConfig['praiseActive'],
 			'nicknameActive'   => $backendConfig['nicknameActive'],
 			'portraitActive'   => $backendConfig['portraitActive'],
-			'reportActive'     => $backendConfig['reportActive'],
+			'complainActive'   => $backendConfig['complainActive'],
 		);
     }
 
