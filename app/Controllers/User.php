@@ -7,11 +7,15 @@ class User extends BaseController {
 
 	public function info()
 	{//获取用户完整信息
-        $userAddress  = $this->request->getPost('userAddress');
+        $userAddress   = $this->request->getPost('userAddress');
+		$typeLogin     = $this->request->getPost('type');
 		$isUserAddress = $this->DisposeModel-> checkAddress($userAddress);
 		if($isUserAddress){
 			$data['code'] = 200;
-			$userInfo	  = (new UserModel())-> userAllInfo($userAddress);
+			if($typeLogin){
+				$opt = ['type' => $typeLogin];
+			}
+			$userInfo	  = (new UserModel())-> userAllInfo($userAddress, $opt);
 			$data['data'] = '';
 			if($userInfo){
 				$data['data'] = $userInfo;
@@ -38,7 +42,7 @@ class User extends BaseController {
 					'type' 		=> $type,
 					'publicKey' => $userAddress
 				];
-			$data = $this->pagesModel-> limit((int)$page, (int)$size, $opt);
+			$data = $this->PagesModel-> limit((int)$page, (int)$size, $opt);
 			echo $data;
 		}else{
 			$data['code'] = 406;
@@ -53,7 +57,7 @@ class User extends BaseController {
 		$size = $this->request->getPost('perPage');
 		$type = 'userFocusContentList';
 		$opt  =	['type' => $type];
-		$data = $this->pagesModel-> limit($page, $size, $opt);
+		$data = $this->PagesModel-> limit($page, $size, $opt);
 		echo $data;
 	}
 

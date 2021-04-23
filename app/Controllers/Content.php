@@ -8,7 +8,7 @@ class Content extends BaseController
         $page = $this->request->getPost('currentPage');
         $size = $this->request->getPost('perPage');
         $opt  = ['type' => 'contentList'];
-		$data = $this->pagesModel-> limit($page, $size, $opt);
+		$data = $this->PagesModel-> limit($page, $size, $opt);
 		echo $data;
     }
 
@@ -18,7 +18,7 @@ class Content extends BaseController
         $isHash = $this->DisposeModel-> checkAddress($hash);
 		if($isHash){
             $opt  = ['select' => 'content'];
-            $data = $this->pagesModel-> Alone($hash, $opt);
+            $data = $this->PagesModel-> Alone($hash, $opt);
             echo $data;
         }else{
 			$data['code'] = 406;
@@ -32,7 +32,7 @@ class Content extends BaseController
         $page = $this->request->getPost('currentPage');
         $size = $this->request->getPost('perPage');
         $opt  = ['type' => 'hotRecList'];
-		$data = $this->pagesModel-> limit($page, $size, $opt);
+		$data = $this->PagesModel-> limit($page, $size, $opt);
 		echo $data;
     }
 }

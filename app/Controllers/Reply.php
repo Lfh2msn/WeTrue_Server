@@ -14,7 +14,7 @@ class Reply extends BaseController {
                 'type'=> 'replyList',
                 'hash' => $hash
             ];
-            $data = $this->pagesModel-> limit($page, $size, $opt);
+            $data = $this->PagesModel-> limit($page, $size, $opt);
             echo $data;
         }else{
 			$data['code'] = 406;

@@ -14,7 +14,7 @@ class Comment extends BaseController {
                     'hash'       => $hash,
                     'replyLimit' => (int)$replyLimit
                 ];
-		$data = $this->pagesModel-> limit($page, $size, $opt);
+		$data = $this->PagesModel-> limit($page, $size, $opt);
 		echo $data;
     }
 
@@ -24,7 +24,7 @@ class Comment extends BaseController {
         $isHash = $this->DisposeModel-> checkAddress($hash);
 		if($isHash){
             $opt  = ['select' => 'comment'];
-            $data = $this->pagesModel-> Alone($hash, $opt);
+            $data = $this->PagesModel-> Alone($hash, $opt);
             echo $data;
         }else{
 			$data['code'] = 406;

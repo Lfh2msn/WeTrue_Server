@@ -10,7 +10,7 @@ class Image extends BaseController
         $page = $this->request->getPost('currentPage');
         $size = $this->request->getPost('perPage');
         $opt  = ['type' => 'imageList'];
-		$data = $this->pagesModel-> limit($page, $size, $opt);
+		$data = $this->PagesModel-> limit($page, $size, $opt);
 		echo $data;
     }
 

@@ -49,7 +49,7 @@ class BaseController extends Controller {
 		header("Access-Control-Allow-Origin: *");
 		header("Access-Control-Allow-Headers: ak-token");
 		$this->request = service('request');
-		$this->pagesModel   = new PagesModel();
+		$this->PagesModel   = new PagesModel();
 		$this->FocusModel   = new FocusModel();
 		$this->DisposeModel = new DisposeModel();
 	}

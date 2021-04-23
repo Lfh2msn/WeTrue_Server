@@ -55,7 +55,11 @@ class UserModel extends Model {
 	}
 
 	public function userAllInfo($address, $opt=[])
-	{//获取用户完整信息
+	{/*获取用户完整信息分页
+		opt可选参数
+		[
+			type => login,登录类型
+		];*/
 		$sql="SELECT 
 					nickname,
 					uactive,
@@ -68,32 +72,41 @@ class UserModel extends Model {
 				FROM $this->tablename WHERE address = '$address' LIMIT 1";
         $query = $this->db->query($sql);
 		$row = $query->getRow();
-		if ($row) {
-			$data['userAddress'] = $address;
-			$nickname = $row->nickname;
-			$data['nickname'] = "";
-			if($nickname){
-				$data['nickname'] = stripslashes($nickname);
-			}
-			$userActive = (int)$row->uactive;
-            $data['active'] 	= $userActive;
-			$data['userActive'] = $this->getActiveGrade($userActive);
-			$bsConfig = $this->ConfigModel-> backendConfig();
-			$data['lastActive'] = ($userActive - $row->last_active) * $bsConfig['airdropWttRatio'];
-			$portrait 	  = $row->portrait;
-			$portraitHash = $row->portrait_hash;
-			$data['portrait']	  = "";
-			$data['portraitHash'] = "";
-			if($portrait){
-				$data['portrait']	  = stripslashes($portrait);
-				$data['portraitHash'] = stripslashes($portraitHash);
-			}
-			$data['topic'] = (int)$row->topic_sum;
-			$data['focus'] = (int)$row->focus_sum;
-			$data['fans']  = (int)$row->fans_sum;
-        }else{
-			return FALSE;
+		if(!$row && $opt['type'] == 'login'){
+			$insertSql = "INSERT INTO $this->tablename(address) VALUES ('$address')";
+			$insBehSql = "INSERT INTO wet_behavior(address, thing) VALUES ('$address', 'newUserLogin')";
+			$this->db->query($insertSql);
+            $this->db->query($insBehSql);
 		}
+		$data['userAddress'] = $address;
+		$nickname = $row->nickname;
+		$data['nickname'] = "";
+		if($nickname){
+			$data['nickname'] = stripslashes($nickname);
+		}
+		$userActive = (int)$row->uactive;
+		$data['active'] 	= $userActive;
+		$data['userActive'] = $this->getActiveGrade($userActive);
+		$bsConfig = $this->ConfigModel-> backendConfig();
+		$data['lastActive']   = ($userActive - $row->last_active) * $bsConfig['airdropWttRatio'];
+		$portrait 	  		  = $row->portrait;
+		$portraitHash 		  = $row->portrait_hash;
+		$data['portrait']	  = "";
+		$data['portraitHash'] = "";
+		if($portrait){
+			$data['portrait']	  = stripslashes($portrait);
+			$data['portraitHash'] = stripslashes($portraitHash);
+		}
+		$data['topic'] = (int)$row->topic_sum;
+		$data['focus'] = (int)$row->focus_sum;
+		$data['fans']  = (int)$row->fans_sum;
+		if($opt['type'] == 'login'){
+			$isAdmin = $this->isAdmin($address);
+			if($isAdmin){
+				$data['isAdmin']  = TRUE;
+			}
+		}
+		
 		return $data;
 	}
 
@@ -191,6 +204,20 @@ class UserModel extends Model {
             return $Grade;
         }
     }
+
+	public function isAdmin($address)
+	{//管理员校验
+		$bsConfig = $this->ConfigModel-> backendConfig();
+		$admin_1  = $bsConfig['adminUser_1'];
+		$admin_2  = $bsConfig['adminUser_2'];
+		$admin_3  = $bsConfig['adminUser_3'];
+
+		if($address === $admin_1 || $address === $admin_2 || $address === $admin_3){
+			return true;
+		}else{
+			return false;
+		}
+	}
 
 }
 
