@@ -5,17 +5,19 @@ use App\Models\BloomModel;
 use App\Models\UserModel;
 use App\Models\ReplyModel;
 use App\Models\PraiseModel;
+use App\Models\DisposeModel;
 
 class CommentModel extends Model {
 
 	public function __construct(){
         parent::__construct();
-        $this->wet_comment = 'wet_comment';
-		$this->wet_reply   = 'wet_reply';
-		$this->bloom	   = new BloomModel();
-		$this->user	   	   = new UserModel();
-		$this->reply	   = new ReplyModel();
-		$this->praise	   = new PraiseModel();
+        $this->wet_comment  = 'wet_comment';
+		$this->wet_reply    = 'wet_reply';
+		$this->bloom	    = new BloomModel();
+		$this->user	   	    = new UserModel();
+		$this->reply	    = new ReplyModel();
+		$this->praise	    = new PraiseModel();
+		$this->DisposeModel	= new DisposeModel();
     }
 
 	public function txComment($hash, $opt=[])
@@ -29,28 +31,23 @@ class CommentModel extends Model {
 				FROM $this->wet_comment WHERE hash='$hash' LIMIT 1";
         $query = $this->db->query($sql);
 		$row   = $query-> getRow();
-        if($row){
-			$data['hash']    = $hash;
-			$data['toHash']  = $row-> to_hash;
-			$sender_id       = $row-> sender_id;
-			$bloom           = $this->bloom-> txBloom($hash);
-			if($bloom){
-				$data['payload'] = stripslashes($row-> payload);
-			}else{
-				$data['payload'] = $hash;
-			}
+        if ($row) {
+			$data['hash']    	 = $hash;
+			$data['toHash']  	 = $row-> to_hash;
+			$sender_id       	 = $row-> sender_id;
+			$data['payload']	 = $this->DisposeModel-> delete_xss($row-> payload);
 			$data['utcTime']	 = (int) $row-> utctime;
 			$data['replyNumber'] = (int) $row-> reply_sum;
 			$data['praise']		 = (int) $row-> praise;
 			$data['isPraise']	 = false;
-			if($opt['userLogin']){
+			if ($opt['userLogin']) {
 				$data['isPraise']	= $this->praise-> isPraise($hash, $opt['userLogin']);
 			}
 			$data['users']			= $this->user-> getUser($sender_id);
-			if($opt['replyLimit']){
+			if ($opt['replyLimit']) {
 				$data['commentList'] = [];
 				$limit = 'LIMIT 0';
-				if((int) $opt['replyLimit']){
+				if ( (int)$opt['replyLimit'] ) {
 					$replyLimit = max(0, (int)$opt['replyLimit']);
 					$limit = 'LIMIT '.$replyLimit;
 				}

@@ -2,13 +2,15 @@
 
 use CodeIgniter\Model;
 use App\Models\ConfigModel;
+use App\Models\DisposeModel;
 
 class UserModel extends Model {
 //用户模块
 	public function __construct(){
         parent::__construct();
-        $this->tablename   = 'wet_users';
-		$this->ConfigModel = new ConfigModel();
+        $this->tablename    = 'wet_users';
+		$this->ConfigModel  = new ConfigModel();
+		$this->DisposeModel	= new DisposeModel();
     }
 
 	public function isUser($address)
@@ -35,18 +37,18 @@ class UserModel extends Model {
 		$row = $query->getRow();
 		if ($row) {
 			$data['userAddress'] = $address;
-			$nickname = $row->nickname;
+			$nickname = $this->DisposeModel-> delete_xss($row->nickname);
 			$data['nickname'] = "";
 			if($nickname){
-				$data['nickname'] = stripslashes($nickname);
+				$data['nickname'] = $nickname;
 			}
 			$userActive = (int)$row->uactive;
             $data['active'] = $userActive;
 			$data['userActive'] = $this->getActiveGrade($userActive);
-			$portrait = $row->portrait;
+			$portrait = $this->DisposeModel-> delete_xss($row->portrait);
 			$data['portrait'] = "";
 			if($portrait){
-				$data['portrait'] = stripslashes($portrait);
+				$data['portrait'] = $portrait;
 			}
         }else{
 			return FALSE;
@@ -79,23 +81,23 @@ class UserModel extends Model {
             $this->db->query($insBehSql);
 		}
 		$data['userAddress'] = $address;
-		$nickname = $row->nickname;
+		$nickname = $this->DisposeModel-> delete_xss($row->nickname);
 		$data['nickname'] = "";
 		if($nickname){
-			$data['nickname'] = stripslashes($nickname);
+			$data['nickname'] = $nickname;
 		}
 		$userActive = (int)$row->uactive;
 		$data['active'] 	= $userActive;
 		$data['userActive'] = $this->getActiveGrade($userActive);
 		$bsConfig = $this->ConfigModel-> backendConfig();
 		$data['lastActive']   = ($userActive - $row->last_active) * $bsConfig['airdropWttRatio'];
-		$portrait 	  		  = $row->portrait;
+		$portrait 	  		  = $this->DisposeModel-> delete_xss($row->portrait);
 		$portraitHash 		  = $row->portrait_hash;
 		$data['portrait']	  = "";
 		$data['portraitHash'] = "";
 		if($portrait){
-			$data['portrait']	  = stripslashes($portrait);
-			$data['portraitHash'] = stripslashes($portraitHash);
+			$data['portrait']	  = $portrait;
+			$data['portraitHash'] = $portraitHash;
 		}
 		$data['topic'] = (int)$row->topic_sum;
 		$data['focus'] = (int)$row->focus_sum;
@@ -116,10 +118,10 @@ class UserModel extends Model {
         $query = $this->db->query($sql);
 		$row   = $query->getRow();
 		if ($row) {
-			$nickname = $row->nickname;
+			$nickname = $this->DisposeModel-> delete_xss($row->nickname);
 			$data = "";
 			if($nickname){
-				$data = stripslashes($nickname);
+				$data = $nickname;
 			}
         }else{
 			return FALSE;

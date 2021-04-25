@@ -29,6 +29,7 @@ class StarModel extends Model {
 		$akToken = $_SERVER['HTTP_AK_TOKEN'];
 		$isAkToken = $this->DisposeModel-> checkAddress($akToken);
 		if(!$isAkToken){
+			$data['code'] = 401;
 			$data['msg']  = 'error_login';
 			return json_encode($data);
 		}

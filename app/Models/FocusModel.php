@@ -41,9 +41,10 @@ class FocusModel extends Model {
 		$size = max(1, (int)$size);
 		$akToken   = $_SERVER['HTTP_AK_TOKEN'];
 		$isAkToken = $this->DisposeModel-> checkAddress($akToken);
+		$data['code'] = 200;
+		$data['data']['data'] = [];
 		if(!$isAkToken){
-			$data['code'] = 200;
-			$data['data']['data'] = [];
+			$data['code'] = 401;
 			$data['msg']  = 'error_login';
 			return json_encode($data);
 		}
@@ -72,10 +73,8 @@ class FocusModel extends Model {
 
 	private function cycle($page, $size, $countSql, $limitSql, $opt)
 	{//用户列表循环
-		$data['code'] = 200;
 		$data['data'] = $this->pages($page, $size, $countSql);
 		$query = $this-> db-> query($limitSql);
-		$data['data']['data'] = [];
 		foreach ($query-> getResult() as $row){
 			$userAddress  = $row -> contrary;
 			$userInfo[]	  = $this->userModel-> userAllInfo($userAddress, $opt);
@@ -107,6 +106,7 @@ class FocusModel extends Model {
 		$akToken = $_SERVER['HTTP_AK_TOKEN'];
 		$isAkToken = $this->DisposeModel-> checkAddress($akToken);
 		if(!$isAkToken){
+			$data['code'] = 401;
 			$data['msg']  = 'error_login';
 			return json_encode($data);
 		}

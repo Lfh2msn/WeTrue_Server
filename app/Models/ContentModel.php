@@ -6,22 +6,24 @@ use App\Models\UserModel;
 use App\Models\PraiseModel;
 use App\Models\StarModel;
 use App\Models\FocusModel;
+use App\Models\DisposeModel;
 
 class ContentModel extends Model {
 
 	public function __construct(){
         parent::__construct();
-        $this->tablename = 'wet_content';
-		$this->bloom	 = new BloomModel();
-		$this->user	   	 = new UserModel();
-		$this->praise	 = new PraiseModel();
-		$this->star		 = new StarModel();
-		$this->focus	 = new FocusModel();
+        $this->tablename    = 'wet_content';
+		$this->bloom	    = new BloomModel();
+		$this->user	   	    = new UserModel();
+		$this->praise	    = new PraiseModel();
+		$this->star		    = new StarModel();
+		$this->focus	    = new FocusModel();
+		$this->DisposeModel = new DisposeModel();
     }
 
 	public function txContent($hash, $opt=[])
 	{//获取主贴内容
-		if(!$opt['substr']){
+		if (!$opt['substr']) {
 			$sql = "SELECT sender_id,
 							payload,
 							img_tx,
@@ -30,7 +32,7 @@ class ContentModel extends Model {
 							praise,
 							star
 				FROM $this->tablename WHERE hash='$hash' LIMIT 1";
-		}else{
+		} else {
 			$sql = "SELECT sender_id,
 							substring(payload for $opt[substr]) as payload,
 							img_tx,
@@ -43,26 +45,19 @@ class ContentModel extends Model {
         
         $query = $this-> db-> query($sql);
 		$row   = $query-> getRow();
-        if($row){
+        if ($row) {
 			$data['hash'] = $hash;
 			$sender_id	  = $row-> sender_id;
-			$bloom		  = $this->bloom-> txBloom($hash);
-			if($bloom){
-				$data['payload']	= stripslashes($row-> payload);
-				$data['imgTx']		= stripslashes($row-> img_tx);
-			}else{
-				$data['payload']	= $hash;
-				$data['imgTx']		= "";
-			}
-
+			$data['payload']		= $this->DisposeModel-> delete_xss($row-> payload);
+			$data['imgTx']			= $this->DisposeModel-> delete_xss($row-> img_tx);
 			$data['utcTime']		= (int) $row-> utctime;
 			$data['praise']			= (int) $row-> praise;
 			$data['star']			= (int) $row-> star;
-			if($opt['userLogin']){
+			if ($opt['userLogin']) {
 				$data['isPraise']	= $this->praise-> isPraise($hash, $opt['userLogin']);
 				$data['isStar']		= $this->star-> isStar($hash, $opt['userLogin']);
 				$data['isFocus']	= $this->focus-> isFocus($sender_id, $opt['userLogin']);
-			}else{
+			} else {
 				$data['isPraise']	= false;
 				$data['isStar']		= false;
 				$data['isFocus']	= false;

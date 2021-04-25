@@ -105,7 +105,8 @@ class DisposeModel extends Model {
 	*        1.要求只包含:点和大于等于0小于等于2147483646的整数 的组合
 	*        2.boole型 true置1，false置0
 	*        3.不设位默认补0计算，如：版本号5等于版号5.0.0
-	*        4.不包括数字 或 负数 的版本号 ,统一按0处理 */
+	*        4.不包括数字 或 负数 的版本号 ,统一按0处理
+    */
 		if ($versionA>2147483646 || $versionB>2147483646) {
 			return false;
 		}
@@ -135,5 +136,39 @@ class DisposeModel extends Model {
 			}
 		}
 	}
+
+    public function delete_xss($string)
+    {//xss删除函数
+        $string = strip_tags($string);
+        $string = htmlspecialchars($string, ENT_QUOTES);
+        return $string;
+    }
+
+    public function remove_xss($string)
+    {/*xss过滤函数
+    *   @param $string
+    *   @return string
+    */
+        $string = preg_replace('/[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]+/S', '', $string);
+        $parm1 = Array('textarea', 'javascript', 'vbscript', 'expression', 'applet', 'meta', 'xml', 'blink', 'link', 'script', 'embed', 'object', 'iframe', 'frame', 'frameset', 'ilayer', 'layer', 'bgsound', 'title', 'base');
+        $parm2 = Array('onabort', 'onactivate', 'onafterprint', 'onafterupdate', 'onbeforeactivate', 'onbeforecopy', 'onbeforecut', 'onbeforedeactivate', 'onbeforeeditfocus', 'onbeforepaste', 'onbeforeprint', 'onbeforeunload', 'onbeforeupdate', 'onblur', 'onbounce', 'oncellchange', 'onchange', 'onclick', 'oncontextmenu', 'oncontrolselect', 'oncopy', 'oncut', 'ondataavailable', 'ondatasetchanged', 'ondatasetcomplete', 'ondblclick', 'ondeactivate', 'ondrag', 'ondragend', 'ondragenter', 'ondragleave', 'ondragover', 'ondragstart', 'ondrop', 'onerror', 'onerrorupdate', 'onfilterchange', 'onfinish', 'onfocus', 'onfocusin', 'onfocusout', 'onhelp', 'onkeydown', 'onkeypress', 'onkeyup', 'onlayoutcomplete', 'onload', 'onlosecapture', 'onmousedown', 'onmouseenter', 'onmouseleave', 'onmousemove', 'onmouseout', 'onmouseover', 'onmouseup', 'onmousewheel', 'onmove', 'onmoveend', 'onmovestart', 'onpaste', 'onpropertychange', 'onreadystatechange', 'onreset', 'onresize', 'onresizeend', 'onresizestart', 'onrowenter', 'onrowexit', 'onrowsdelete', 'onrowsinserted', 'onscroll', 'onselect', 'onselectionchange', 'onselectstart', 'onstart', 'onstop', 'onsubmit', 'onunload');
+        $parm = array_merge($parm1, $parm2);
+        for ($i = 0; $i < sizeof($parm); $i++) {
+        $pattern = '/';
+        for ($j = 0; $j < strlen($parm[$i]); $j++) {
+            if ($j > 0) {
+                $pattern .= '(';
+                $pattern .= '(&#[x|X]0([9][a][b]);?)?';
+                $pattern .= '|(&#0([9][10][13]);?)?';
+                $pattern .= ')?';
+            }
+            $pattern .= $parm[$i][$j];
+        }
+        $pattern .= '/i';
+        $string = preg_replace($pattern, ' ', $string);
+        }
+        return $string;
+    }
+
 }
 
