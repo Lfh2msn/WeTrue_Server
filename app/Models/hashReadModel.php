@@ -98,6 +98,7 @@ class hashReadModel extends Model {
 							) VALUES (
 								'$data[hash]', '$data[toHash]', '$data[sender]', '$data[receipt]', '$data[mbTime]', '$data[amount]', '$data[type]', '$data[content]'
 							)";
+			$upCommsumSql = "UPDATE $this->wet_content SET commsum = commsum+1 WHERE hash = '$data[toHash]'";
 			$active = $bsConfig['commentActive'];
 		}
 
@@ -112,6 +113,7 @@ class hashReadModel extends Model {
 								'$data[hash]', '$data[toHash]', '$data[replyHash]', '$data[replyType]', '$data[toAddress]', 
 								'$data[sender]', '$data[receipt]', '$data[mbTime]', '$data[amount]', '$data[content]'
 							)";
+			$upCommsumSql = "UPDATE $this->wet_comment SET commsum = commsum+1 WHERE hash = '$data[toHash]'";
 			$active = $bsConfig['replyActive'];
 		}
 
@@ -153,7 +155,8 @@ class hashReadModel extends Model {
 		}
 
 		$this->db->query($insertSql);
-
+		$this->db->query($upCommsumSql);
+		
 		//入库行为记录
 		$insetrBehaviorSql = "INSERT INTO $this->wet_behavior(
 									address, hash, thing, influence, toaddress

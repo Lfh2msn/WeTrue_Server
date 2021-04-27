@@ -14,8 +14,8 @@ class ConfigModel extends Model {
 			'replyAmount'        => (int)'1e14',  //回复费用
 			'nicknameAmount'     => (int)'1e14',  //昵称金额
 			'portraitAmount'     => (int)'1e14',  //头像费用
-			'articleSendNode'    => PUBLIC_NODE,  //内容发送节点
-			'backendServiceNode' => PUBLIC_NODE,  //内容发送节点
+			'articleSendNode'    => PUBLIC_NODE,  //前端节点
+			'backendServiceNode' => PUBLIC_NODE,  //后端节点
 			'receivingAccount'   => 'ak_dMyzpooJ4oGnBVX35SCvHspJrq55HAAupCwPQTDZmRDT5SSSW',  //接收账户
 			'adminUser_1'        => 'ak_2kxt6D65giv4yNt4oa44SjW4jEXfoHMviPFvAreSEXvz25Q3QQ',  // Admin User 1
 			'adminUser_2'        => 'ak_2kxt6D65giv4yNt4oa44SjW4jEXfoHMviPFvAreSEXvz25Q3QQ',  // Admin User 2
@@ -58,6 +58,21 @@ class ConfigModel extends Model {
 			'portraitActive'   => $backendConfig['portraitActive'],
 			'complainActive'   => $backendConfig['complainActive'],
 		);
+    }
+
+	public function nodesConfig()
+	{//节点配置
+
+		$data[] = array(
+			'url'	=> PUBLIC_NODE,
+			'name' 	=> 'WeTrue',
+		);
+		$data[] = array(
+			'url'	=> 'https://mainnet.aeternity.io/',
+			'name' 	=> 'Aeternity',
+		);
+
+		return $data;
     }
 
 }

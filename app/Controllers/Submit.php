@@ -79,4 +79,5 @@ class Submit extends BaseController {
             echo json_encode($data);
 		}
 	}
+
 }

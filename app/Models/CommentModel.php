@@ -40,23 +40,20 @@ class CommentModel extends Model {
 			$data['replyNumber'] = (int) $row-> reply_sum;
 			$data['praise']		 = (int) $row-> praise;
 			$data['isPraise']	 = false;
-			if ($opt['userLogin']) {
-				$data['isPraise']	= $this->praise-> isPraise($hash, $opt['userLogin']);
+			if ( $opt['userLogin'] ) {
+				$data['isPraise'] = $this->praise-> isPraise($hash, $opt['userLogin']);
 			}
-			$data['users']			= $this->user-> getUser($sender_id);
-			if ($opt['replyLimit']) {
+			$data['users'] = $this->user-> getUser($sender_id);
+			if ( (int)$opt['replyLimit'] ) {
 				$data['commentList'] = [];
-				$limit = 'LIMIT 0';
-				if ( (int)$opt['replyLimit'] ) {
-					$replyLimit = max(0, (int)$opt['replyLimit']);
-					$limit = 'LIMIT '.$replyLimit;
-				}
-				$replySql = "SELECT hash FROM $this->wet_reply WHERE to_hash='$hash' ORDER BY uid DESC ".$limit;
+				$replyLimit = max(0, (int)$opt['replyLimit']);
+				$limit = 'LIMIT '.$replyLimit;
+				$replySql = "SELECT hash FROM $this->wet_reply WHERE to_hash = '$hash' ORDER BY uid DESC ".$limit;
 				$query = $this-> db-> query($replySql);
-				foreach ($query-> getResult() as $row){
+				foreach ($query-> getResult() as $row) {
 					$hash  = $row -> hash;
 					$bloom = $this->bloom-> txBloom($hash);
-					if($bloom){
+					if ($bloom) {
 						$list[] = $this->reply-> txReply($hash);
 					}
 					$data['commentList'] = $list;

@@ -9,9 +9,23 @@ class Config extends BaseController {
 	{//获取前端配置
 		$data['code'] = 200;
 		$data['data'] = '';
-		$frontConfig  = (new ConfigModel())-> frontConfig();
-		if($frontConfig){
-			$data['data'] = $frontConfig;
+		$config  = (new ConfigModel())-> frontConfig();
+		if($config){
+			$data['data'] = $config;
+			$data['msg']  = 'success';
+		}else{
+			$data['msg']  = 'error';
+		}
+		echo json_encode($data);
+    }
+
+	public function nodes()
+	{//获取节点列表
+		$data['code'] = 200;
+		$data['data'] = '';
+		$config  = (new ConfigModel())-> nodesConfig();
+		if($config){
+			$data['data'] = $config;
 			$data['msg']  = 'success';
 		}else{
 			$data['msg']  = 'error';
