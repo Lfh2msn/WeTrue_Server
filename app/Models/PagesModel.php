@@ -81,7 +81,7 @@ class PagesModel extends Model {
 			$FifteenTime 	 = (time()-60 * 60 *24 * $hotRecDay )*1000;//86400秒*x天*1000毫秒
 			$countSql		 = "SELECT count(hash) FROM $this->tablename WHERE utctime >= $FifteenTime";
 			$limitSql		 = "SELECT hash FROM $this->tablename WHERE utctime >= $FifteenTime 
-									ORDER BY (praise+comment_sum+star) DESC LIMIT $size OFFSET ".($page-1)*$size;
+									ORDER BY (praise+comment_num+star) DESC LIMIT $size OFFSET ".($page-1)*$size;
 			$select 		 = "content";
 		}
 

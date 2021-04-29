@@ -7,20 +7,18 @@ class StarModel extends Model {
 
 	public function __construct(){
 		parent::__construct();
-		$this->tablename = "wet_star";
+		$this->wet_star     = "wet_star";
+		$this->wet_content  = "wet_content";
 		$this->DisposeModel = new DisposeModel();
 	}
 
     public function isStar($hash, $address)
 	{//获取收藏状态
-		$sql   ="SELECT hash FROM $this->tablename WHERE hash = '$hash' AND sender_id = '$address' LIMIT 1";
+		$sql   ="SELECT hash FROM $this->wet_star WHERE hash = '$hash' AND sender_id = '$address' LIMIT 1";
         $query = $this->db-> query($sql);
 		$row   = $query-> getRow();
-		if ($row) {
-			return true;
-        }else{
-			return false;
-		}
+		return $row ? true : false;
+
 	}
 
 	public function star($hash)
@@ -42,11 +40,11 @@ class StarModel extends Model {
 
 		$verify = $this->isStar($hash, $akToken);
 		if(!$verify){
-			$starSql   = "INSERT INTO $this->tablename(hash, sender_id) VALUES ('$hash', '$akToken')";
-			$updataSql = "UPDATE wet_content SET star = star+1 WHERE hash = '$hash'";
+			$starSql   = "INSERT INTO $this->wet_star(hash, sender_id) VALUES ('$hash', '$akToken')";
+			$updataSql = "UPDATE $this->wet_content SET star = star+1 WHERE hash = '$hash'";
 		}else{
-			$starSql   = "DELETE FROM $this->tablename WHERE hash = '$hash' AND sender_id = '$akToken'";
-			$updataSql = "UPDATE wet_content SET star = star-1 WHERE hash = '$hash'";
+			$starSql   = "DELETE FROM $this->wet_star WHERE hash = '$hash' AND sender_id = '$akToken'";
+			$updataSql = "UPDATE $this->wet_content SET star = star-1 WHERE hash = '$hash'";
 		}
 		$this->db-> query($starSql);
 		$this->db-> query($updataSql);
@@ -54,7 +52,7 @@ class StarModel extends Model {
 		$starBehaviorSql = "INSERT INTO wet_behavior(address, thing, hash) 
 								VALUES ('$akToken', 'isStar', '$hash')";
 		$this->db->query($starBehaviorSql);
-		$getStarSql = "SELECT star FROM wet_content WHERE hash = '$hash' LIMIT 1";
+		$getStarSql = "SELECT star FROM $this->wet_content WHERE hash = '$hash' LIMIT 1";
 		$query = $this->db-> query($getStarSql);
 		$row = $query-> getRow();
 		$data['data']['star']  = (int)$row->star;

@@ -16,14 +16,10 @@ class PraiseModel extends Model {
 
     public function isPraise($hash, $address)
 	{//是否点赞
-		$sql   = "SELECT hash FROM wet_praise WHERE hash='$hash' and sender_id='$address' LIMIT 1";
+		$sql   = "SELECT hash FROM wet_praise WHERE hash = '$hash' and sender_id = '$address' LIMIT 1";
         $query = $this->db->query($sql);
 		$row   = $query->getRow();
-		if ($row) {
-			return TRUE;
-        }else{
-			return FALSE;
-		}
+		return $row ? TRUE : FALSE;
 	}
 	
 	public function praise($hash, $type)
@@ -41,12 +37,12 @@ class PraiseModel extends Model {
 		if($type === 'topic'){
 			$this->tablename = 'wet_content';
 
-		}else if($type === 'comment'){
+		}elseif($type === 'comment'){
 			$this->tablename = 'wet_comment';
 
-		}else if($type === 'reply'){
+		}elseif($type === 'reply'){
 			$this->tablename = 'wet_reply';
-			
+
 		}else{
 			$data['msg'] = 'error_type';
 			return json_encode($data);

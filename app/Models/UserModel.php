@@ -38,18 +38,13 @@ class UserModel extends Model {
 		if ($row) {
 			$data['userAddress'] = $address;
 			$nickname = $this->DisposeModel-> delete_xss($row->nickname);
-			$data['nickname'] = "";
-			if($nickname){
-				$data['nickname'] = $nickname;
-			}
+			$data['nickname'] = $nickname ?? "";
 			$userActive = (int)$row->uactive;
             $data['active'] = $userActive;
 			$data['userActive'] = $this->getActiveGrade($userActive);
 			$portrait = $this->DisposeModel-> delete_xss($row->portrait);
-			$data['portrait'] = "";
-			if($portrait){
-				$data['portrait'] = $portrait;
-			}
+			$data['portrait'] = $portrait ?? "";
+			
         }else{
 			return FALSE;
 		}
@@ -80,28 +75,21 @@ class UserModel extends Model {
 			$this->db->query($insertSql);
             $this->db->query($insBehSql);
 		}
-		$data['userAddress'] = $address;
-		$nickname = $this->DisposeModel-> delete_xss($row->nickname);
-		$data['nickname'] = "";
-		if($nickname){
-			$data['nickname'] = $nickname;
-		}
-		$userActive = (int)$row->uactive;
-		$data['active'] 	= $userActive;
-		$data['userActive'] = $this->getActiveGrade($userActive);
-		$bsConfig = $this->ConfigModel-> backendConfig();
+		$bsConfig 	  = $this->ConfigModel-> backendConfig();
+		$nickname     = $this->DisposeModel-> delete_xss($row->nickname);
+		$userActive   = (int)$row->uactive;
+		$portrait 	  = $this->DisposeModel-> delete_xss($row->portrait);
+		$portraitHash = $row->portrait_hash;
+		$data['userAddress']  = $address;
+		$data['nickname']     = $nickname ?? "";
+		$data['active'] 	  = $userActive;
+		$data['userActive']   = $this->getActiveGrade($userActive);
 		$data['lastActive']   = ($userActive - $row->last_active) * $bsConfig['airdropWttRatio'];
-		$portrait 	  		  = $this->DisposeModel-> delete_xss($row->portrait);
-		$portraitHash 		  = $row->portrait_hash;
-		$data['portrait']	  = "";
-		$data['portraitHash'] = "";
-		if($portrait){
-			$data['portrait']	  = $portrait;
-			$data['portraitHash'] = $portraitHash;
-		}
-		$data['topic'] = (int)$row->topic_sum;
-		$data['focus'] = (int)$row->focus_sum;
-		$data['fans']  = (int)$row->fans_sum;
+		$data['portrait']	  = $portrait ?? "";
+		$data['portraitHash'] = $portraitHash ?? "";
+		$data['topic'] 		  = (int)$row->topic_sum;
+		$data['focus'] 		  = (int)$row->focus_sum;
+		$data['fans']  		  = (int)$row->fans_sum;
 		if($opt['type'] == 'login'){
 			$isAdmin = $this->isAdmin($address);
 			if($isAdmin){
@@ -119,10 +107,7 @@ class UserModel extends Model {
 		$row   = $query->getRow();
 		if ($row) {
 			$nickname = $this->DisposeModel-> delete_xss($row->nickname);
-			$data = "";
-			if($nickname){
-				$data = $nickname;
-			}
+			$data = $nickname ?? "";
         }else{
 			return FALSE;
 		}
@@ -183,25 +168,27 @@ class UserModel extends Model {
             $Grade = 7;
             return $Grade;
 
-        }elseif($num>=5000){
+        } elseif($num>=5000){
             $Grade = 6;
             return $Grade;
 
-        }elseif ($num>=2000) {
+        } elseif ($num>=2000) {
             $Grade = 5;
             return $Grade;
 
-        }elseif ($num>=500) {
+        } elseif ($num>=500) {
             $Grade = 4;
             return $Grade;
 
-        }elseif ($num>=100) {
+        } elseif ($num>=100) {
             $Grade = 3;
             return $Grade;
-        }elseif ($num>=50) {
+
+        } elseif ($num>=50) {
             $Grade = 2;
             return $Grade;
-        }else{
+			
+        } else{
             $Grade = 1;
             return $Grade;
         }

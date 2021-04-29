@@ -4,6 +4,7 @@ use CodeIgniter\Model;
 use App\Models\ConfigModel;
 use App\Models\DisposeModel;
 use App\Models\UserModel;
+use App\Models\BloomModel;
 
 class hashReadModel extends Model {
 
@@ -12,6 +13,7 @@ class hashReadModel extends Model {
 		$this->ConfigModel   = new ConfigModel();
 		$this->DisposeModel  = new DisposeModel();
 		$this->UserModel	 = new UserModel();
+		$this->bloom	     = new BloomModel();
 		$this->wet_temporary = 'wet_temporary';
 		$this->wet_behavior  = 'wet_behavior';
 		$this->wet_content 	 = 'wet_content';
@@ -24,31 +26,33 @@ class hashReadModel extends Model {
 	{//上链内容入库
 		$isHashSql = "SELECT tp_hash FROM $this->wet_temporary WHERE tp_hash = '$hash' LIMIT 1";
 		$query = $this->db-> query($isHashSql)-> getRow();
-		if(!$query){//写入临时缓存
+		if (!$query) {  //写入临时缓存
 			$insertTempSql = "INSERT INTO $this->wet_temporary(tp_hash) VALUES ('$hash')";
 			$this->db->query($insertTempSql);
 		}
 
 		$json = $this->getTxDetails($hash);
-        if(empty($json)){
-        	return;
+		$bloomAddress = $this->bloom ->addressBloom( $json['tx']['sender_id'] );
+
+        if ( empty(
+				$json ||
+				$bloomAddress
+			) ) {
+        		return;
         }
-		
-        //过滤无效预设钱包
-        if(empty(
-			$json['tx']['recipient_id'] == $bsConfig['receivingAccount'] || 
-			$json['tx']['type'] == 'SpendTx' || 
-			$json['tx']['payload']===null || 
-			$json['tx']['payload']==="ba_Xfbg4g=="
-			)){
-        	//删除临时缓存
-	        $deleteTempSql = "DELETE FROM $this->wet_temporary WHERE tp_hash='$hash'";
-	        $this->db->query($deleteTempSql);
-        	return;
+
+        if ( empty(  //过滤无效预设钱包
+				$json['tx']['recipient_id'] == $bsConfig['receivingAccount'] || 
+				$json['tx']['type'] == 'SpendTx' || 
+				$json['tx']['payload'] == null || 
+				$json['tx']['payload'] == "ba_Xfbg4g=="
+			) ){
+				$this->deleteTemp($data['hash']);  //删除临时缓存
+				return;
         }
 
 		$data = $this->decodeContent($json);
-		return $data ;
+		return $data;
 	}
 
 	public function decodeContent($json)
@@ -64,13 +68,14 @@ class hashReadModel extends Model {
 		$hash	 = $json['hash'];
 		$WeTrue  = $payload['WeTrue'];
 		$require = $bsConfig['requireVersion'];
-		$version = $this->DisposeModel ->versionCompare($WeTrue, $require); //版本检测
-		if(!$version){
+		$version = $this->DisposeModel ->versionCompare($WeTrue, $require);  //版本检测
+		if (!$version) {
 			$versionLow = "versionLow";
 			$updateSql  = "UPDATE $this->wet_temporary SET tp_source = '$versionLow' WHERE tp_hash = '$hash'";
 	        $this->db-> query($updateSql);
 			return;
 		}
+
 		$type 			 = $payload['type'];
 		$data['WeTrue']  = $WeTrue;
 		$data['type']    = $type;
@@ -82,6 +87,13 @@ class hashReadModel extends Model {
 		$data['content'] = $payload['content'];
 		//内容分配
 		if( $type == 'topic' ){  //主贴
+			$selectHash = "SELECT hash FROM $this->wet_content WHERE hash = '$data[hash]' LIMIT 1";
+        	$getRow = $this->db->query($selectHash)-> getRow();
+			if ($getRow) {
+				$this->deleteTemp($data['hash']);
+				return;
+			}
+
 			$data['imgList'] = $payload['img_list'];
 			$insertSql = "INSERT INTO $this->wet_content(
 								hash, sender_id, recipient_id, utctime, amount, type, payload, img_tx
@@ -91,18 +103,31 @@ class hashReadModel extends Model {
 			$active = $bsConfig['contentActive'];
 		}
 
-		if( $type == 'comment' ){  //评论
+		elseif ( $type == 'comment' ){  //评论
+			$selectHash = "SELECT hash FROM $this->wet_comment WHERE hash = '$data[hash]' LIMIT 1";
+        	$getRow = $this->db->query($selectHash)-> getRow();
+			if ($getRow) {
+				$this->deleteTemp($data['hash']);
+				return;
+			}
+
 			$data['toHash'] = $payload['toHash'];
 			$insertSql = "INSERT INTO $this->wet_comment(
 								hash, to_hash, sender_id, recipient_id, utctime, amount, type, payload
 							) VALUES (
 								'$data[hash]', '$data[toHash]', '$data[sender]', '$data[receipt]', '$data[mbTime]', '$data[amount]', '$data[type]', '$data[content]'
 							)";
-			$upCommsumSql = "UPDATE $this->wet_content SET commsum = commsum+1 WHERE hash = '$data[toHash]'";
+			$upCommsumSql = "UPDATE $this->wet_content SET comment_num = comment_num+1 WHERE hash = '$data[toHash]'";
 			$active = $bsConfig['commentActive'];
 		}
 
-		if( $type == 'reply' ){  //回复
+		elseif ( $type == 'reply' ){  //回复
+			$selectHash = "SELECT hash FROM $this->wet_reply WHERE hash = '$data[hash]' LIMIT 1";
+        	$getRow = $this->db->query($selectHash)-> getRow();
+			if ($getRow) {
+				$this->deleteTemp($data['hash']);
+				return;
+			}
 			$data['replyType'] = $payload['reply_type'];
 			$data['toHash']    = trim($payload['to_hash']);
 			$data['toAddress'] = trim($payload['to_address']);
@@ -113,11 +138,11 @@ class hashReadModel extends Model {
 								'$data[hash]', '$data[toHash]', '$data[replyHash]', '$data[replyType]', '$data[toAddress]', 
 								'$data[sender]', '$data[receipt]', '$data[mbTime]', '$data[amount]', '$data[content]'
 							)";
-			$upCommsumSql = "UPDATE $this->wet_comment SET commsum = commsum+1 WHERE hash = '$data[toHash]'";
+			$upCommsumSql = "UPDATE $this->wet_comment SET comment_num = comment_num+1 WHERE hash = '$data[toHash]'";
 			$active = $bsConfig['replyActive'];
 		}
 
-		if( $type == 'nickname' ){  //昵称
+		elseif ( $type == 'nickname' ){  //昵称
 			$data['content'] = trim($payload['content']);
 			$verify = $this->UserModel-> isUser($data['sender']);
 			if($verify){
@@ -135,7 +160,14 @@ class hashReadModel extends Model {
 			$active = $bsConfig['nicknameActive'];
 		}
 
-		if( $type == 'portrait' ){  //头像
+		elseif ( $type == 'portrait' ){  //头像
+			$selectHash = "SELECT hash FROM $this->wet_users WHERE maxportrait = '$data[hash]' LIMIT 1";
+        	$getRow = $this->db->query($selectHash)-> getRow();
+			if ($getRow) {
+				$this->deleteTemp($data['hash']);
+				return;
+			}
+
 			$verify = $this->UserModel-> isUser($data['sender']);
 			if($verify){
 				$insertSql = "UPDATE $this->wet_users 
@@ -150,9 +182,7 @@ class hashReadModel extends Model {
 			}
 			
 			$active = $bsConfig['portraitActive'];
-		}else{
-			return;
-		}
+		} else return;
 
 		$this->db->query($insertSql);
 		$this->db->query($upCommsumSql);
@@ -165,9 +195,7 @@ class hashReadModel extends Model {
 								)";
 		$this->db->query($insetrBehaviorSql);
 
-		//删除临时缓存
-		$sql_del_tp = "DELETE FROM $this->wet_temporary WHERE tp_hash='$data[hash]'";
-		$this->db->query($sql_del_tp);
+		$this->deleteTemp($data['hash']);
     }
 
 	public function getSenderId($hash)
@@ -198,6 +226,13 @@ class hashReadModel extends Model {
 
 		return $json ;
 	}
+
+	public function deleteTemp($hash)
+	{//删除临时缓存
+		$deleteTempSql = "DELETE FROM $this->wet_temporary WHERE tp_hash = '$hash'";
+		$this->db->query($deleteTempSql);
+	}
+	
 
 }
 

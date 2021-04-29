@@ -1,20 +1,25 @@
 <?php namespace App\Models;
 
 use CodeIgniter\Model;
+use App\Models\DisposeModel;
 
 class ConfigModel extends Model {
+
+	public function __construct(){
+        parent::__construct();
+		$this->DisposeModel = new DisposeModel();
+    }
 
     public function backendConfig()
 	{//后端配置
 		return array(
 			'version'			 => '2.0.0',  //当前版本号
 			'requireVersion'	 => '2.0.0',  //最低要求版本号
-			'contentAmount'      => (int)'1e14',  //发帖费用 1e17 = 0.1ae
-			'commentAmount'      => (int)'1e14',  //评论费用
-			'replyAmount'        => (int)'1e14',  //回复费用
-			'nicknameAmount'     => (int)'1e14',  //昵称金额
-			'portraitAmount'     => (int)'1e14',  //头像费用
-			'articleSendNode'    => PUBLIC_NODE,  //前端节点
+			'topicAmount'        => 1e14,  //默认，发帖费用 1e17 = 0.1ae
+			'commentAmount'      => 1e14,  //默认，评论费用
+			'replyAmount'        => 1e14,  //默认，回复费用
+			'nicknameAmount'     => 1e14,  //默认，昵称费用
+			'portraitAmount'     => 1e14,  //默认，头像费用
 			'backendServiceNode' => PUBLIC_NODE,  //后端节点
 			'receivingAccount'   => 'ak_dMyzpooJ4oGnBVX35SCvHspJrq55HAAupCwPQTDZmRDT5SSSW',  //接收账户
 			'adminUser_1'        => 'ak_2kxt6D65giv4yNt4oa44SjW4jEXfoHMviPFvAreSEXvz25Q3QQ',  // Admin User 1
@@ -25,38 +30,55 @@ class ConfigModel extends Model {
 			'AeasyApp_id'        => '',  //Aeasy.io appid
 			'AeasyAmount'        => '0.1',  //活动金额
 			'AeasySecretKey'     => '',  //私钥
-			'airdropWttRatio'    => (int)'3',  //WTT空投比例
-			'hotRecDay'          => (int)'365',  //热点推荐天数
-
-			'contentActive'      => (int)'5',  //发帖 +活跃度
-			'commentActive'      => (int)'2',  //评论 +活跃度
-			'replyActive'        => (int)'2',  //回复 +活跃度
-			'praiseActive'       => (int)'1',  //点赞 +活跃度
-			'nicknameActive'     => (int)'1',  //昵称 +活跃度
-			'portraitActive'     => (int)'1',  //头像 +活跃度
-			'complainActive'     => (int)'30'  //举报 -活跃度
+			'airdropWttRatio'    => 3,  //WTT空投比例
+			'hotRecDay'          => 180,  //热点推荐天数
+			'topicActive'        => 5,  //发帖 +活跃度
+			'commentActive'      => 2,  //评论 +活跃度
+			'replyActive'        => 2,  //回复 +活跃度
+			'praiseActive'       => 1,  //点赞 +活跃度
+			'nicknameActive'     => 1,  //昵称 +活跃度
+			'portraitActive'     => 1,  //头像 +活跃度
+			'complainActive'     => 30  //举报 -活跃度
 		);
     }
 
     public function frontConfig()
 	{//前端配置
-		$backendConfig = (new ConfigModel())-> backendConfig();
-
+		$bsConfig = $this-> backendConfig();
+		
+		$akToken   = $_SERVER['HTTP_AK_TOKEN'];
+		$isAkToken = $this->DisposeModel-> checkAddress($akToken);
+		if ($isAkToken) { //根据登录状态，判断某用户自定义费用
+			$selectSql = "SELECT topic, 
+								comment, 
+								reply, 
+								nickname, 
+								portrait
+							FROM wet_amount WHERE address = '$akToken' LIMIT 1";
+			$query  = $this->db->query($selectSql);
+			$getRow = $query-> getRow();
+			$topicAmount    = (int)$getRow-> topic;
+			$commentAmount  = (int)$getRow-> comment;
+			$replyAmount    = (int)$getRow-> reply;
+			$nicknameAmount = (int)$getRow-> nickname;
+			$portraitAmount = (int)$getRow-> portrait;
+		}
+		
 		return array(
-			'WeTrue'           => $backendConfig['version'],
-			'requireVersion'   => $backendConfig['requireVersion'],
-			'contentAmount'    => $backendConfig['contentAmount'],
-			'commentAmount'    => $backendConfig['commentAmount'],
-			'replyAmount'      => $backendConfig['replyAmount'],
-			'nicknameAmount'   => $backendConfig['nicknameAmount'],
-			'portraitAmount'   => $backendConfig['portraitAmount'],
-			'receivingAccount' => $backendConfig['receivingAccount'],
-			'contentActive'    => $backendConfig['contentActive'],
-			'commentActive'    => $backendConfig['commentActive'],
-			'praiseActive'     => $backendConfig['praiseActive'],
-			'nicknameActive'   => $backendConfig['nicknameActive'],
-			'portraitActive'   => $backendConfig['portraitActive'],
-			'complainActive'   => $backendConfig['complainActive'],
+			'WeTrue'           => $bsConfig['version'],
+			'requireVersion'   => $bsConfig['requireVersion'],
+			'topicAmount'      => $topicAmount    ?? $bsConfig['topicAmount'],
+			'commentAmount'    => $commentAmount  ?? $bsConfig['commentAmount'],
+			'replyAmount'      => $replyAmount    ?? $bsConfig['replyAmount'],
+			'nicknameAmount'   => $nicknameAmount ?? $bsConfig['nicknameAmount'],
+			'portraitAmount'   => $portraitAmount ?? $bsConfig['portraitAmount'],
+			'receivingAccount' => $bsConfig['receivingAccount'],
+			'contentActive'    => $bsConfig['topicActive'],
+			'commentActive'    => $bsConfig['commentActive'],
+			'praiseActive'     => $bsConfig['praiseActive'],
+			'nicknameActive'   => $bsConfig['nicknameActive'],
+			'portraitActive'   => $bsConfig['portraitActive'],
+			'complainActive'   => $bsConfig['complainActive'],
 		);
     }
 

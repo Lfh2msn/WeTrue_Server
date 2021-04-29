@@ -28,7 +28,7 @@ class ContentModel extends Model {
 							payload,
 							img_tx,
 							utctime,
-							comment_sum,
+							comment_num,
 							praise,
 							star
 				FROM $this->tablename WHERE hash='$hash' LIMIT 1";
@@ -37,7 +37,7 @@ class ContentModel extends Model {
 							substring(payload for $opt[substr]) as payload,
 							img_tx,
 							utctime,
-							comment_sum,
+							comment_num,
 							praise,
 							star
 				FROM $this->tablename WHERE hash='$hash' LIMIT 1";
@@ -63,7 +63,7 @@ class ContentModel extends Model {
 				$data['isFocus']	= false;
 			}
 			
-			$data['commentNumber']  = (int) $row-> comment_sum;
+			$data['commentNumber']  = (int) $row-> comment_num;
 			$data['users']			= $this->user-> getUser($sender_id);
         }
 

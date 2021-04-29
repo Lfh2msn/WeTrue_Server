@@ -26,7 +26,7 @@ class CommentModel extends Model {
 					sender_id,
 					payload,
 					utctime,
-					reply_sum,
+					comment_num,
 					praise
 				FROM $this->wet_comment WHERE hash='$hash' LIMIT 1";
         $query = $this->db->query($sql);
@@ -37,19 +37,16 @@ class CommentModel extends Model {
 			$sender_id       	 = $row-> sender_id;
 			$data['payload']	 = $this->DisposeModel-> delete_xss($row-> payload);
 			$data['utcTime']	 = (int) $row-> utctime;
-			$data['replyNumber'] = (int) $row-> reply_sum;
+			$data['replyNumber'] = (int) $row-> comment_num;
 			$data['praise']		 = (int) $row-> praise;
-			$data['isPraise']	 = false;
-			if ( $opt['userLogin'] ) {
-				$data['isPraise'] = $this->praise-> isPraise($hash, $opt['userLogin']);
-			}
+			$data['isPraise']	 = $opt['userLogin'] ? $this->praise-> isPraise($hash, $opt['userLogin']) : false;
 			$data['users'] = $this->user-> getUser($sender_id);
 			if ( (int)$opt['replyLimit'] ) {
 				$data['commentList'] = [];
 				$replyLimit = max(0, (int)$opt['replyLimit']);
-				$limit = 'LIMIT '.$replyLimit;
-				$replySql = "SELECT hash FROM $this->wet_reply WHERE to_hash = '$hash' ORDER BY uid DESC ".$limit;
-				$query = $this-> db-> query($replySql);
+				$limit    = 'LIMIT '.$replyLimit;
+				$replySql = "SELECT hash FROM $this->wet_reply WHERE to_hash = '$hash' ORDER BY utctime DESC ".$limit;
+				$query    = $this-> db-> query($replySql);
 				foreach ($query-> getResult() as $row) {
 					$hash  = $row -> hash;
 					$bloom = $this->bloom-> txBloom($hash);

@@ -31,23 +31,19 @@ class ReplyModel extends Model {
         $query = $this->db->query($sql);
 		$row   = $query-> getRow();
         if ($row) {
+			$sender_id			  = $row-> sender_id;
+			$to_address			  = $row-> to_address;
 			$data['hash']		  = $hash;
 			$data['toHash']		  = $row-> to_hash;
 			$data['replyType']	  = $row-> reply_type;
 			$data['replyHash']    = $row-> reply_hash;
 			$data['payload']	  = $this->DisposeModel-> delete_xss($row-> payload);
-			$sender_id			  = $row-> sender_id;
-			$to_address			  = $row-> to_address;
 			$data['senderId']	  = $sender_id;
 			$data['toAddress']    = $to_address;
 			$data['receiverName'] = $this->user-> getName($to_address);
 			$data['utcTime']	  = (int) $row-> utctime;
 			$data['praise']		  = (int) $row-> praise;
-			if($opt['userLogin']){
-				$data['isPraise'] = $this->praise-> isPraise($hash, $opt['userLogin']);
-			} else {
-				$data['isPraise'] = false;
-			}
+			$data['isPraise']	  = $opt['userLogin'] ? $this->praise-> isPraise($hash, $opt['userLogin']) : false;
 			$data['users']		  = $this->user-> getUser($sender_id);
         }
 
