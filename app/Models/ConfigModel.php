@@ -48,7 +48,7 @@ class ConfigModel extends Model {
 		
 		$akToken   = $_SERVER['HTTP_AK_TOKEN'];
 		$isAkToken = $this->DisposeModel-> checkAddress($akToken);
-		if ($isAkToken) { //根据登录状态，判断某用户自定义费用
+		if ($isAkToken) { //查询用户自定义费用
 			$selectSql = "SELECT topic, 
 								comment, 
 								reply, 
@@ -57,21 +57,23 @@ class ConfigModel extends Model {
 							FROM wet_amount WHERE address = '$akToken' LIMIT 1";
 			$query  = $this->db->query($selectSql);
 			$getRow = $query-> getRow();
-			$topicAmount    = (int)$getRow-> topic;
-			$commentAmount  = (int)$getRow-> comment;
-			$replyAmount    = (int)$getRow-> reply;
-			$nicknameAmount = (int)$getRow-> nickname;
-			$portraitAmount = (int)$getRow-> portrait;
 		}
 		
+		//根据登录状态，判断某用户自定义费用
+		$topicAmount    = $getRow->topic 	?? $bsConfig['topicAmount'];
+		$commentAmount  = $getRow->comment  ?? $bsConfig['commentAmount'];
+		$replyAmount    = $getRow->reply	?? $bsConfig['replyAmount'];
+		$nicknameAmount = $getRow->nickname ?? $bsConfig['nicknameAmount'];
+		$portraitAmount = $getRow->portrait ?? $bsConfig['portraitAmount'];
+
 		return array(
 			'WeTrue'           => $bsConfig['version'],
 			'requireVersion'   => $bsConfig['requireVersion'],
-			'topicAmount'      => $topicAmount    ?? $bsConfig['topicAmount'],
-			'commentAmount'    => $commentAmount  ?? $bsConfig['commentAmount'],
-			'replyAmount'      => $replyAmount    ?? $bsConfig['replyAmount'],
-			'nicknameAmount'   => $nicknameAmount ?? $bsConfig['nicknameAmount'],
-			'portraitAmount'   => $portraitAmount ?? $bsConfig['portraitAmount'],
+			'topicAmount'      => (int)$topicAmount,
+			'commentAmount'    => (int)$commentAmount,
+			'replyAmount'      => (int)$replyAmount,
+			'nicknameAmount'   => (int)$nicknameAmount,
+			'portraitAmount'   => (int)$portraitAmount,
 			'receivingAccount' => $bsConfig['receivingAccount'],
 			'contentActive'    => $bsConfig['topicActive'],
 			'commentActive'    => $bsConfig['commentActive'],
