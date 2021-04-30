@@ -31,7 +31,11 @@ class ConfigModel extends Model {
 			'AeasyAmount'        => '0.1',  //活动金额
 			'AeasySecretKey'     => '',  //私钥
 			'airdropWttRatio'    => 3,  //WTT空投比例
-			'hotRecDay'          => 180,  //热点推荐天数
+			'hotRecDay'          => 240,  //热点推荐天数
+			'factorPraise'		 => 1,  //点赞因子,越大权重越大
+			'factorComment'		 => 3,  //评论因子,越大权重越大
+			'factorStar'		 => 5,  //收藏因子,越大权重越大
+			'factorTime'		 => 0.2,  //时间因子,越大权重越小
 			'topicActive'        => 5,  //发帖 +活跃度
 			'commentActive'      => 2,  //评论 +活跃度
 			'replyActive'        => 2,  //回复 +活跃度

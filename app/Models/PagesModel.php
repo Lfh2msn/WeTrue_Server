@@ -35,13 +35,13 @@ class PagesModel extends Model {
 		$size = max(1, (int)$size);
 		$akToken   = $_SERVER['HTTP_AK_TOKEN'];
 		$isAkToken = $this->DisposeModel-> checkAddress($akToken);
-		if($isAkToken){
+		if ( $isAkToken ){
 			$opt['userLogin'] = $akToken;
 		}
 		
 		$opt['substr']	  = 160; //限制输出
 
-		if($opt['type'] == 'contentList'){
+		if ( $opt['type'] == 'contentList' ){
 			//主贴列表
 			$this->tablename = "wet_content";
 			$countSql		 = "SELECT count(hash) FROM $this->tablename";
@@ -50,7 +50,7 @@ class PagesModel extends Model {
 			$select			 = "content";
 		}
 
-		if($opt['type'] == 'commentList'){  //评论列表
+		if ( $opt['type'] == 'commentList' ){  //评论列表
 			$this->tablename = "wet_comment";
 			$countSql		 = "SELECT count(to_hash) FROM $this->tablename WHERE to_hash='$opt[hash]'";
 			$limitSql		 = "SELECT hash FROM $this->tablename WHERE to_hash = '$opt[hash]' 
@@ -58,7 +58,7 @@ class PagesModel extends Model {
 			$select			 = "comment";
 		}
 
-		if($opt['type'] == 'replyList'){  //回复列表
+		if ( $opt['type'] == 'replyList' ){  //回复列表
 			$this->tablename = "wet_reply";
 			$countSql		 = "SELECT count(to_hash) FROM $this->tablename WHERE to_hash='$opt[hash]'";
 			$limitSql		 = "SELECT hash FROM $this->tablename WHERE to_hash = '$opt[hash]' 
@@ -66,7 +66,7 @@ class PagesModel extends Model {
 			$select			 = "reply";
 		}
 
-		if($opt['type'] == 'imageList'){  //图片列表
+		if ( $opt['type'] == 'imageList' ){  //图片列表
 			$this->tablename = "wet_content";
 			$countSql		 = "SELECT count(hash) FROM $this->tablename WHERE img_tx <> ''";
 			$limitSql		 = "SELECT hash FROM $this->tablename WHERE img_tx <> '' 
@@ -74,18 +74,28 @@ class PagesModel extends Model {
 			$select 		 = "content";
 		}
 
-		if($opt['type'] == 'hotRecList'){  //热点推荐
+		if ( $opt['type'] == 'hotRecList' ){  //热点推荐
 			$this->tablename = "wet_content";
-			$backendConfig   = $this->configModel-> backendConfig();
-			$hotRecDay  	 = $backendConfig['hotRecDay'];
-			$FifteenTime 	 = (time()-60 * 60 *24 * $hotRecDay )*1000;//86400秒*x天*1000毫秒
-			$countSql		 = "SELECT count(hash) FROM $this->tablename WHERE utctime >= $FifteenTime";
-			$limitSql		 = "SELECT hash FROM $this->tablename WHERE utctime >= $FifteenTime 
-									ORDER BY (praise+comment_num+star) DESC LIMIT $size OFFSET ".($page-1)*$size;
+			$bsConfig   	 = $this->configModel-> backendConfig();
+			$hotRecDay  	 = $bsConfig['hotRecDay'];
+			$factorPraise	 = $bsConfig['factorPraise'];
+			$factorComment	 = $bsConfig['factorComment'];
+			$factorStar		 = $bsConfig['factorStar'];
+			$factorTime	 	 = $bsConfig['factorTime'];
+			$nowTime		 = time() * 1000;
+			$cycleTime 	 	 = $nowTime - 86400000 * $hotRecDay;  //当前时间 - 86400000毫秒 * 天
+			$countSql		 = "SELECT count(hash) FROM $this->tablename WHERE utctime >= $cycleTime";
+			$limitSql		 = "SELECT hash FROM $this->tablename WHERE utctime >= $cycleTime 
+									ORDER BY (
+											   (praise * $factorPraise)
+											 + (comment_num * $factorComment)
+											 + (star * $factorStar)
+											 - ( ( ($nowTime - utctime) / 8640000) * $factorTime)
+											) DESC LIMIT $size OFFSET ".($page-1) * $size;
 			$select 		 = "content";
 		}
 
-		if($opt['type'] == 'userContentList'){  //用户发帖列表
+		if ( $opt['type'] == 'userContentList' ){  //用户发帖列表
 			$this->tablename = "wet_content";
 			$countSql		 = "SELECT count(sender_id) FROM $this->tablename WHERE sender_id='$opt[publicKey]'";
 			$limitSql		 = "SELECT hash FROM $this->tablename WHERE sender_id='$opt[publicKey]' 
@@ -93,7 +103,7 @@ class PagesModel extends Model {
 			$select			 = "content";
 		}
 
-		if($opt['type'] == 'userFocusContentList'){  //被关注主贴列表
+		if ( $opt['type'] == 'userFocusContentList' ){  //被关注主贴列表
 			$akToken	  = $opt['userLogin'];
 			$countSql = "SELECT count(wet_content.hash) FROM wet_content 
 							INNER JOIN wet_focus 
