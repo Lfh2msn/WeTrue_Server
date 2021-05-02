@@ -69,7 +69,8 @@ class hashReadModel extends Model {
 		$WeTrue  = $payload['WeTrue'];
 		$require = $bsConfig['requireVersion'];
 		$version = $this->DisposeModel ->versionCompare($WeTrue, $require);  //版本检测
-		if (!$version) {
+		if (!$version)
+		{
 			$versionLow = "versionLow";
 			$updateSql  = "UPDATE $this->wet_temporary SET tp_source = '$versionLow' WHERE tp_hash = '$hash'";
 	        $this->db-> query($updateSql);
@@ -86,7 +87,8 @@ class hashReadModel extends Model {
 		$data['mbTime']  = $json['mb_time'];
 		$data['content'] = $payload['content'];
 		//内容分配
-		if( $type == 'topic' ){  //主贴
+		if( $type == 'topic' )
+		{  //主贴
 			$selectHash = "SELECT hash FROM $this->wet_content WHERE hash = '$data[hash]' LIMIT 1";
         	$getRow = $this->db->query($selectHash)-> getRow();
 			if ($getRow) {
@@ -100,10 +102,10 @@ class hashReadModel extends Model {
 							) VALUES (   
 								'$data[hash]', '$data[sender]', '$data[receipt]', '$data[mbTime]', '$data[amount]', '$data[type]', '$data[content]', '$data[imgList]'
 							)";
-			$active = $bsConfig['contentActive'];
+			$active = $bsConfig['topicActive'];
 		}
-
-		elseif ( $type == 'comment' ){  //评论
+		elseif ( $type == 'comment' )
+		{  //评论
 			$selectHash = "SELECT hash FROM $this->wet_comment WHERE hash = '$data[hash]' LIMIT 1";
         	$getRow = $this->db->query($selectHash)-> getRow();
 			if ($getRow) {
@@ -120,8 +122,8 @@ class hashReadModel extends Model {
 			$upCommsumSql = "UPDATE $this->wet_content SET comment_num = comment_num+1 WHERE hash = '$data[toHash]'";
 			$active = $bsConfig['commentActive'];
 		}
-
-		elseif ( $type == 'reply' ){  //回复
+		elseif ( $type == 'reply' )
+		{  //回复
 			$selectHash = "SELECT hash FROM $this->wet_reply WHERE hash = '$data[hash]' LIMIT 1";
         	$getRow = $this->db->query($selectHash)-> getRow();
 			if ($getRow) {
@@ -141,8 +143,8 @@ class hashReadModel extends Model {
 			$upCommsumSql = "UPDATE $this->wet_comment SET comment_num = comment_num+1 WHERE hash = '$data[toHash]'";
 			$active = $bsConfig['replyActive'];
 		}
-
-		elseif ( $type == 'nickname' ){  //昵称
+		elseif ( $type == 'nickname' )
+		{  //昵称
 			$data['content'] = trim($payload['content']);
 			$verify = $this->UserModel-> isUser($data['sender']);
 			if($verify){
@@ -159,8 +161,8 @@ class hashReadModel extends Model {
 			
 			$active = $bsConfig['nicknameActive'];
 		}
-
-		elseif ( $type == 'portrait' ){  //头像
+		elseif ( $type == 'portrait' )
+		{  //头像
 			$selectHash = "SELECT hash FROM $this->wet_users WHERE maxportrait = '$data[hash]' LIMIT 1";
         	$getRow = $this->db->query($selectHash)-> getRow();
 			if ($getRow) {
@@ -182,7 +184,8 @@ class hashReadModel extends Model {
 			}
 			
 			$active = $bsConfig['portraitActive'];
-		} else return;
+		}
+		else return;
 
 		$this->db->query($insertSql);
 		$this->db->query($upCommsumSql);
@@ -194,7 +197,7 @@ class hashReadModel extends Model {
 									'$data[sender]', '$data[hash]', '$data[type]', '$active', '$data[receipt]'
 								)";
 		$this->db->query($insetrBehaviorSql);
-
+		$this->UserModel-> userActive($data['sender'], $active, $e = TRUE);
 		$this->deleteTemp($data['hash']);
     }
 

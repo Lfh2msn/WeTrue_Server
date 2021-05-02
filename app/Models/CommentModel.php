@@ -51,7 +51,8 @@ class CommentModel extends Model {
 					$hash  = $row -> hash;
 					$bloom = $this->bloom-> txBloom($hash);
 					if ($bloom) {
-						$list[] = $this->reply-> txReply($hash);
+						$opt['substr']	  = 140; //限制输出
+						$list[] = $this->reply-> txReply($hash, $opt);
 					}
 					$data['commentList'] = $list;
 				}

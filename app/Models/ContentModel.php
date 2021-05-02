@@ -23,26 +23,21 @@ class ContentModel extends Model {
 
 	public function txContent($hash, $opt=[])
 	{//获取主贴内容
-		if (!$opt['substr']) {
-			$sql = "SELECT sender_id,
-							payload,
-							img_tx,
-							utctime,
-							comment_num,
-							praise,
-							star
-				FROM $this->tablename WHERE hash='$hash' LIMIT 1";
+		if ( (int) $opt['substr'] ){
+			$payload = "substring(payload for '$opt[substr]') as payload";
 		} else {
-			$sql = "SELECT sender_id,
-							substring(payload for $opt[substr]) as payload,
+			$payload = "payload";
+		}
+
+		$sql = "SELECT sender_id,
+							$payload,
 							img_tx,
 							utctime,
 							comment_num,
 							praise,
 							star
 				FROM $this->tablename WHERE hash='$hash' LIMIT 1";
-		}
-        
+
         $query = $this-> db-> query($sql);
 		$row   = $query-> getRow();
         if ($row) {

@@ -9,7 +9,7 @@ class PraiseModel extends Model {
 
 	public function __construct(){
         parent::__construct();
-		$this->userModel    = new UserModel();
+		$this->UserModel    = new UserModel();
 		$this->configModel  = new ConfigModel();
 		$this->DisposeModel = new DisposeModel();
     }
@@ -69,7 +69,7 @@ class PraiseModel extends Model {
 			//用户活跃入库
 			$backendConfig = $this->configModel-> backendConfig();
 			$praiseActive  = $backendConfig['praiseActive'];
-			$this->userModel-> userActive($akToken, $praiseActive, $e);
+			$this->UserModel-> userActive($akToken, $praiseActive, $e);
 			//入库行为记录
 			$praiseBehaviorSql = "INSERT INTO wet_behavior(address, thing, influence, toaddress) 
 									VALUES ('$akToken', 'isPraise', '$praiseActive', '$hash')";

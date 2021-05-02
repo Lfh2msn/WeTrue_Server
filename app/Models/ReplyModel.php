@@ -18,16 +18,23 @@ class ReplyModel extends Model {
 
 	public function txReply($hash, $opt=[])
 	{//获取回复内容
-        $sql="SELECT hash,
-					to_hash,
-					reply_hash,
-					reply_type,
-					payload,
-					sender_id,
-					to_address,
-					utctime,
-					praise
+		if ( (int) $opt['substr'] ){
+			$payload = "substring(payload for '$opt[substr]') as payload";
+		} else {
+			$payload = "payload";
+		}
+
+		$sql = "SELECT hash,
+							to_hash,
+							reply_hash,
+							reply_type,
+							$payload,
+							sender_id,
+							to_address,
+							utctime,
+							praise
 				FROM $this->tablename WHERE hash='$hash' LIMIT 1";
+
         $query = $this->db->query($sql);
 		$row   = $query-> getRow();
         if ($row) {
