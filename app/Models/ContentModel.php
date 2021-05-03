@@ -9,6 +9,7 @@ use App\Models\FocusModel;
 use App\Models\DisposeModel;
 
 class ContentModel extends Model {
+//主贴Model
 
 	public function __construct(){
         parent::__construct();

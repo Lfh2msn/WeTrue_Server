@@ -3,7 +3,7 @@ namespace App\Controllers;
 
 use App\Models\PraiseModel;
 use App\Models\StarModel;
-use App\Models\hashReadModel;
+use App\Models\HashReadModel;
 use App\Models\ComplainModel;
 
 class Submit extends BaseController {
@@ -13,10 +13,10 @@ class Submit extends BaseController {
         $hash   = $this->request->getPost('hash');
         $type   = $this->request->getPost('type');
 		$isHash = $this->DisposeModel-> checkAddress($hash);
-        if($isHash && $type == 'topic' || $type == 'comment' || $type == 'reply'){
+        if ($isHash && $type == 'topic' || $type == 'comment' || $type == 'reply') {
             $data = (new PraiseModel())-> praise($hash, $type);
 		    echo $data;
-        }else{
+        } else {
 			$data['code'] = 406;
 			$data['msg']  = 'error';
 			echo json_encode($data);
@@ -28,10 +28,10 @@ class Submit extends BaseController {
 	{//关注
 		$userAddress   = $this->request->getPost('userAddress');
         $isUserAddress = $this->DisposeModel-> checkAddress($userAddress);
-		if($isUserAddress){
+		if ($isUserAddress) {
             $data = $this->FocusModel-> focus($userAddress);
 		    echo $data;
-        }else{
+        } else {
 			$data['code'] = 406;
 			$data['msg']  = 'error';
             echo json_encode($data);
@@ -42,10 +42,10 @@ class Submit extends BaseController {
 	{//收藏
 		$hash  = $this->request->getPost('hash');
 		$isHash = $this->DisposeModel-> checkAddress($hash);
-		if($isHash){
+		if ($isHash) {
             $data = (new StarModel())-> star($hash);
 			echo $data;
-        }else{
+        } else {
 			$data['code'] = 406;
 			$data['msg']  = 'error_hash';
             echo json_encode($data);
@@ -56,10 +56,10 @@ class Submit extends BaseController {
 	{//发布hash
 		$hash  = $this->request->getPost('hash');
 		$isHash = $this->DisposeModel-> checkAddress($hash);
-		if($isHash){
-            $data = (new hashReadModel())-> split($hash);
+		if ($isHash) {
+            $data = (new HashReadModel())-> split($hash);
 			echo $data;
-        }else{
+        } else {
 			$data['code'] = 406;
 			$data['msg']  = 'error_hash';
             echo json_encode($data);
@@ -70,10 +70,10 @@ class Submit extends BaseController {
 	{//投诉hash
 		$hash  = $this->request->getPost('hash');
 		$isHash = $this->DisposeModel-> checkAddress($hash);
-		if($isHash){
+		if ($isHash) {
             $data = (new ComplainModel())-> txHash($hash);
 			echo $data;
-        }else{
+        } else {
 			$data['code'] = 406;
 			$data['msg']  = 'error_hash';
             echo json_encode($data);

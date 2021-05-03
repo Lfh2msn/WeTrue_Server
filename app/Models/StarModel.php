@@ -4,6 +4,7 @@ use CodeIgniter\Model;
 use App\Models\DisposeModel;
 
 class StarModel extends Model {
+//收藏Model
 
 	public function __construct(){
 		parent::__construct();

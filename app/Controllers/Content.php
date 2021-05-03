@@ -14,7 +14,7 @@ class Content extends BaseController
 
 	public function tx()
     {//主贴详情
-        $hash = $this->request->getPost('hash');
+        $hash   = $this->request->getPost('hash');
         $isHash = $this->DisposeModel-> checkAddress($hash);
 		if($isHash){
             $opt  = ['select' => 'content'];

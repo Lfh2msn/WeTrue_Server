@@ -4,6 +4,7 @@ use CodeIgniter\Model;
 use App\Models\DisposeModel;
 
 class ConfigModel extends Model {
+//配置Model
 
 	public function __construct(){
         parent::__construct();

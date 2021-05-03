@@ -2,14 +2,30 @@
 namespace App\Controllers;
 
 use App\Models\ComplainModel;
+use App\Models\BloomModel;
 
 class Admin extends BaseController
 {//管理
-	public function complain()
-    {//获取已屏蔽帖
+	public function complainList()
+	{//投诉列表
 		$page = $this->request->getPost('currentPage');
-        $size = $this->request->getPost('perPage');
-        $data = (new ComplainModel())-> limit($page, $size);
-        echo $data;
+		$size = $this->request->getPost('perPage');
+		$data = (new ComplainModel())-> limit($page, $size);
+		echo $data;
+	}
+
+	public function bloom()
+	{//投诉hash屏蔽
+		$hash   = $this->request->getPost('hash');
+		$isHash = $this->DisposeModel-> checkAddress($hash);
+        if ($isHash) {
+            $data = (new BloomModel())-> bloomHash($hash);
+			echo $data;
+        } else {
+            $data['code'] = 406;
+			$data['msg']  = 'error_hash';
+            echo json_encode($data);
+		}
+		
 	}
 }

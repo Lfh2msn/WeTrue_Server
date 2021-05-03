@@ -6,6 +6,7 @@ use App\Models\ConfigModel;
 use App\Models\DisposeModel;
 
 class PraiseModel extends Model {
+//点赞Model
 
 	public function __construct(){
         parent::__construct();

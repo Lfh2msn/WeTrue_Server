@@ -6,6 +6,7 @@ use App\Models\PraiseModel;
 use App\Models\DisposeModel;
 
 class ReplyModel extends Model {
+//回复Model
 
 	public function __construct(){
         parent::__construct();

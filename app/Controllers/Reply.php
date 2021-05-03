@@ -9,14 +9,14 @@ class Reply extends BaseController {
         $size = $this->request->getPost('perPage');
 		$hash = $this->request->getPost('hash');
         $isHash = $this->DisposeModel-> checkAddress($hash);
-		if($isHash){
+		if ($isHash) {
             $opt  = [
                 'type'=> 'replyList',
                 'hash' => $hash
             ];
             $data = $this->PagesModel-> limit($page, $size, $opt);
             echo $data;
-        }else{
+        } else {
 			$data['code'] = 406;
 			$data['msg']  = 'error_hash';
             echo json_encode($data);

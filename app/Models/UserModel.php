@@ -5,7 +5,8 @@ use App\Models\ConfigModel;
 use App\Models\DisposeModel;
 
 class UserModel extends Model {
-//用户模块
+//用户Model
+
 	public function __construct(){
         parent::__construct();
         $this->tablename    = 'wet_users';

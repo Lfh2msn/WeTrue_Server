@@ -3,6 +3,7 @@
 use CodeIgniter\Model;
 
 class DisposeModel extends Model {
+//数据处理Model
 
     public function checkAddress($address)
     {//校验地址

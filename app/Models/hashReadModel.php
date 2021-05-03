@@ -6,7 +6,8 @@ use App\Models\DisposeModel;
 use App\Models\UserModel;
 use App\Models\BloomModel;
 
-class hashReadModel extends Model {
+class HashReadModel extends Model {
+//链上hash入库Model
 
 	public function __construct(){
         parent::__construct();
@@ -235,7 +236,6 @@ class hashReadModel extends Model {
 		$deleteTempSql = "DELETE FROM $this->wet_temporary WHERE tp_hash = '$hash'";
 		$this->db->query($deleteTempSql);
 	}
-	
 
 }
 
