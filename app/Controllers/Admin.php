@@ -14,6 +14,14 @@ class Admin extends BaseController
 		echo $data;
 	}
 
+	public function bloomList()
+	{//屏蔽列表
+		$page = $this->request->getPost('currentPage');
+		$size = $this->request->getPost('perPage');
+		$data = (new BloomModel())-> limit($page, $size);
+		echo $data;
+	}
+
 	public function bloom()
 	{//投诉hash屏蔽
 		$hash   = $this->request->getPost('hash');
@@ -26,6 +34,19 @@ class Admin extends BaseController
 			$data['msg']  = 'error_hash';
             echo json_encode($data);
 		}
-		
+	}
+
+	public function unBloom()
+	{//取消屏蔽
+		$hash   = $this->request->getPost('hash');
+		$isHash = $this->DisposeModel-> checkAddress($hash);
+        if ($isHash) {
+            $data = (new BloomModel())-> unBloom($hash);
+			echo $data;
+        } else {
+            $data['code'] = 406;
+			$data['msg']  = 'error_hash';
+            echo json_encode($data);
+		}
 	}
 }
