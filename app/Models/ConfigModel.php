@@ -104,5 +104,18 @@ class ConfigModel extends Model {
 		return $data;
     }
 
+	public function compilerConfig()
+	{//编译器配置
+		$data[] = array(
+			'url'	=> 'https://compiler.aechina.io/',
+			'name' 	=> 'WeTrue',
+		);
+		$data[] = array(
+			'url'	=> 'https://compiler.aeasy.io/',
+			'name' 	=> 'BoxAepp',
+		);
+		return $data;
+    }
+
 }
 
