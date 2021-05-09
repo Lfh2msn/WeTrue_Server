@@ -26,7 +26,7 @@ class HashReadModel extends Model {
 	public function split($hash)
 	{//上链内容入库
 		$isHashSql = "SELECT tp_hash FROM $this->wet_temporary WHERE tp_hash = '$hash' LIMIT 1";
-		$query = $this->db-> query($isHashSql)-> getRow();
+		$query     = $this->db-> query($isHashSql)-> getRow();
 		if (!$query) {  //写入临时缓存
 			$insertTempSql = "INSERT INTO $this->wet_temporary(tp_hash) VALUES ('$hash')";
 			$this->db->query($insertTempSql);
@@ -103,6 +103,7 @@ class HashReadModel extends Model {
 							) VALUES (   
 								'$data[hash]', '$data[sender]', '$data[receipt]', '$data[mbTime]', '$data[amount]', '$data[type]', '$data[content]', '$data[imgList]'
 							)";
+			$upSql  = "UPDATE $this->wet_users SET topic = topic + 1 WHERE address = '$data[sender]'";
 			$active = $bsConfig['topicActive'];
 		}
 		elseif ( $type == 'comment' )
@@ -120,7 +121,7 @@ class HashReadModel extends Model {
 							) VALUES (
 								'$data[hash]', '$data[toHash]', '$data[sender]', '$data[receipt]', '$data[mbTime]', '$data[amount]', '$data[type]', '$data[content]'
 							)";
-			$upCommsumSql = "UPDATE $this->wet_content SET comment_num = comment_num+1 WHERE hash = '$data[toHash]'";
+			$upSql  = "UPDATE $this->wet_content SET comment_num = comment_num + 1 WHERE hash = '$data[toHash]'";
 			$active = $bsConfig['commentActive'];
 		}
 		elseif ( $type == 'reply' )
@@ -141,14 +142,14 @@ class HashReadModel extends Model {
 								'$data[hash]', '$data[toHash]', '$data[replyHash]', '$data[replyType]', '$data[toAddress]', 
 								'$data[sender]', '$data[receipt]', '$data[mbTime]', '$data[amount]', '$data[content]'
 							)";
-			$upCommsumSql = "UPDATE $this->wet_comment SET comment_num = comment_num+1 WHERE hash = '$data[toHash]'";
+			$upSql  = "UPDATE $this->wet_comment SET comment_num = comment_num + 1 WHERE hash = '$data[toHash]'";
 			$active = $bsConfig['replyActive'];
 		}
 		elseif ( $type == 'nickname' )
 		{  //昵称
 			$data['content'] = trim($payload['content']);
 			$verify = $this->UserModel-> isUser($data['sender']);
-			if($verify){
+			if($verify){  //是否存在
 				$insertSql = "UPDATE $this->wet_users 
 								SET username = '$data[content]' 
 								WHERE address = '$data[sender]'";
@@ -189,7 +190,6 @@ class HashReadModel extends Model {
 		else return;
 
 		$this->db->query($insertSql);
-		$this->db->query($upCommsumSql);
 		
 		//入库行为记录
 		$insetrBehaviorSql = "INSERT INTO $this->wet_behavior(
@@ -199,6 +199,7 @@ class HashReadModel extends Model {
 								)";
 		$this->db->query($insetrBehaviorSql);
 		$this->UserModel-> userActive($data['sender'], $active, $e = TRUE);
+		$this->db->query($upSql);
 		$this->deleteTemp($data['hash']);
     }
 

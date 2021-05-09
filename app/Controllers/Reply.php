@@ -11,7 +11,7 @@ class Reply extends BaseController {
         $isHash = $this->DisposeModel-> checkAddress($hash);
 		if ($isHash) {
             $opt  = [
-                'type'=> 'replyList',
+                'type' => 'replyList',
                 'hash' => $hash
             ];
             $data = $this->PagesModel-> limit($page, $size, $opt);

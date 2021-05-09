@@ -46,7 +46,7 @@ class PagesModel extends Model {
 			$this->tablename = "wet_content";
 			$countSql		 = "SELECT count(hash) FROM $this->tablename";
 			$limitSql		 = "SELECT hash FROM $this->tablename 
-									ORDER BY utctime DESC LIMIT $size OFFSET ".($page-1)*$size;
+									ORDER BY utctime DESC LIMIT $size OFFSET ".($page-1) * $size;
 			$select			 = "content";
 		}
 
@@ -54,7 +54,7 @@ class PagesModel extends Model {
 			$this->tablename = "wet_comment";
 			$countSql		 = "SELECT count(to_hash) FROM $this->tablename WHERE to_hash='$opt[hash]'";
 			$limitSql		 = "SELECT hash FROM $this->tablename WHERE to_hash = '$opt[hash]' 
-									ORDER BY uid DESC LIMIT $size OFFSET ".($page-1)*$size;
+									ORDER BY uid DESC LIMIT $size OFFSET ".($page-1) * $size;
 			$select			 = "comment";
 		}
 
@@ -62,7 +62,7 @@ class PagesModel extends Model {
 			$this->tablename = "wet_reply";
 			$countSql		 = "SELECT count(to_hash) FROM $this->tablename WHERE to_hash='$opt[hash]'";
 			$limitSql		 = "SELECT hash FROM $this->tablename WHERE to_hash = '$opt[hash]' 
-									ORDER BY uid DESC LIMIT $size OFFSET ".($page-1)*$size;
+									ORDER BY uid DESC LIMIT $size OFFSET ".($page-1) * $size;
 			$select			 = "reply";
 		}
 
@@ -70,7 +70,7 @@ class PagesModel extends Model {
 			$this->tablename = "wet_content";
 			$countSql		 = "SELECT count(hash) FROM $this->tablename WHERE img_tx <> ''";
 			$limitSql		 = "SELECT hash FROM $this->tablename WHERE img_tx <> '' 
-									ORDER BY utctime DESC LIMIT $size OFFSET ".($page-1)*$size;
+									ORDER BY utctime DESC LIMIT $size OFFSET ".($page-1) * $size;
 			$select 		 = "content";
 		}
 
@@ -99,7 +99,7 @@ class PagesModel extends Model {
 			$this->tablename = "wet_content";
 			$countSql		 = "SELECT count(sender_id) FROM $this->tablename WHERE sender_id='$opt[publicKey]'";
 			$limitSql		 = "SELECT hash FROM $this->tablename WHERE sender_id='$opt[publicKey]' 
-									ORDER BY utctime DESC LIMIT $size OFFSET ".($page-1)*$size;
+									ORDER BY utctime DESC LIMIT $size OFFSET ".($page-1) * $size;
 			$select			 = "content";
 		}
 
@@ -112,7 +112,7 @@ class PagesModel extends Model {
 			$limitSql = "SELECT wet_content.hash FROM wet_content 
 							INNER JOIN wet_focus ON wet_content.sender_id = wet_focus.focus 
 							AND wet_focus.fans = '$akToken' 
-							ORDER BY wet_content.uid DESC LIMIT $size OFFSET ".($page-1)*$size;
+							ORDER BY wet_content.uid DESC LIMIT $size OFFSET ".($page-1) * $size;
 			$select	  = "content";
 		}
 

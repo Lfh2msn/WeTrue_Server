@@ -63,8 +63,8 @@ class FocusModel extends Model {
 				$contrary = "fans";
 			}
 			$countSql = "SELECT count($field) FROM $this->tablename WHERE $field = '$akToken'";
-			$limitSql = "SELECT $contrary AS contrary FROM $this->tablename WHERE $field='$akToken' 
-						ORDER BY uid DESC LIMIT $size OFFSET ".($page-1)*$size;
+			$limitSql = "SELECT $contrary AS contrary FROM $this->tablename 
+								WHERE $field='$akToken' ORDER BY uid DESC LIMIT $size OFFSET ".($page-1) * $size;
 		}
 
 		$data = $this->cycle($page, $size, $countSql, $limitSql, $opt);

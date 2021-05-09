@@ -119,7 +119,7 @@ class ComplainModel extends Model {
 		$opt['userLogin'] = $akToken;
 
 		$countSql = "SELECT count(hash) FROM $this->wet_complain";
-		$limitSql = "SELECT hash FROM $this->wet_complain LIMIT $size OFFSET ".($page-1)*$size;
+		$limitSql = "SELECT hash FROM $this->wet_complain LIMIT $size OFFSET ".($page-1) * $size;
 
 		$data = $this->cycle($page, $size, $countSql, $limitSql, $opt);
 		return json_encode($data);

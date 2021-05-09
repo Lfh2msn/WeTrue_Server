@@ -5,6 +5,7 @@ use App\Models\PraiseModel;
 use App\Models\StarModel;
 use App\Models\HashReadModel;
 use App\Models\ComplainModel;
+use App\Models\SearchModel;
 
 class Submit extends BaseController {
 
@@ -79,5 +80,27 @@ class Submit extends BaseController {
             echo json_encode($data);
 		}
 	}
+
+	public function search()
+    {//搜索
+		$page = $this->request->getPost('currentPage');
+        $size = $this->request->getPost('perPage');
+		$type = $this->request->getPost('type');
+		$key  = $this->request->getPost('key');
+
+		$opt  = [
+			'type' => $type,
+			'key'  => $key
+		];
+        if ($type && $key) {
+            $data = (new SearchModel())-> search($page, $size, $opt);
+		    echo $data;
+		} else {
+			$data['code'] = 406;
+			$data['msg']  = 'error';
+			echo json_encode($data);
+		}
+		
+    }
 
 }

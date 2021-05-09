@@ -137,7 +137,7 @@ class BloomModel extends Model {
 		$opt['userLogin'] = $akToken;
 
 		$countSql = "SELECT count(bf_hash) FROM $this->wet_bloom";
-		$limitSql = "SELECT bf_hash AS hash FROM $this->wet_bloom LIMIT $size OFFSET ".($page-1)*$size;
+		$limitSql = "SELECT bf_hash AS hash FROM $this->wet_bloom LIMIT $size OFFSET ".($page-1) * $size;
 
 		$data = $this->cycle($page, $size, $countSql, $limitSql, $opt);
 		return json_encode($data);
