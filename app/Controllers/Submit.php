@@ -83,8 +83,8 @@ class Submit extends BaseController {
 
 	public function search()
     {//搜索
-		$page = $this->request->getPost('currentPage');
-        $size = $this->request->getPost('perPage');
+		$page = $this->request->getPost('page');
+        $size = $this->request->getPost('size');
 		$type = $this->request->getPost('type');
 		$key  = $this->request->getPost('key');
 

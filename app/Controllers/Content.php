@@ -5,8 +5,8 @@ class Content extends BaseController
 {
 	public function list()
     {//主贴列表
-        $page = $this->request->getPost('currentPage');
-        $size = $this->request->getPost('perPage');
+        $page = $this->request->getPost('page');
+        $size = $this->request->getPost('size');
         $opt  = ['type' => 'contentList'];
 		$data = $this->PagesModel-> limit($page, $size, $opt);
 		echo $data;
@@ -29,8 +29,8 @@ class Content extends BaseController
 
     public function hotRec()
     {//热点推荐列表
-        $page = $this->request->getPost('currentPage');
-        $size = $this->request->getPost('perPage');
+        $page = $this->request->getPost('page');
+        $size = $this->request->getPost('size');
         $opt  = ['type' => 'hotRecList'];
 		$data = $this->PagesModel-> limit($page, $size, $opt);
 		echo $data;

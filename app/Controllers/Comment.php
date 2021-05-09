@@ -5,8 +5,8 @@ class Comment extends BaseController {
 
 	public function list()
     {//评论列表
-        $page   = $this->request->getPost('currentPage');
-        $size   = $this->request->getPost('perPage');
+        $page   = $this->request->getPost('page');
+        $size   = $this->request->getPost('size');
 		$hash   = $this->request->getPost('hash');
         $replyLimit = $this->request->getPost('replyLimit');
         $opt  = [

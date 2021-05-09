@@ -179,15 +179,14 @@ class PagesModel extends Model {
 
 	private function pages($page, $size, $sql)
 	{
-		$query  = $this->db-> query($sql);
-		$row	= $query-> getRow();
-        $count	= $row->count;//总数量
-		$data	= [
-			'currentPage'	=> $page, //当前页
-			'perPage'		=> $size, //每页数量
-			'totalPage'		=> (int)ceil($count/$size), //总页数
-			'lastPage'		=> (int)ceil($count/$size), //总页数
-			'totalSize'		=> (int)$count  //总数量
+		$query = $this->db-> query($sql);
+		$row   = $query-> getRow();
+        $count = $row->count;//总数量
+		$data  = [
+			'page'		=> $page,  //当前页
+			'size'		=> $size,  //每页数量
+			'totalPage'	=> (int)ceil($count/$size),  //总页数
+			'totalSize'	=> (int)$count  //总数量
 		];
 		return $data;
 	}
