@@ -71,16 +71,20 @@ class HashReadModel extends Model {
 		$require = $bsConfig['requireVersion'];
 		$version = $this->DisposeModel ->versionCompare($WeTrue, $require);  //版本检测
 		if (!$version)
-		{
+		{  //版本号错误或低
+			if(!$WeTrue){ //非WeTrue
+				$this->deleteTemp($data['hash']);  //删除临时缓存
+				return;
+			}
+
 			$versionLow = "versionLow";
 			$updateSql  = "UPDATE $this->wet_temporary SET tp_source = '$versionLow' WHERE tp_hash = '$hash'";
 	        $this->db-> query($updateSql);
 			return;
 		}
 
-		$type 			 = $payload['type'];
 		$data['WeTrue']  = $WeTrue;
-		$data['type']    = $type;
+		$data['type']    = $payload['type'];
 		$data['hash']    = $hash;
 		$data['receipt'] = $json['tx']['recipient_id'];
 		$data['sender']  = $json['tx']['sender_id'];
@@ -88,8 +92,8 @@ class HashReadModel extends Model {
 		$data['mbTime']  = $json['mb_time'];
 		$data['content'] = $payload['content'];
 		//内容分配
-		if( $type == 'topic' )
-		{  //主贴
+		if( $data['type'] == 'topic' )
+		{//主贴
 			$selectHash = "SELECT hash FROM $this->wet_content WHERE hash = '$data[hash]' LIMIT 1";
         	$getRow = $this->db->query($selectHash)-> getRow();
 			if ($getRow) {
@@ -97,7 +101,7 @@ class HashReadModel extends Model {
 				return;
 			}
 
-			$data['imgList'] = $payload['img_list'];
+			$data['imgList'] = trim($payload['img_list']);
 			$insertSql = "INSERT INTO $this->wet_content(
 								hash, sender_id, recipient_id, utctime, amount, type, payload, img_tx
 							) VALUES (   
@@ -106,8 +110,9 @@ class HashReadModel extends Model {
 			$upSql  = "UPDATE $this->wet_users SET topic = topic + 1 WHERE address = '$data[sender]'";
 			$active = $bsConfig['topicActive'];
 		}
-		elseif ( $type == 'comment' )
-		{  //评论
+
+		elseif ( $data['type'] == 'comment' )
+		{//评论
 			$selectHash = "SELECT hash FROM $this->wet_comment WHERE hash = '$data[hash]' LIMIT 1";
         	$getRow = $this->db->query($selectHash)-> getRow();
 			if ($getRow) {
@@ -115,7 +120,7 @@ class HashReadModel extends Model {
 				return;
 			}
 
-			$data['toHash'] = $payload['toHash'];
+			$data['toHash'] = trim($payload['toHash']);
 			$insertSql = "INSERT INTO $this->wet_comment(
 								hash, to_hash, sender_id, recipient_id, utctime, amount, type, payload
 							) VALUES (
@@ -124,15 +129,16 @@ class HashReadModel extends Model {
 			$upSql  = "UPDATE $this->wet_content SET comment_num = comment_num + 1 WHERE hash = '$data[toHash]'";
 			$active = $bsConfig['commentActive'];
 		}
-		elseif ( $type == 'reply' )
-		{  //回复
+
+		elseif ( $data['type'] == 'reply' )
+		{//回复
 			$selectHash = "SELECT hash FROM $this->wet_reply WHERE hash = '$data[hash]' LIMIT 1";
         	$getRow = $this->db->query($selectHash)-> getRow();
 			if ($getRow) {
 				$this->deleteTemp($data['hash']);
 				return;
 			}
-			$data['replyType'] = $payload['reply_type'];
+			$data['replyType'] = trim($payload['reply_type']);
 			$data['toHash']    = trim($payload['to_hash']);
 			$data['toAddress'] = trim($payload['to_address']);
 			$data['replyHash'] = trim($payload['reply_hash']);
@@ -145,8 +151,9 @@ class HashReadModel extends Model {
 			$upSql  = "UPDATE $this->wet_comment SET comment_num = comment_num + 1 WHERE hash = '$data[toHash]'";
 			$active = $bsConfig['replyActive'];
 		}
-		elseif ( $type == 'nickname' )
-		{  //昵称
+
+		elseif ( $data['type'] == 'nickname' )
+		{//昵称
 			$data['content'] = trim($payload['content']);
 			$verify = $this->UserModel-> isUser($data['sender']);
 			if($verify){  //是否存在
@@ -163,21 +170,23 @@ class HashReadModel extends Model {
 			
 			$active = $bsConfig['nicknameActive'];
 		}
-		elseif ( $type == 'portrait' )
-		{  //头像
+
+		elseif ( $data['type'] == 'portrait' )
+		{//头像
+			$data['content'] = trim($payload['content']);
 			$selectHash = "SELECT hash FROM $this->wet_users WHERE maxportrait = '$data[hash]' LIMIT 1";
-        	$getRow = $this->db->query($selectHash)-> getRow();
+        	$getRow		= $this->db->query($selectHash)-> getRow();
 			if ($getRow) {
 				$this->deleteTemp($data['hash']);
 				return;
 			}
 
 			$verify = $this->UserModel-> isUser($data['sender']);
-			if($verify){
+			if ($verify) {
 				$insertSql = "UPDATE $this->wet_users 
 								SET portrait = '$data[content]', maxportrait = '$data[hash]' 
 								WHERE address = '$data[sender]'";
-			}else{
+			} else {
 				$insertSql = "INSERT INTO $this->wet_users(
 					address, portrait, maxportrait
 				) VALUES (
@@ -186,6 +195,28 @@ class HashReadModel extends Model {
 			}
 			
 			$active = $bsConfig['portraitActive'];
+		}
+
+		elseif ( $data['type'] == 'drift' )
+		{//漂流瓶
+			$selectHash = "SELECT hash FROM $this->wet_reply WHERE hash = '$data[hash]' LIMIT 1";
+        	$getRow		= $this->db->query($selectHash)-> getRow();
+			if ($getRow) {
+				$this->deleteTemp($data['hash']);
+				return;
+			}
+			$data['replyType'] = trim($payload['reply_type']);
+			$data['toHash']    = trim($payload['to_hash']);
+			$data['toAddress'] = trim($payload['to_address']);
+			$data['replyHash'] = trim($payload['reply_hash']);
+			$insertSql = "INSERT INTO $this->wet_reply(
+								hash, to_hash, reply_hash, reply_type, to_address, sender_id, recipient_id, utctime, amount, payload
+							) VALUES (
+								'$data[hash]', '$data[toHash]', '$data[replyHash]', '$data[replyType]', '$data[toAddress]', 
+								'$data[sender]', '$data[receipt]', '$data[mbTime]', '$data[amount]', '$data[content]'
+							)";
+			$upSql  = "UPDATE $this->wet_comment SET comment_num = comment_num + 1 WHERE hash = '$data[toHash]'";
+			$active = $bsConfig['replyActive'];
 		}
 		else return;
 
@@ -206,7 +237,7 @@ class HashReadModel extends Model {
 	public function getSenderId($hash)
 	{//获取tx 发送人
         $json = $this->getTxDetails($hash);
-		if(empty($json)){
+		if (empty($json)) {
         	return;
         }
 		return $json['tx']['sender_id'];
@@ -223,12 +254,11 @@ class HashReadModel extends Model {
 			sleep(1);
 		}
 
-        if(empty($get)){
+        if (empty($get)) {
         	return;
         }
 
         $json = (array) json_decode($get, true);
-
 		return $json ;
 	}
 

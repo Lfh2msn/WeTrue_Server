@@ -19,7 +19,7 @@ class ReplyModel extends Model {
 
 	public function txReply($hash, $opt=[])
 	{//获取回复内容
-		if ( (int) $opt['substr'] ){
+		if ( (int) $opt['substr'] ) {
 			$payload = "substring(payload for '$opt[substr]') as payload";
 		} else {
 			$payload = "payload";
@@ -38,7 +38,8 @@ class ReplyModel extends Model {
 
         $query = $this->db->query($sql);
 		$row   = $query-> getRow();
-        if ($row) {
+        if ($row)
+		{
 			$sender_id			  = $row-> sender_id;
 			$to_address			  = $row-> to_address;
 			$data['hash']		  = $hash;

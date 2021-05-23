@@ -53,7 +53,7 @@ class ComplainModel extends Model {
 		$data['code'] = 200;
 		$akToken   = $_SERVER['HTTP_AK_TOKEN'];
 		$isAkToken = $this->DisposeModel-> checkAddress($akToken);
-		if(!$isAkToken){
+		if (!$isAkToken) {
 			$data['code'] = 401;
 			$data['msg'] = 'error_login';
 			return json_encode($data);
@@ -131,7 +131,7 @@ class ComplainModel extends Model {
 		$data['data'] = $this->pages($page, $size, $countSql);
 		$query = $this->db-> query($limitSql);
 		$data['data']['data'] = [];
-		foreach ($query-> getResult() as $row){
+		foreach ($query-> getResult() as $row) {
 			$hash  = $row -> hash;
 
 			$conSql   = "SELECT hash FROM wet_content WHERE hash='$hash' LIMIT 1";
@@ -140,7 +140,7 @@ class ComplainModel extends Model {
 
 			if ($conRow) {
 				$detaila[] = $this->ContentModel-> txContent($hash, $opt);
-			}else{
+			} else {
 				$comSql   = "SELECT hash FROM wet_comment WHERE hash='$hash' LIMIT 1";
 				$comQuery = $this-> db-> query($comSql);
 				$comRow   = $comQuery-> getRow();
@@ -148,7 +148,7 @@ class ComplainModel extends Model {
 			
 			if ($comRow) {
 				$detaila[] = $this->CommentModel-> txComment($hash, $opt);
-			}else{
+			} else {
 				$repSql   = "SELECT hash FROM wet_reply WHERE hash='$hash' LIMIT 1";
 				$repQuery = $this-> db-> query($repSql);
 				$repRow   = $repQuery-> getRow();

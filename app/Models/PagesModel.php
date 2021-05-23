@@ -35,46 +35,51 @@ class PagesModel extends Model {
 		$size = max(1, (int)$size);
 		$akToken   = $_SERVER['HTTP_AK_TOKEN'];
 		$isAkToken = $this->DisposeModel-> checkAddress($akToken);
-		if ( $isAkToken ){
+		if ( $isAkToken )
+		{
 			$opt['userLogin'] = $akToken;
 		}
 		
 		$opt['substr']	  = 160; //限制输出
 
-		if ( $opt['type'] == 'contentList' ){
-			//主贴列表
+		if ( $opt['type'] == 'contentList' )
+		{//主贴列表
 			$this->tablename = "wet_content";
 			$countSql		 = "SELECT count(hash) FROM $this->tablename";
 			$limitSql		 = "SELECT hash FROM $this->tablename 
 									ORDER BY utctime DESC LIMIT $size OFFSET ".($page-1) * $size;
-			$select			 = "content";
+			$opt['select']	 = "content";
 		}
 
-		if ( $opt['type'] == 'commentList' ){  //评论列表
+		if ( $opt['type'] == 'commentList' )
+		{//评论列表
 			$this->tablename = "wet_comment";
-			$countSql		 = "SELECT count(to_hash) FROM $this->tablename WHERE to_hash='$opt[hash]'";
+			$countSql		 = "SELECT count(to_hash) FROM $this->tablename WHERE to_hash = '$opt[hash]'";
 			$limitSql		 = "SELECT hash FROM $this->tablename WHERE to_hash = '$opt[hash]' 
 									ORDER BY uid DESC LIMIT $size OFFSET ".($page-1) * $size;
-			$select			 = "comment";
+			$opt['select']	 = "comment";
 		}
 
-		if ( $opt['type'] == 'replyList' ){  //回复列表
+		if ( $opt['type'] == 'replyList' )
+		{//回复列表
 			$this->tablename = "wet_reply";
-			$countSql		 = "SELECT count(to_hash) FROM $this->tablename WHERE to_hash='$opt[hash]'";
+			$countSql		 = "SELECT count(to_hash) FROM $this->tablename WHERE to_hash = '$opt[hash]'";
 			$limitSql		 = "SELECT hash FROM $this->tablename WHERE to_hash = '$opt[hash]' 
 									ORDER BY uid DESC LIMIT $size OFFSET ".($page-1) * $size;
-			$select			 = "reply";
+			$opt['select']	 = "reply";
 		}
 
-		if ( $opt['type'] == 'imageList' ){  //图片列表
+		if ( $opt['type'] == 'imageList' )
+		{//图片列表
 			$this->tablename = "wet_content";
 			$countSql		 = "SELECT count(hash) FROM $this->tablename WHERE img_tx <> ''";
 			$limitSql		 = "SELECT hash FROM $this->tablename WHERE img_tx <> '' 
 									ORDER BY utctime DESC LIMIT $size OFFSET ".($page-1) * $size;
-			$select 		 = "content";
+			$opt['select']	 = "content";
 		}
 
-		if ( $opt['type'] == 'hotRecList' ){  //热点推荐
+		if ( $opt['type'] == 'hotRecList' )
+		{//热点推荐
 			$this->tablename = "wet_content";
 			$bsConfig   	 = $this->configModel-> backendConfig();
 			$hotRecDay  	 = $bsConfig['hotRecDay'];
@@ -83,27 +88,29 @@ class PagesModel extends Model {
 			$factorStar		 = $bsConfig['factorStar'];
 			$factorTime	 	 = $bsConfig['factorTime'];
 			$nowTime		 = time() * 1000;
-			$cycleTime 	 	 = $nowTime - 86400000 * $hotRecDay;  //当前时间 - 86400000毫秒 * 天
+			$cycleTime 	 	 = $nowTime - (86400000 * $hotRecDay);  //当前时间 - 86400000毫秒 * 天 //1614950034235 1621087508000
 			$countSql		 = "SELECT count(hash) FROM $this->tablename WHERE utctime >= $cycleTime";
 			$limitSql		 = "SELECT hash FROM $this->tablename WHERE utctime >= $cycleTime 
 									ORDER BY (
 											   (praise * $factorPraise)
 											 + (comment_num * $factorComment)
 											 + (star * $factorStar)
-											 - ( ( ($nowTime - utctime) / 8640000) * $factorTime)
+											 - ( ( ($nowTime - utctime) / 86400000) * $factorTime)
 											) DESC LIMIT $size OFFSET ".($page-1) * $size;
-			$select 		 = "content";
+			$opt['select']	 = "content";
 		}
 
-		if ( $opt['type'] == 'userContentList' ){  //用户发帖列表
+		if ( $opt['type'] == 'userContentList' )
+		{//用户发帖列表
 			$this->tablename = "wet_content";
 			$countSql		 = "SELECT count(sender_id) FROM $this->tablename WHERE sender_id='$opt[publicKey]'";
-			$limitSql		 = "SELECT hash FROM $this->tablename WHERE sender_id='$opt[publicKey]' 
+			$limitSql		 = "SELECT hash FROM $this->tablename WHERE sender_id = '$opt[publicKey]' 
 									ORDER BY utctime DESC LIMIT $size OFFSET ".($page-1) * $size;
-			$select			 = "content";
+			$opt['select']	 = "content";
 		}
 
-		if ( $opt['type'] == 'userFocusContentList' ){  //被关注主贴列表
+		if ( $opt['type'] == 'userFocusContentList' )
+		{//被关注主贴列表
 			$akToken	  = $opt['userLogin'];
 			$countSql = "SELECT count(wet_content.hash) FROM wet_content 
 							INNER JOIN wet_focus 
@@ -113,10 +120,10 @@ class PagesModel extends Model {
 							INNER JOIN wet_focus ON wet_content.sender_id = wet_focus.focus 
 							AND wet_focus.fans = '$akToken' 
 							ORDER BY wet_content.uid DESC LIMIT $size OFFSET ".($page-1) * $size;
-			$select	  = "content";
+			$opt['select'] = "content";
 		}
 
-		$data = $this->cycle($page, $size, $countSql, $limitSql, $select, $opt);
+		$data = $this->cycle($page, $size, $countSql, $limitSql, $opt);
 		return json_encode($data);
     }
 
@@ -125,31 +132,31 @@ class PagesModel extends Model {
 		$data['code'] = 200;
 		$akToken   = $_SERVER['HTTP_AK_TOKEN'];
 		$isAkToken = $this->DisposeModel-> checkAddress($akToken);
-		if($isAkToken){
+		if($isAkToken) {
 			$opt['userLogin'] = $akToken;
 		}
 		
 		$data['data'] = '';
 
-		if($opt['select'] == 'content'){
+		if($opt['select'] == 'content') {
 			$Content = $this->content-> txContent($hash, $opt);
 		}
 
-		if($opt['select'] == 'comment'){
+		if($opt['select'] == 'comment') {
 			$Content = $this->comment-> txComment($hash, $opt);
 		}
 
-		if($Content){
+		if($Content) {
 			$data['data'] = $Content;
 			$data['msg']  = 'success';
-		}else{
+		} else {
 			$data['msg']  = 'error_hash';
 		}
 
 		return json_encode($data);
     }
 
-	private function cycle($page, $size, $countSql, $limitSql, $select, $opt)
+	private function cycle($page, $size, $countSql, $limitSql, $opt)
 	{//列表循环
 		$data['code'] = 200;
 		$data['data'] = $this->pages($page, $size, $countSql);
@@ -158,16 +165,16 @@ class PagesModel extends Model {
 		foreach ($query-> getResult() as $row){
 			$hash  = $row -> hash;
 			$bloom = $this->bloom-> txBloom($hash);
-			if($bloom){
-				if($select  == 'content'){
+			if ($bloom) {
+				if ($opt['select']  == 'content') {
 					$detaila[] = $this->content-> txContent($hash, $opt);
 				}
 
-				if($select  == 'comment'){
+				if ($opt['select']  == 'comment') {
 					$detaila[] = $this->comment-> txComment($hash, $opt);
 				}
 
-				if($select == 'reply'){
+				if ($opt['select'] == 'reply') {
 					$detaila[] = $this->reply-> txReply($hash, $opt);
 				}
 			}

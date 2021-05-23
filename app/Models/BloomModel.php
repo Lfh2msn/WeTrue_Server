@@ -11,7 +11,8 @@ use App\Models\ReplyModel;
 class BloomModel extends Model {
 //过滤Model
 
-    public function __construct(){
+    public function __construct()
+	{
 		parent::__construct();
 		$this->DisposeModel  = new DisposeModel();
 		$this->UserModel	 = new UserModel();
@@ -129,7 +130,7 @@ class BloomModel extends Model {
 		$isAdmin   = $this->UserModel-> isAdmin($akToken);
 		$data['code'] = 200;
 		$data['data']['data'] = [];
-		if (!$isAkToken || !$isAdmin) {
+		if ( !$isAkToken || !$isAdmin ) {
 			$data['code'] = 401;
 			$data['msg']  = 'error_login';
 			return json_encode($data);
@@ -149,7 +150,7 @@ class BloomModel extends Model {
 		$data['data'] = $this->pages($page, $size, $countSql);
 		$query = $this->db-> query($limitSql);
 		$data['data']['data'] = [];
-		foreach ($query-> getResult() as $row){
+		foreach ($query-> getResult() as $row) {
 			$hash  = $row -> hash;
 
 			$conSql   = "SELECT hash FROM $this->wet_content WHERE hash='$hash' LIMIT 1";
@@ -158,7 +159,7 @@ class BloomModel extends Model {
 
 			if ($conRow) {
 				$detaila[] = (new ContentModel())-> txContent($hash, $opt);
-			}else{
+			} else {
 				$comSql   = "SELECT hash FROM $this->wet_comment WHERE hash='$hash' LIMIT 1";
 				$comQuery = $this-> db-> query($comSql);
 				$comRow   = $comQuery-> getRow();
@@ -166,7 +167,7 @@ class BloomModel extends Model {
 			
 			if ($comRow) {
 				$detaila[] = (new CommentModel())-> txComment($hash, $opt);
-			}else{
+			} else {
 				$repSql   = "SELECT hash FROM $this->wet_reply WHERE hash='$hash' LIMIT 1";
 				$repQuery = $this-> db-> query($repSql);
 				$repRow   = $repQuery-> getRow();

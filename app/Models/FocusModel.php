@@ -19,9 +19,9 @@ class FocusModel extends Model {
 		$sql   = "SELECT focus, fans FROM $this->tablename WHERE fans = '$my_id' AND focus = '$focus' LIMIT 1";
         $query = $this->db->query($sql);
 		$row   = $query->getRow();
-		if($row) {
-			return true;
-        }else{
+		if ($row) {
+			return true; 
+		} else {
 			return false;
 		}
 	}
@@ -43,22 +43,21 @@ class FocusModel extends Model {
 		$isAkToken = $this->DisposeModel-> checkAddress($akToken);
 		$data['code'] = 200;
 		$data['data']['data'] = [];
-		if(!$isAkToken){
+		if (!$isAkToken) {
 			$data['code'] = 401;
 			$data['msg']  = 'error_login';
 			return json_encode($data);
 		}
 		$opt['userLogin'] = $akToken;
 
-		if($opt['type'] == 'userFocusUserList'){
-		//关注、被关注列表
+		if ($opt['type'] == 'userFocusUserList') {
 			$akToken    = $opt['userLogin'];
-			if($opt['focus'] == "myFocus"){
+			if($opt['focus'] == "myFocus") {  //关注列表
 				$field	  = "fans";
 				$contrary = "focus";
 			}
 
-			if($opt['focus'] == "focusMy"){
+			if($opt['focus'] == "focusMy") {  //被关注列表
 				$field	  = "focus";
 				$contrary = "fans";
 			}
@@ -72,10 +71,10 @@ class FocusModel extends Model {
     }
 
 	private function cycle($page, $size, $countSql, $limitSql, $opt)
-	{//用户列表循环
+	{  //用户列表循环
 		$data['data'] = $this->pages($page, $size, $countSql);
 		$query = $this-> db-> query($limitSql);
-		foreach ($query-> getResult() as $row){
+		foreach ($query-> getResult() as $row) {
 			$userAddress  = $row -> contrary;
 			$userInfo[]	  = $this->userModel-> userAllInfo($userAddress, $opt);
 			$data['data']['data'] = $userInfo;
@@ -104,17 +103,17 @@ class FocusModel extends Model {
 		$data['code'] = 200;
 		$akToken = $_SERVER['HTTP_AK_TOKEN'];
 		$isAkToken = $this->DisposeModel-> checkAddress($akToken);
-		if(!$isAkToken){
+		if (!$isAkToken) {
 			$data['code'] = 401;
 			$data['msg']  = 'error_login';
 			return json_encode($data);
 		}
 
 		$verify = $this->isFocus($userAddress, $akToken);
-		if(!$verify){
+		if (!$verify) {
 			$focusSql = "INSERT INTO $this->tablename(focus, fans) VALUES ('$userAddress', '$akToken')";
 			$e = true;
-		}else{
+		} else {
 			$focusSql = "DELETE FROM $this->tablename WHERE focus = '$userAddress' AND fans = '$akToken'";
 			$e = false;
 		}

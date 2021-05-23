@@ -28,23 +28,23 @@ class PraiseModel extends Model {
 		$data['code'] = 200;
 		$akToken = $_SERVER['HTTP_AK_TOKEN'];
 		$isAkToken = $this->DisposeModel-> checkAddress($akToken);
-		if(!$isAkToken){
+		if ( !$isAkToken ) {
 			$data['code'] = 401;
 			$data['msg']  = 'error_login';
 			return json_encode($data);
 		}
 
 		$data['data'] = [];
-		if($type === 'topic'){
+		if ( $type === 'topic' ) {
 			$this->tablename = 'wet_content';
 
-		}elseif($type === 'comment'){
+		} elseif ( $type === 'comment' ) {
 			$this->tablename = 'wet_comment';
 
-		}elseif($type === 'reply'){
+		} elseif ( $type === 'reply' ) {
 			$this->tablename = 'wet_reply';
 
-		}else{
+		} else {
 			$data['msg'] = 'error_type';
 			return json_encode($data);
 		}
@@ -52,15 +52,15 @@ class PraiseModel extends Model {
 		$isHashSql = "SELECT hash, praise FROM $this->tablename WHERE hash = '$hash' LIMIT 1";
 		$query = $this->db-> query($isHashSql);
 		$row   = $query-> getRow();
-		if(!$row){
+		if(!$row) {
 			$data['msg']  = 'error_hash';
-		}else{
+		} else {
 			$verify = $this->isPraise($hash, $akToken);
-			if(!$verify){
+			if(!$verify) {
 				$updateSql = "UPDATE $this->tablename SET praise = praise+1 WHERE hash = '$hash'";
 				$praiseSql = "INSERT INTO wet_praise(hash,sender_id) VALUES ('$hash','$akToken')";
 				$e = TRUE;
-			}else{
+			} else {
 				$updateSql = "UPDATE $this->tablename SET praise = praise-1 WHERE hash='$hash'";
 				$praiseSql = "DELETE FROM wet_praise WHERE hash = '$hash' AND sender_id = '$akToken'";
 				$e = FALSE;

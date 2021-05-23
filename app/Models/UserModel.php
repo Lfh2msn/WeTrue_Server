@@ -21,7 +21,7 @@ class UserModel extends Model {
 		$row   = $query->getRow();
 		if ($row) {
 			return TRUE;
-        }else{
+        } else {
 			return FALSE;
 		}
 	}
@@ -43,10 +43,10 @@ class UserModel extends Model {
 			$userActive = (int)$row->uactive;
             $data['active'] = $userActive;
 			$data['userActive'] = $this->getActiveGrade($userActive);
-			$portrait = $this->DisposeModel-> delete_xss($row->portrait);
-			$data['portrait'] = $portrait ?? "";
+			$portrait = $row->portrait;
+			$data['portrait'] = $portrait ? "https://api.wetrue.io/User/portrait/".$address : "https://api.wetrue.io/images/default_head.png";
 			
-        }else{
+        } else {
 			return FALSE;
 		}
 		return $data;
@@ -70,7 +70,8 @@ class UserModel extends Model {
 				FROM $this->tablename WHERE address = '$address' LIMIT 1";
         $query = $this->db->query($sql);
 		$row = $query->getRow();
-		if(!$row && $opt['type'] == 'login'){
+		if (!$row && $opt['type'] == 'login')
+		{
 			$insertSql = "INSERT INTO $this->tablename(address) VALUES ('$address')";
 			$insBehSql = "INSERT INTO wet_behavior(address, thing) VALUES ('$address', 'newUserLogin')";
 			$this->db->query($insertSql);
@@ -79,21 +80,22 @@ class UserModel extends Model {
 		$bsConfig 	  = $this->ConfigModel-> backendConfig();
 		$nickname     = $this->DisposeModel-> delete_xss($row->nickname);
 		$userActive   = (int)$row->uactive;
-		$portrait 	  = $this->DisposeModel-> delete_xss($row->portrait);
+		$portrait 	  = $row->portrait;
 		$portraitHash = $row->portrait_hash;
 		$data['userAddress']  = $address;
 		$data['nickname']     = $nickname ?? "";
 		$data['active'] 	  = $userActive;
 		$data['userActive']   = $this->getActiveGrade($userActive);
 		$data['lastActive']   = ($userActive - $row->last_active) * $bsConfig['airdropWttRatio'];
-		$data['portrait']	  = $portrait ?? "";
+		$data['portrait']	  = $portrait ? "https://api.wetrue.io/User/portrait/".$address : "https://api.wetrue.io/images/default_head.png";
 		$data['portraitHash'] = $portraitHash ?? "";
 		$data['topic'] 		  = (int)$row->topic_sum;
 		$data['focus'] 		  = (int)$row->focus_sum;
 		$data['fans']  		  = (int)$row->fans_sum;
-		if($opt['type'] == 'login'){
+		if ($opt['type'] == 'login')
+		{
 			$isAdmin = $this->isAdmin($address);
-			if($isAdmin){
+			if ($isAdmin) {
 				$data['isAdmin']  = TRUE;
 			}
 		}
@@ -109,7 +111,20 @@ class UserModel extends Model {
 		if ($row) {
 			$nickname = $this->DisposeModel-> delete_xss($row->nickname);
 			$data = $nickname ?? "";
-        }else{
+        } else {
+			return FALSE;
+		}
+		return $data;
+	}
+
+	public function getPortrait($address)
+	{//获取用户头像
+		$sql   = "SELECT portrait FROM wet_users WHERE address = '$address' LIMIT 1";
+        $query = $this->db->query($sql);
+		$row   = $query->getRow();
+		if ($row) {
+			$data = $row->portrait ?? "";
+        } else {
 			return FALSE;
 		}
 		return $data;
@@ -124,15 +139,15 @@ class UserModel extends Model {
 		$selectSql = "SELECT address FROM $this->tablename WHERE address = '$address' LIMIT 1";
 		$query	   = $this->db->query($selectSql);
 		$row	   = $query-> getRow();
-		if(!$row){
+		if (!$row) {
 			$insertSql = "INSERT INTO $this->tablename(address) VALUES ('$address')";
 			$this->db->query($insertSql);
 		}
 
-		if($e){
-			$updateSql="UPDATE $this->tablename SET uactive = uactive + '$active' WHERE address = '$address'";
-		}else{
-			$updateSql="UPDATE $this->tablename SET uactive = uactive - '$active' WHERE address = '$address'";
+		if ($e) {
+			$updateSql = "UPDATE $this->tablename SET uactive = uactive + '$active' WHERE address = '$address'";
+		} else {
+			$updateSql = "UPDATE $this->tablename SET uactive = uactive - '$active' WHERE address = '$address'";
 		}
 		$this->db->query($updateSql);
 	}
@@ -146,15 +161,15 @@ class UserModel extends Model {
 		$selectSql = "SELECT address FROM $this->tablename WHERE address = '$fans' LIMIT 1";
 		$query	   = $this->db->query($selectSql);
 		$row	   = $query-> getRow();
-		if(!$row){
+		if ( !$row ) {
 			$insertSql = "INSERT INTO $this->tablename(address) VALUES ('$fans')";
 			$this->db->query($insertSql);
 		}
 
-		if($e){
+		if ($e) {
 			$focusSql = "UPDATE $this->tablename SET focus_sum = focus_sum + 1 WHERE address = '$fans'";
 			$fansSql  = "UPDATE $this->tablename SET fans_sum = fans_sum + 1 WHERE address = '$focus'";
-		}else{
+		} else {
 			$focusSql = "UPDATE $this->tablename SET focus_sum = focus_sum - 1 WHERE address = '$fans'";
 			$fansSql  = "UPDATE $this->tablename SET fans_sum = fans_sum - 1 WHERE address = '$focus'";
 		}
@@ -162,37 +177,37 @@ class UserModel extends Model {
 		$this->db->query($fansSql);
 	}
 
-	public function getActiveGrade($num)
+	public function getActiveGrade( $num )
 	{//等级划分
 		(int)$num;
-        if($num>=10000){
+        if ( $num >= 50000 ) {
+            $Grade = 9;
+
+        } elseif ( $num >= 20000 ) {
+            $Grade = 8;
+
+        } elseif ( $num >= 10000 ) {
             $Grade = 7;
-            return $Grade;
 
-        } elseif($num>=5000){
+        } elseif ( $num >= 5000 ) {
             $Grade = 6;
-            return $Grade;
 
-        } elseif ($num>=2000) {
+        } elseif ( $num >= 2000 ) {
             $Grade = 5;
-            return $Grade;
 
-        } elseif ($num>=500) {
+        } elseif ( $num >= 500 ) {
             $Grade = 4;
-            return $Grade;
 
-        } elseif ($num>=100) {
+        } elseif ( $num >= 200 ) {
             $Grade = 3;
-            return $Grade;
 
-        } elseif ($num>=50) {
+        } elseif ( $num >= 100 ) {
             $Grade = 2;
-            return $Grade;
-			
-        } else{
+
+        } else {
             $Grade = 1;
-            return $Grade;
         }
+		return $Grade;
     }
 
 	public function isAdmin($address)
@@ -202,9 +217,9 @@ class UserModel extends Model {
 		$admin_2  = $bsConfig['adminUser_2'];
 		$admin_3  = $bsConfig['adminUser_3'];
 
-		if($address === $admin_1 || $address === $admin_2 || $address === $admin_3){
+		if($address === $admin_1 || $address === $admin_2 || $address === $admin_3) {
 			return true;
-		}else{
+		} else {
 			return false;
 		}
 	}

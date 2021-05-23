@@ -24,7 +24,7 @@ class ContentModel extends Model {
 
 	public function txContent($hash, $opt=[])
 	{//获取主贴内容
-		if ( (int) $opt['substr'] ){
+		if ( (int) $opt['substr'] ) {
 			$payload = "substring(payload for '$opt[substr]') as payload";
 		} else {
 			$payload = "payload";
@@ -45,7 +45,7 @@ class ContentModel extends Model {
 			$data['hash'] = $hash;
 			$sender_id	  = $row-> sender_id;
 			$data['payload']		= $this->DisposeModel-> delete_xss($row-> payload);
-			$data['imgTx']			= $this->DisposeModel-> delete_xss($row-> img_tx);
+			$data['imgTx']			= $row->img_tx ? "https://api.wetrue.io/Image/toimg/".$hash : "";
 			$data['utcTime']		= (int) $row-> utctime;
 			$data['praise']			= (int) $row-> praise;
 			$data['star']			= (int) $row-> star;

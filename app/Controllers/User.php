@@ -1,7 +1,6 @@
 <?php
 namespace App\Controllers;
 
-use App\Models\UserModel;
 
 class User extends BaseController {
 
@@ -15,7 +14,7 @@ class User extends BaseController {
 			if($typeLogin){
 				$opt = ['type' => $typeLogin];
 			}
-			$userInfo	  = (new UserModel())-> userAllInfo($userAddress, $opt);
+			$userInfo	  = $this->UserModel-> userAllInfo($userAddress, $opt);
 			$data['data'] = '';
 			if($userInfo){
 				$data['data'] = $userInfo;
@@ -79,6 +78,17 @@ class User extends BaseController {
 			$data['msg']  = 'error';
 			echo json_encode($data);
 		}
+	}
+
+	public function portrait($address)
+	{//获取头像
+		$portrait = $this->UserModel-> getPortrait($address);
+        $portrait = str_replace("data:image/jpeg;base64,","",$portrait);
+    	$portrait = base64_decode($portrait);
+		$this->response->setHeader('Expires', date(DATE_RFC1123, strtotime("+7 day") ) );
+		$this->response->setHeader('Content-type', 'image/jpeg');
+    	echo $portrait;
+		$this->cachePage(10);
 	}
 
 }

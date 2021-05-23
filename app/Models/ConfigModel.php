@@ -16,11 +16,14 @@ class ConfigModel extends Model {
 		return array(
 			'version'			 => '2.0.0',  //当前版本号
 			'requireVersion'	 => '2.0.0',  //最低要求版本号
-			'topicAmount'        => 1e14,  //默认，发帖费用 1e17 = 0.1ae
-			'commentAmount'      => 1e14,  //默认，评论费用
-			'replyAmount'        => 1e14,  //默认，回复费用
-			'nicknameAmount'     => 1e14,  //默认，昵称费用
-			'portraitAmount'     => 1e14,  //默认，头像费用
+			'topicAmount'        => 1e14,  //默认，发帖消耗AE 1e17 = 0.1ae
+			'commentAmount'      => 1e14,  //默认，评论消耗AE
+			'replyAmount'        => 1e14,  //默认，回复消耗AE
+			'nicknameAmount'     => 1e14,  //默认，昵称消耗AE
+			'portraitAmount'     => 1e14,  //默认，头像消耗AE
+			'driftAmount'        => 1e14,  //默认，漂流瓶消耗AE
+			'driftReplyAmount'   => 1e14,  //默认，漂流瓶回复消耗AE
+			'driftSalvageAmount' => 5,     //默认，漂流瓶打捞消耗WTT
 			'backendServiceNode' => PUBLIC_NODE,  //后端节点
 			'receivingAccount'   => 'ak_dMyzpooJ4oGnBVX35SCvHspJrq55HAAupCwPQTDZmRDT5SSSW',  //接收账户
 			'adminUser_1'        => 'ak_2kxt6D65giv4yNt4oa44SjW4jEXfoHMviPFvAreSEXvz25Q3QQ',  // Admin User 1
@@ -32,7 +35,7 @@ class ConfigModel extends Model {
 			'AeasyAmount'        => '0.1',  //活动金额
 			'AeasySecretKey'     => '',  //私钥
 			'airdropWttRatio'    => 3,  //WTT空投比例
-			'hotRecDay'          => 240,  //热点推荐天数
+			'hotRecDay'          => 20,  //热点推荐天数
 			'factorPraise'		 => 1,  //点赞因子,越大权重越大
 			'factorComment'		 => 3,  //评论因子,越大权重越大
 			'factorStar'		 => 5,  //收藏因子,越大权重越大
@@ -43,6 +46,8 @@ class ConfigModel extends Model {
 			'praiseActive'       => 1,  //点赞 +活跃度
 			'nicknameActive'     => 1,  //昵称 +活跃度
 			'portraitActive'     => 1,  //头像 +活跃度
+			'driftActive'     	 => 3,  //漂流瓶 +活跃度
+			'driftReplyActive'   => 1,  //漂流瓶回复 +活跃度
 			'complainActive'     => 30  //举报 -活跃度
 		);
     }

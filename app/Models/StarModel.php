@@ -27,23 +27,23 @@ class StarModel extends Model {
 		$data['code'] = 200;
 		$akToken = $_SERVER['HTTP_AK_TOKEN'];
 		$isAkToken = $this->DisposeModel-> checkAddress($akToken);
-		if(!$isAkToken){
+		if (!$isAkToken) {
 			$data['code'] = 401;
 			$data['msg']  = 'error_login';
 			return json_encode($data);
 		}
 
 		$data['data'] = [];
-		if(!$hash){
+		if (!$hash) {
 			$data['msg'] = 'error_hash';
 			return json_encode($data);
 		}
 
 		$verify = $this->isStar($hash, $akToken);
-		if(!$verify){
+		if (!$verify) {
 			$starSql   = "INSERT INTO $this->wet_star(hash, sender_id) VALUES ('$hash', '$akToken')";
 			$updataSql = "UPDATE $this->wet_content SET star = star+1 WHERE hash = '$hash'";
-		}else{
+		} else {
 			$starSql   = "DELETE FROM $this->wet_star WHERE hash = '$hash' AND sender_id = '$akToken'";
 			$updataSql = "UPDATE $this->wet_content SET star = star-1 WHERE hash = '$hash'";
 		}

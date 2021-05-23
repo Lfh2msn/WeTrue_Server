@@ -18,6 +18,8 @@ use CodeIgniter\Controller;
 use App\Models\PagesModel;
 use App\Models\FocusModel;
 use App\Models\DisposeModel;
+use App\Models\UserModel;
+use CodeIgniter\HTTP\RequestInterface;
 
 class BaseController extends Controller {
 
@@ -46,12 +48,17 @@ class BaseController extends Controller {
 		// E.g.:
 		// $this->session = \Config\Services::session();
 		//$message->header = CodeIgniter\HTTP\Message;
-		header("Access-Control-Allow-Origin: *");
-		header("Access-Control-Allow-Headers: ak-token");
-		$this->request = service('request');
+		//header("Access-Control-Allow-Origin: *");
+		//header("Access-Control-Allow-Headers: ak-token");
+		$this->request 		= $request;
+		//$this->request = service('request');
+		$this->response 	= $response;
 		$this->PagesModel   = new PagesModel();
 		$this->FocusModel   = new FocusModel();
 		$this->DisposeModel = new DisposeModel();
+		$this->UserModel	= new UserModel();
+		$this->response->setHeader('Access-Control-Allow-Origin', '*');
+		$this->response->setHeader('Access-Control-Allow-Headers', 'ak-token');
 	}
 
 }

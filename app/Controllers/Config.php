@@ -46,4 +46,5 @@ class Config extends BaseController {
 		}
 		echo json_encode($data);
     }
+
 }

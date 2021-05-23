@@ -23,25 +23,25 @@ class SearchModel extends Model {
 		$size = max(1, (int)$size);
 		$akToken   = $_SERVER['HTTP_AK_TOKEN'];
 		$isAkToken = $this->DisposeModel-> checkAddress($akToken);
-		if ( $isAkToken ){
+		if ( $isAkToken ) {
 			$opt['userLogin'] = $akToken;
 		}
 
-		if ( $opt['type'] == 'topic' ) {
-			//搜索主贴
+		if ( $opt['type'] == 'topic' )
+		{//搜索主贴
 			$this->tablename = "wet_content";
 			$countSql = "SELECT count(hash) FROM $this->tablename WHERE payload ilike '%$opt[key]%'";
 			$limitSql = "SELECT hash FROM $this->tablename 
 								WHERE payload ilike '%$opt[key]%' ORDER BY utctime DESC LIMIT $size OFFSET ".($page-1) * $size;
 		} 
 		
-		else if ( $opt['type'] == 'user' ){
-			//搜索用户
+		else if ( $opt['type'] == 'user' ) 
+		{//搜索用户
 			$this->tablename = "wet_users";
 			$countSql = "SELECT count(address) FROM $this->tablename WHERE nickname ilike '%$opt[key]%'";
 			$limitSql = "SELECT address FROM $this->tablename 
 								WHERE nickname ilike '%$opt[key]%' ORDER BY uid DESC LIMIT $size OFFSET ".($page-1) * $size;
-		}else{
+		} else {
 			$data['code'] = 406;
 			$data['msg']  = 'error_type';
 			return json_encode($data);
@@ -58,23 +58,25 @@ class SearchModel extends Model {
 		$data['data'] = $this->pages($page, $size, $countSql);
 		$query = $this->db-> query($limitSql);
 		$data['data']['data'] = [];
-		foreach ($query-> getResult() as $row){
+		foreach ($query-> getResult() as $row)
+		{
 			$hash  	 = $row -> hash;
 			$address = $row -> address;
-			if ( $hash ) {
+			if ($hash) {
 				$txBloom = $this->bloom-> txBloom($hash);
 			}
 
-			if ( $address ) {
+			if ($address) {
 				$arBloom = $this->bloom-> addressBloom($address);
 			}
 
-			if($txBloom || $arBloom) {
-				if($opt['type']  == 'topic'){
+			if($txBloom || $arBloom)
+			{
+				if($opt['type']  == 'topic') {
 					$detaila[] = $this->wet_content-> txContent($hash, $opt);
 				}
 
-				if($opt['type']  == 'user'){
+				if($opt['type']  == 'user') {
 					$detaila[] = $this->UserModel-> userAllInfo($address);
 				}
 			}

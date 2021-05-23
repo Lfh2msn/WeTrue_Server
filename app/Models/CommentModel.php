@@ -10,7 +10,8 @@ use App\Models\DisposeModel;
 class CommentModel extends Model {
 //评论Model
 
-	public function __construct(){
+	public function __construct()
+	{
         parent::__construct();
         $this->wet_comment  = 'wet_comment';
 		$this->wet_reply    = 'wet_reply';

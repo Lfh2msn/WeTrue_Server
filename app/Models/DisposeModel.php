@@ -8,13 +8,13 @@ class DisposeModel extends Model {
     public function checkAddress($address)
     {//校验地址
         $hex = $this->base58_decode($address);
-        if (strlen($hex)!=72){
+        if (strlen($hex)!=72) {
             return false;
         }
         $substr = hex2bin(substr($hex,0,strlen($hex)-8));
         $checksum = hash('sha256', hash('sha256', $substr, true));
         $checksum = substr($checksum, 0, 8);
-        if(substr($hex, 64, 72)!==$checksum){
+        if (substr($hex, 64, 72)!==$checksum) {
             return false;
         }
         return true;
@@ -23,8 +23,8 @@ class DisposeModel extends Model {
     public function addressToHex($address)
     {//地址转公钥
         $hex = $this->base58_decode($address);
-        if (strlen($hex) != 72){
-            return false;
+        if (strlen($hex) != 72) {
+             return false; 
         }
         $hex = substr($hex, 0, 64);
         return $hex;
@@ -38,8 +38,7 @@ class DisposeModel extends Model {
             $origbase58 = $base58;
             $return = "0";
         
-            for ($i = 0; $i < strlen($base58); $i++) {
-                // return = return*58 + current position of $base58[i]in self::$base58chars
+            for ($i = 0; $i < strlen($base58); $i++){
                 $return = gmp_add(gmp_mul($return, 58), strpos("123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz", $base58[$i]));
             }
             $return = gmp_strval($return, 16);
@@ -83,8 +82,8 @@ class DisposeModel extends Model {
         if ($decimal > 0) {
             $output .= $alphabet[$decimal];
         }
-        $output = strrev($output);
 
+        $output = strrev($output);
         return (string) $output;
     }
 
@@ -109,8 +108,9 @@ class DisposeModel extends Model {
 	*        4.不包括数字 或 负数 的版本号 ,统一按0处理
     */
 		if ($versionA>2147483646 || $versionB>2147483646) {
-			return false;
-		}
+            return false;
+        }
+
 		$verListA = explode('.', (string) $versionA);
 		$verListB = explode('.', (string) $versionB);
 
@@ -119,22 +119,23 @@ class DisposeModel extends Model {
 		while ($i++<$len) {
 			$verListA[$i] = intval(@$verListA[$i]);
 			if ($verListA[$i] < 0 ) {
-				$verListA[$i] = 0;
-			}
+                $verListA[$i] = 0;
+            }
+
 			$verListB[$i] = intval(@$verListB[$i]);
 			if ($verListB[$i] < 0 ) {
-				$verListB[$i] = 0;
-			}
+                $verListB[$i] = 0; 
+            }
 
 			if ($verListA[$i]>$verListB[$i]) {
                 return true;
-			}
+            }
 			if ($verListA[$i]<$verListB[$i]) {
                 return false;
-			}
+            }
 			if ($i==($len-1)) {
                 return true;
-			}
+            }
 		}
 	}
 
@@ -142,6 +143,7 @@ class DisposeModel extends Model {
     {//xss删除函数
         $string = strip_tags($string);
         $string = htmlspecialchars($string, ENT_QUOTES);
+        $string = str_replace("\n","<br>",$string);
         return $string;
     }
 
