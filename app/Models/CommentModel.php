@@ -51,8 +51,8 @@ class CommentModel extends Model {
 				$query    = $this-> db-> query($replySql);
 				foreach ($query-> getResult() as $row) {
 					$hash  = $row -> hash;
-					$bloom = $this->bloom-> txBloom($hash);
-					if ($bloom) {
+					$txBloom = $this->bloom-> txBloom($hash);
+					if (!$txBloom) {
 						$opt['substr']	  = 140; //限制输出
 						$list[] = $this->reply-> txReply($hash, $opt);
 					}

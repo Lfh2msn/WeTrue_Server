@@ -17,8 +17,8 @@ class BloomModel extends Model {
 		$this->DisposeModel  = new DisposeModel();
 		$this->UserModel	 = new UserModel();
         $this->ConfigModel	 = new ConfigModel();
-		$this->wet_complain  = 'wet_complain';
 		$this->wet_bloom     = 'wet_bloom';
+		$this->wet_complain  = 'wet_complain';
         $this->wet_content   = 'wet_content';
         $this->wet_comment   = 'wet_comment';
         $this->wet_reply     = 'wet_reply';
@@ -27,11 +27,11 @@ class BloomModel extends Model {
 	}
     
    public function ipBloom($ip)
-   {//过滤IP，存在返回false
+   {//过滤IP，存在返回true
         $sql   = "SELECT bf_ip FROM $this->wet_bloom WHERE bf_ip = '$ip' LIMIT 1";
         $query = $this->db->query($sql);
         $row   = $query->getRow();
-        return $row ? false : true;
+        return $row ? true : false;
     }
 	
 	public function txBloom($hash)
@@ -39,7 +39,7 @@ class BloomModel extends Model {
         $sql   = "SELECT bf_hash FROM $this->wet_bloom WHERE bf_hash = '$hash' LIMIT 1";
         $query = $this->db->query($sql);
         $row   = $query->getRow();
-        return $row ? false : true;
+        return $row ? true : false;
     }
 
     public function addressBloom($address)
@@ -47,7 +47,7 @@ class BloomModel extends Model {
         $sql   = "SELECT bf_address FROM $this->wet_bloom WHERE bf_address = '$address' LIMIT 1";
         $query = $this->db->query($sql);
         $row   = $query->getRow();
-        return $row ? false : true;
+        return $row ? true : false;
     }
 
     public function deleteBloom($hash)
@@ -75,8 +75,8 @@ class BloomModel extends Model {
 			return json_encode($data);
         }
 
-        $isBloom = $this->txBloom($hash);
-        if (!$isBloom) {
+        $txBloom = $this->txBloom($hash);
+        if ($txBloom) {
 			$data['msg']  = 'repeat';
 			return json_encode($data);
         }

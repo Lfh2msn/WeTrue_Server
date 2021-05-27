@@ -1,7 +1,6 @@
 <?php
 namespace App\Controllers;
 
-
 class User extends BaseController {
 
 	public function info()
@@ -50,16 +49,6 @@ class User extends BaseController {
 		}
 	}
 
-	public function focusContent()
-	{//关注的用户主贴列表
-		$page = $this->request->getPost('page');
-		$size = $this->request->getPost('size');
-		$type = 'userFocusContentList';
-		$opt  =	['type' => $type];
-		$data = $this->PagesModel-> limit($page, $size, $opt);
-		echo $data;
-	}
-
 	public function focusList()
 	{//关注列表
 		$page  = $this->request->getPost('page');
@@ -89,6 +78,15 @@ class User extends BaseController {
 		$this->response->setHeader('Content-type', 'image/jpeg');
     	echo $portrait;
 		$this->cachePage(10);
+	}
+
+	public function isNickname()
+	{//获取昵称是否存在
+		$nickname = $this->request->getPost('nickname');
+		$data['code'] = 200;
+		$data['isNickname'] = $this->UserModel-> isNickname($nickname);
+		$data['msg']  = 'success';
+		echo json_encode($data);
 	}
 
 }

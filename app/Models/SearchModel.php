@@ -67,10 +67,10 @@ class SearchModel extends Model {
 			}
 
 			if ($address) {
-				$arBloom = $this->bloom-> addressBloom($address);
+				$idBloom = $this->bloom-> addressBloom($address);
 			}
 
-			if($txBloom || $arBloom)
+			if($txBloom || !$idBloom)
 			{
 				if($opt['type']  == 'topic') {
 					$detaila[] = $this->wet_content-> txContent($hash, $opt);

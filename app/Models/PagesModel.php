@@ -164,8 +164,8 @@ class PagesModel extends Model {
 		$data['data']['data'] = [];
 		foreach ($query-> getResult() as $row){
 			$hash  = $row -> hash;
-			$bloom = $this->bloom-> txBloom($hash);
-			if ($bloom) {
+			$txBloom = $this->bloom-> txBloom($hash);
+			if (!$txBloom) {
 				if ($opt['select']  == 'content') {
 					$detaila[] = $this->content-> txContent($hash, $opt);
 				}

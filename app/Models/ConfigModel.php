@@ -16,13 +16,13 @@ class ConfigModel extends Model {
 		return array(
 			'version'			 => '2.0.0',  //当前版本号
 			'requireVersion'	 => '2.0.0',  //最低要求版本号
-			'topicAmount'        => 1e14,  //默认，发帖消耗AE 1e17 = 0.1ae
+			'topicAmount'        => 1e15,  //默认，发帖消耗AE 1e17 = 0.1ae
 			'commentAmount'      => 1e14,  //默认，评论消耗AE
 			'replyAmount'        => 1e14,  //默认，回复消耗AE
-			'nicknameAmount'     => 1e14,  //默认，昵称消耗AE
-			'portraitAmount'     => 1e14,  //默认，头像消耗AE
-			'driftAmount'        => 1e14,  //默认，漂流瓶消耗AE
-			'driftReplyAmount'   => 1e14,  //默认，漂流瓶回复消耗AE
+			'nicknameAmount'     => 1e16,  //默认，昵称消耗AE
+			'portraitAmount'     => 1e16,  //默认，头像消耗AE
+			'driftAmount'        => 1e17,  //默认，漂流瓶消耗AE
+			'driftReplyAmount'   => 1e15,  //默认，漂流瓶回复消耗AE
 			'driftSalvageAmount' => 5,     //默认，漂流瓶打捞消耗WTT
 			'backendServiceNode' => PUBLIC_NODE,  //后端节点
 			'receivingAccount'   => 'ak_dMyzpooJ4oGnBVX35SCvHspJrq55HAAupCwPQTDZmRDT5SSSW',  //接收账户
@@ -30,8 +30,9 @@ class ConfigModel extends Model {
 			'adminUser_2'        => 'ak_2kxt6D65giv4yNt4oa44SjW4jEXfoHMviPFvAreSEXvz25Q3QQ',  // Admin User 2
 			'adminUser_3'        => 'ak_2kxt6D65giv4yNt4oa44SjW4jEXfoHMviPFvAreSEXvz25Q3QQ',  // Admin User 3
 			'gateioApiUrl'       => 'https://data.gateapi.io/api2/1/ticker/ae_usdt',  //Gate.io AE API
+			'AeasyAirdropAE'     => false,  //是否开启Aeasy空投 true = 开启, false = 关闭
 			'AeasyApiUrl'        => 'https://aeasy.io/api/wallet/transfer',  //Aeasy.io API
-			'AeasyApp_id'        => '',  //Aeasy.io appid
+			'AeasyAppID'         => '',  //Aeasy.io appid
 			'AeasyAmount'        => '0.1',  //活动金额
 			'AeasySecretKey'     => '',  //私钥
 			'airdropWttRatio'    => 3,  //WTT空投比例

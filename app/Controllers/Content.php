@@ -35,4 +35,14 @@ class Content extends BaseController
 		$data = $this->PagesModel-> limit($page, $size, $opt);
 		echo $data;
     }
+
+    public function focusContent()
+	{//关注的用户主贴列表
+		$page = $this->request->getPost('page');
+		$size = $this->request->getPost('size');
+		$type = 'userFocusContentList';
+		$opt  =	['type' => $type];
+		$data = $this->PagesModel-> limit($page, $size, $opt);
+		echo $data;
+	}
 }

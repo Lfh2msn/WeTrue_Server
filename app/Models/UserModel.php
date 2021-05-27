@@ -15,15 +15,19 @@ class UserModel extends Model {
     }
 
 	public function isUser($address)
-	{//验证用户是否存在
+	{//验证用户ID是否存在
 		$sql   = "SELECT address FROM $this->tablename WHERE address = '$address' LIMIT 1";
         $query = $this->db->query($sql);
 		$row   = $query->getRow();
-		if ($row) {
-			return TRUE;
-        } else {
-			return FALSE;
-		}
+		return $row ? true : false;
+	}
+
+	public function isNickname($nickname)
+	{//查询昵称是否存在
+		$sql   = "SELECT nickname FROM $this->tablename WHERE nickname ilike '$nickname' LIMIT 1";
+		$query = $this->db->query($sql);
+		$row   = $query->getRow();
+		return $row ? true : false;
 	}
 
     public function getUser($address)

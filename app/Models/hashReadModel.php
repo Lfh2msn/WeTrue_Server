@@ -35,11 +35,8 @@ class HashReadModel extends Model {
 		$json = $this->getTxDetails($hash);
 		$bloomAddress = $this->bloom ->addressBloom( $json['tx']['sender_id'] );
 
-        if ( empty(
-				$json ||
-				$bloomAddress
-			) ) {
-        		return;
+        if ( !$json || $bloomAddress ) {
+        	return;
         }
 
         if ( empty(  //过滤无效预设钱包
@@ -158,11 +155,11 @@ class HashReadModel extends Model {
 			$verify = $this->UserModel-> isUser($data['sender']);
 			if($verify){  //是否存在
 				$insertSql = "UPDATE $this->wet_users 
-								SET username = '$data[content]' 
+								SET nickname = '$data[content]' 
 								WHERE address = '$data[sender]'";
 			}else{
 				$insertSql = "INSERT INTO $this->wet_users(
-					address, username
+					address, nickname
 				) VALUES (
 					'$data[sender]', '$data[content]'
 				)";
