@@ -3,6 +3,7 @@ namespace App\Controllers;
 
 use App\Models\ComplainModel;
 use App\Models\BloomModel;
+use App\Models\AirdropModel;
 
 class Admin extends BaseController
 {//管理
@@ -48,5 +49,15 @@ class Admin extends BaseController
 			$data['msg']  = 'error_hash';
             echo json_encode($data);
 		}
+	}
+
+	public function airdropWTT()
+	{//生成空投WTT文件
+		$type = $this->request->getPost('type');
+		if($type) {
+			$opt = ['type' => $type];
+		}
+		$data = (new AirdropModel())-> airdropWTT($opt);
+		echo $data;
 	}
 }

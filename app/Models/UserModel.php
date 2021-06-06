@@ -1,11 +1,11 @@
-<?php namespace App\Models;
+<?php 
+namespace App\Models;
 
-use CodeIgniter\Model;
-use App\Models\ConfigModel;
-use App\Models\DisposeModel;
+use App\Models\ComModel;
+use App\Models\AirdropModel;
 
-class UserModel extends Model {
-//用户Model
+class UserModel extends ComModel
+{//用户Model
 
 	public function __construct(){
         parent::__construct();
@@ -51,7 +51,7 @@ class UserModel extends Model {
 			$data['portrait'] = $portrait ? "https://api.wetrue.io/User/portrait/".$address : "https://api.wetrue.io/images/default_head.png";
 			
         } else {
-			return FALSE;
+			die("error getUser");
 		}
 		return $data;
 	}
@@ -74,14 +74,17 @@ class UserModel extends Model {
 				FROM $this->tablename WHERE address = '$address' LIMIT 1";
         $query = $this->db->query($sql);
 		$row = $query->getRow();
+		$bsConfig = $this->ConfigModel-> backendConfig();
 		if (!$row && $opt['type'] == 'login')
 		{
 			$insertSql = "INSERT INTO $this->tablename(address) VALUES ('$address')";
 			$insBehSql = "INSERT INTO wet_behavior(address, thing) VALUES ('$address', 'newUserLogin')";
 			$this->db->query($insertSql);
             $this->db->query($insBehSql);
+			if ($bsConfig['AeasyAirdropAE']) {
+				(new AirdropModel())-> airdropAE($address);
+			}
 		}
-		$bsConfig 	  = $this->ConfigModel-> backendConfig();
 		$nickname     = $this->DisposeModel-> delete_xss($row->nickname);
 		$userActive   = (int)$row->uactive;
 		$portrait 	  = $row->portrait;
@@ -116,9 +119,19 @@ class UserModel extends Model {
 			$nickname = $this->DisposeModel-> delete_xss($row->nickname);
 			$data = $nickname ?? "";
         } else {
-			return FALSE;
+			return;
 		}
 		return $data;
+	}
+
+	public function countTopic($address)
+	{//统计用户发帖总数量
+		$countSql = "SELECT count(hash) FROM wet_content WHERE sender_id = '$address'";
+		$query  = $this->db-> query($countSql);
+		$getRow = $query-> getRow();
+		$count  = $getRow->count;
+		$upSql  = "UPDATE $this->tablename SET topic_sum = '$count' WHERE address = '$address'";
+		$this->db->query($upSql);
 	}
 
 	public function getPortrait($address)
@@ -129,7 +142,7 @@ class UserModel extends Model {
 		if ($row) {
 			$data = $row->portrait ?? "";
         } else {
-			return FALSE;
+			die("error getPortrait");
 		}
 		return $data;
 	}
@@ -181,7 +194,7 @@ class UserModel extends Model {
 		$this->db->query($fansSql);
 	}
 
-	public function getActiveGrade( $num )
+	public function getActiveGrade($num)
 	{//等级划分
 		(int)$num;
         if ( $num >= 50000 ) {

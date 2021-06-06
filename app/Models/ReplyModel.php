@@ -9,7 +9,8 @@ class ReplyModel extends Model {
 //回复Model
 
 	public function __construct(){
-        parent::__construct();
+        //parent::__construct();
+		$this->db = \Config\Database::connect('default');
         $this->tablename    = 'wet_reply';
 		$this->bloom	    = new BloomModel();
 		$this->user	   	    = new UserModel();

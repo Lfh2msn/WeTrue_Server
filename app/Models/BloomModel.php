@@ -11,9 +11,10 @@ use App\Models\ReplyModel;
 class BloomModel extends Model {
 //过滤Model
 
-    public function __construct()
+	public function __construct()
 	{
-		parent::__construct();
+		//parent::__construct();
+		$this->db			 = \Config\Database::connect('default');
 		$this->DisposeModel  = new DisposeModel();
 		$this->UserModel	 = new UserModel();
         $this->ConfigModel	 = new ConfigModel();
@@ -35,7 +36,7 @@ class BloomModel extends Model {
     }
 	
 	public function txBloom($hash)
-    {//过滤TX，存在返回false
+    {//过滤TX，存在返回true
         $sql   = "SELECT bf_hash FROM $this->wet_bloom WHERE bf_hash = '$hash' LIMIT 1";
         $query = $this->db->query($sql);
         $row   = $query->getRow();
@@ -43,7 +44,7 @@ class BloomModel extends Model {
     }
 
     public function addressBloom($address)
-    {//过滤address，存在返回false
+    {//过滤address，存在返回true
         $sql   = "SELECT bf_address FROM $this->wet_bloom WHERE bf_address = '$address' LIMIT 1";
         $query = $this->db->query($sql);
         $row   = $query->getRow();

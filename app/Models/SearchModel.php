@@ -10,7 +10,8 @@ class SearchModel extends Model {
 //搜索Model
 
 	public function __construct(){
-		parent::__construct();
+		//parent::__construct();
+		$this->db = \Config\Database::connect('default');
 		$this->bloom   		= new BloomModel();
 		$this->wet_content 	= new ContentModel();
 		$this->DisposeModel = new DisposeModel();

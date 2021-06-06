@@ -50,7 +50,7 @@ class User extends BaseController {
 	}
 
 	public function focusList()
-	{//关注列表
+	{//关注用户列表
 		$page  = $this->request->getPost('page');
 		$size  = $this->request->getPost('size');
 		$focus = $this->request->getPost('focus');

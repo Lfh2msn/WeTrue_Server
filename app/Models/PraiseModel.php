@@ -9,7 +9,8 @@ class PraiseModel extends Model {
 //点赞Model
 
 	public function __construct(){
-        parent::__construct();
+        //parent::__construct();
+		$this->db = \Config\Database::connect('default');
 		$this->UserModel    = new UserModel();
 		$this->configModel  = new ConfigModel();
 		$this->DisposeModel = new DisposeModel();
@@ -57,16 +58,18 @@ class PraiseModel extends Model {
 		} else {
 			$verify = $this->isPraise($hash, $akToken);
 			if(!$verify) {
-				$updateSql = "UPDATE $this->tablename SET praise = praise+1 WHERE hash = '$hash'";
-				$praiseSql = "INSERT INTO wet_praise(hash,sender_id) VALUES ('$hash','$akToken')";
+				$updateSql = "UPDATE $this->tablename SET praise = praise + 1 WHERE hash = '$hash'";
+				$praiseSql = "INSERT INTO wet_praise(hash, sender_id) VALUES ('$hash', '$akToken')";
 				$e = TRUE;
 			} else {
-				$updateSql = "UPDATE $this->tablename SET praise = praise-1 WHERE hash='$hash'";
+				$updateSql = "UPDATE $this->tablename SET praise = praise - 1 WHERE hash = '$hash'";
 				$praiseSql = "DELETE FROM wet_praise WHERE hash = '$hash' AND sender_id = '$akToken'";
 				$e = FALSE;
 			}
 			$this->db->query($updateSql);
 			$this->db->query($praiseSql);
+			//统计用户发帖总数量--临时
+			$this->UserModel-> countTopic($akToken);
 			//用户活跃入库
 			$backendConfig = $this->configModel-> backendConfig();
 			$praiseActive  = $backendConfig['praiseActive'];

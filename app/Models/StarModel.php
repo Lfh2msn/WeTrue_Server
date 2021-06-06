@@ -7,7 +7,8 @@ class StarModel extends Model {
 //收藏Model
 
 	public function __construct(){
-		parent::__construct();
+		//parent::__construct();
+		$this->db = \Config\Database::connect('default');
 		$this->wet_star     = "wet_star";
 		$this->wet_content  = "wet_content";
 		$this->DisposeModel = new DisposeModel();
@@ -25,7 +26,7 @@ class StarModel extends Model {
 	public function star($hash)
 	{//收藏
 		$data['code'] = 200;
-		$akToken = $_SERVER['HTTP_AK_TOKEN'];
+		$akToken   = $_SERVER['HTTP_AK_TOKEN'];
 		$isAkToken = $this->DisposeModel-> checkAddress($akToken);
 		if (!$isAkToken) {
 			$data['code'] = 401;
@@ -42,10 +43,10 @@ class StarModel extends Model {
 		$verify = $this->isStar($hash, $akToken);
 		if (!$verify) {
 			$starSql   = "INSERT INTO $this->wet_star(hash, sender_id) VALUES ('$hash', '$akToken')";
-			$updataSql = "UPDATE $this->wet_content SET star = star+1 WHERE hash = '$hash'";
+			$updataSql = "UPDATE $this->wet_content SET star_sum = star_sum + 1 WHERE hash = '$hash'";
 		} else {
 			$starSql   = "DELETE FROM $this->wet_star WHERE hash = '$hash' AND sender_id = '$akToken'";
-			$updataSql = "UPDATE $this->wet_content SET star = star-1 WHERE hash = '$hash'";
+			$updataSql = "UPDATE $this->wet_content SET star_sum = star_sum - 1 WHERE hash = '$hash'";
 		}
 		$this->db-> query($starSql);
 		$this->db-> query($updataSql);
@@ -53,10 +54,10 @@ class StarModel extends Model {
 		$starBehaviorSql = "INSERT INTO wet_behavior(address, thing, hash) 
 								VALUES ('$akToken', 'isStar', '$hash')";
 		$this->db->query($starBehaviorSql);
-		$getStarSql = "SELECT star FROM $this->wet_content WHERE hash = '$hash' LIMIT 1";
+		$getStarSql = "SELECT star_sum FROM $this->wet_content WHERE hash = '$hash' LIMIT 1";
 		$query = $this->db-> query($getStarSql);
 		$row = $query-> getRow();
-		$data['data']['star']  = (int)$row->star;
+		$data['data']['star']  = (int)$row->star_sum;
 		$isStar = $this->isStar($hash, $akToken);
 		$data['data']['isStar'] = $isStar;
 		$data['msg'] = 'success';

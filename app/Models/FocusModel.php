@@ -8,7 +8,8 @@ class FocusModel extends Model {
 //关注Model
 
 	public function __construct(){
-		parent::__construct();
+		//parent::__construct();
+		$this->db = \Config\Database::connect('default');
 		$this->tablename    = "wet_focus";
 		$this->userModel    = new UserModel();
 		$this->DisposeModel = new DisposeModel();
@@ -19,11 +20,7 @@ class FocusModel extends Model {
 		$sql   = "SELECT focus, fans FROM $this->tablename WHERE fans = '$my_id' AND focus = '$focus' LIMIT 1";
         $query = $this->db->query($sql);
 		$row   = $query->getRow();
-		if ($row) {
-			return true; 
-		} else {
-			return false;
-		}
+		return $row ? true : false;
 	}
 
     public function limit($page, $size, $opt=[])
@@ -120,7 +117,7 @@ class FocusModel extends Model {
 		$this->db-> query($focusSql);
 		$this->userModel-> userFocus($userAddress, $akToken, $e);
 		//入库行为记录
-		$focusBehaviorSql = "INSERT INTO wet_behavior(address,thing,toaddress) 
+		$focusBehaviorSql = "INSERT INTO wet_behavior(address, thing, toaddress) 
 								VALUES ('$akToken', 'isFocus', '$userAddress')";
 		$this->db->query($focusBehaviorSql);
 		$isFocus = $this->isFocus($userAddress, $akToken);

@@ -8,7 +8,8 @@ class DriftModel extends Model {
 //Drift模型
 
 	public function __construct(){
-        parent::__construct();
+        //parent::__construct();
+		$this->db = \Config\Database::connect('default');
 		$this->bloom		   = new BloomModel();
 		$this->DisposeModel	   = new DisposeModel();
 		$this->wet_drift_topic = "wet_drift_topic";

@@ -5,19 +5,20 @@ use App\Models\BloomModel;
 use App\Models\ContentModel;
 use App\Models\CommentModel;
 use App\Models\ReplyModel;
-use App\Models\configModel;
+use App\Models\ConfigModel;
 use App\Models\DisposeModel;
 
 class PagesModel extends Model {
 //分页列表模型
 
 	public function __construct(){
-        parent::__construct();
+        //parent::__construct();
+		$this->db = \Config\Database::connect('default');
 		$this->bloom   		= new BloomModel();
 		$this->content 		= new ContentModel();
 		$this->comment 		= new CommentModel();
 		$this->reply 		= new ReplyModel();
-		$this->configModel 	= new configModel();
+		$this->ConfigModel 	= new ConfigModel();
 		$this->DisposeModel = new DisposeModel();
     }
 
@@ -49,6 +50,12 @@ class PagesModel extends Model {
 			$limitSql		 = "SELECT hash FROM $this->tablename 
 									ORDER BY utctime DESC LIMIT $size OFFSET ".($page-1) * $size;
 			$opt['select']	 = "content";
+
+			$upReadSql = "UPDATE $this->tablename SET read_sum = CASE hash
+							when hash then read_sum + 1 
+							end
+							where hash in ($limitSql)";
+			$this->db-> query($upReadSql);
 		}
 
 		if ( $opt['type'] == 'commentList' )
@@ -81,11 +88,12 @@ class PagesModel extends Model {
 		if ( $opt['type'] == 'hotRecList' )
 		{//热点推荐
 			$this->tablename = "wet_content";
-			$bsConfig   	 = $this->configModel-> backendConfig();
+			$bsConfig   	 = $this->ConfigModel-> backendConfig();
 			$hotRecDay  	 = $bsConfig['hotRecDay'];
 			$factorPraise	 = $bsConfig['factorPraise'];
 			$factorComment	 = $bsConfig['factorComment'];
 			$factorStar		 = $bsConfig['factorStar'];
+			$factorRead		 = $bsConfig['factorRead'];
 			$factorTime	 	 = $bsConfig['factorTime'];
 			$nowTime		 = time() * 1000;
 			$cycleTime 	 	 = $nowTime - (86400000 * $hotRecDay);  //当前时间 - 86400000毫秒 * 天 //1614950034235 1621087508000
@@ -93,8 +101,9 @@ class PagesModel extends Model {
 			$limitSql		 = "SELECT hash FROM $this->tablename WHERE utctime >= $cycleTime 
 									ORDER BY (
 											   (praise * $factorPraise)
-											 + (comment_num * $factorComment)
-											 + (star * $factorStar)
+											 + (comment_sum * $factorComment)
+											 + (star_sum * $factorStar)
+											 + (read_sum * $factorRead)
 											 - ( ( ($nowTime - utctime) / 86400000) * $factorTime)
 											) DESC LIMIT $size OFFSET ".($page-1) * $size;
 			$opt['select']	 = "content";
@@ -103,7 +112,7 @@ class PagesModel extends Model {
 		if ( $opt['type'] == 'userContentList' )
 		{//用户发帖列表
 			$this->tablename = "wet_content";
-			$countSql		 = "SELECT count(sender_id) FROM $this->tablename WHERE sender_id='$opt[publicKey]'";
+			$countSql		 = "SELECT count(sender_id) FROM $this->tablename WHERE sender_id = '$opt[publicKey]'";
 			$limitSql		 = "SELECT hash FROM $this->tablename WHERE sender_id = '$opt[publicKey]' 
 									ORDER BY utctime DESC LIMIT $size OFFSET ".($page-1) * $size;
 			$opt['select']	 = "content";
@@ -121,6 +130,21 @@ class PagesModel extends Model {
 							AND wet_focus.fans = '$akToken' 
 							ORDER BY wet_content.uid DESC LIMIT $size OFFSET ".($page-1) * $size;
 			$opt['select'] = "content";
+		}
+
+		if ( $opt['type'] == 'userStarContentList' )
+		{//收藏的帖子
+			if (!$isAkToken) {
+				$data['code'] = 401;
+				$data['msg']  = 'error_login';
+				return json_encode($data);
+			}
+			
+			$this->tablename = "wet_star";
+			$countSql		 = "SELECT count(hash) FROM $this->tablename WHERE sender_id = '$opt[userLogin]'";
+			$limitSql		 = "SELECT hash FROM $this->tablename WHERE sender_id = '$opt[userLogin]' 
+									ORDER BY star_time DESC LIMIT $size OFFSET ".($page-1) * $size;
+			$opt['select']	 = "content";
 		}
 
 		$data = $this->cycle($page, $size, $countSql, $limitSql, $opt);

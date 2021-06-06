@@ -13,7 +13,8 @@ class ComplainModel extends Model {
 //投诉Model
 
 	public function __construct(){
-		parent::__construct();
+		//parent::__construct();
+		$this->db = \Config\Database::connect('default');
 		$this->DisposeModel  = new DisposeModel();
 		$this->HashReadModel = new HashReadModel();
 		$this->UserModel	 = new UserModel();
@@ -75,12 +76,12 @@ class ComplainModel extends Model {
 		$isComplain = $this->isComplain($hash);
 		if ($isComplain) {
 			$updateReportSql = "INSERT INTO $this->wet_complain(
-									hash, address, cp_num
+									hash, address, complain_sum
 								) VALUES (
 									'$hash', '$rpSenderId', '1'
 								)";
         } else {
-			$updateReportSql = "UPDATE $this->wet_complain SET cp_num = cp_num+1 WHERE hash = '$hash'";
+			$updateReportSql = "UPDATE $this->wet_complain SET complain_sum = complain_sum + 1 WHERE hash = '$hash'";
 		}
 
 		//入库行为记录

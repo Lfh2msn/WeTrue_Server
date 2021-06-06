@@ -7,7 +7,8 @@ class Content extends BaseController
     {//主贴列表
         $page = $this->request->getPost('page');
         $size = $this->request->getPost('size');
-        $opt  = ['type' => 'contentList'];
+        $type = 'contentList';
+		$opt  =	['type' => $type];
 		$data = $this->PagesModel-> limit($page, $size, $opt);
 		echo $data;
     }
@@ -17,7 +18,10 @@ class Content extends BaseController
         $hash   = $this->request->getPost('hash');
         $isHash = $this->DisposeModel-> checkAddress($hash);
 		if($isHash){
-            $opt  = ['select' => 'content'];
+            $type = 'content';
+		    $opt  =	['select' => $type,
+                     'read' => true
+                    ];
             $data = $this->PagesModel-> Alone($hash, $opt);
             echo $data;
         }else{
@@ -31,12 +35,13 @@ class Content extends BaseController
     {//热点推荐列表
         $page = $this->request->getPost('page');
         $size = $this->request->getPost('size');
-        $opt  = ['type' => 'hotRecList'];
+        $type = 'hotRecList';
+		$opt  =	['type' => $type];
 		$data = $this->PagesModel-> limit($page, $size, $opt);
 		echo $data;
     }
 
-    public function focusContent()
+    public function focusList()
 	{//关注的用户主贴列表
 		$page = $this->request->getPost('page');
 		$size = $this->request->getPost('size');
@@ -45,4 +50,14 @@ class Content extends BaseController
 		$data = $this->PagesModel-> limit($page, $size, $opt);
 		echo $data;
 	}
+
+    public function starList()
+    {//收藏列表
+        $page = $this->request->getPost('page');
+        $size = $this->request->getPost('size');
+        $type = 'userStarContentList';
+		$opt  =	['type' => $type];
+		$data = $this->PagesModel-> limit($page, $size, $opt);
+		echo $data;
+    }
 }

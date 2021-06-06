@@ -10,7 +10,8 @@ class HashReadModel extends Model {
 //链上hash入库Model
 
 	public function __construct(){
-        parent::__construct();
+        //parent::__construct();
+		$this->db = \Config\Database::connect('default');
 		$this->ConfigModel   = new ConfigModel();
 		$this->DisposeModel  = new DisposeModel();
 		$this->UserModel	 = new UserModel();
@@ -36,7 +37,7 @@ class HashReadModel extends Model {
 		$bloomAddress = $this->bloom ->addressBloom( $json['tx']['sender_id'] );
 
         if ( !$json || $bloomAddress ) {
-        	return;
+        	die(0);
         }
 
         if ( empty(  //过滤无效预设钱包
@@ -46,7 +47,7 @@ class HashReadModel extends Model {
 				$json['tx']['payload'] == "ba_Xfbg4g=="
 			) ){
 				$this->deleteTemp($data['hash']);  //删除临时缓存
-				return;
+				die(0);
         }
 
 		$data = $this->decodeContent($json);
@@ -71,13 +72,13 @@ class HashReadModel extends Model {
 		{  //版本号错误或低
 			if(!$WeTrue){ //非WeTrue
 				$this->deleteTemp($data['hash']);  //删除临时缓存
-				return;
+				die("is Not WeTrue");
 			}
 
 			$versionLow = "versionLow";
 			$updateSql  = "UPDATE $this->wet_temporary SET tp_source = '$versionLow' WHERE tp_hash = '$hash'";
 	        $this->db-> query($updateSql);
-			return;
+			die(0);
 		}
 
 		$data['WeTrue']  = $WeTrue;
@@ -95,7 +96,7 @@ class HashReadModel extends Model {
         	$getRow = $this->db->query($selectHash)-> getRow();
 			if ($getRow) {
 				$this->deleteTemp($data['hash']);
-				return;
+				die("Repeat Content Hash");
 			}
 
 			$data['imgList'] = trim($payload['img_list']);
@@ -104,7 +105,7 @@ class HashReadModel extends Model {
 							) VALUES (   
 								'$data[hash]', '$data[sender]', '$data[receipt]', '$data[mbTime]', '$data[amount]', '$data[type]', '$data[content]', '$data[imgList]'
 							)";
-			$upSql  = "UPDATE $this->wet_users SET topic = topic + 1 WHERE address = '$data[sender]'";
+			$upSql  = "UPDATE $this->wet_users SET topic_sum = topic_sum + 1 WHERE address = '$data[sender]'";
 			$active = $bsConfig['topicActive'];
 		}
 
@@ -114,7 +115,7 @@ class HashReadModel extends Model {
         	$getRow = $this->db->query($selectHash)-> getRow();
 			if ($getRow) {
 				$this->deleteTemp($data['hash']);
-				return;
+				die("Repeat Comment Hash");
 			}
 
 			$data['toHash'] = trim($payload['toHash']);
@@ -123,7 +124,7 @@ class HashReadModel extends Model {
 							) VALUES (
 								'$data[hash]', '$data[toHash]', '$data[sender]', '$data[receipt]', '$data[mbTime]', '$data[amount]', '$data[type]', '$data[content]'
 							)";
-			$upSql  = "UPDATE $this->wet_content SET comment_num = comment_num + 1 WHERE hash = '$data[toHash]'";
+			$upSql  = "UPDATE $this->wet_content SET comment_sum = comment_sum + 1 WHERE hash = '$data[toHash]'";
 			$active = $bsConfig['commentActive'];
 		}
 
@@ -133,7 +134,7 @@ class HashReadModel extends Model {
         	$getRow = $this->db->query($selectHash)-> getRow();
 			if ($getRow) {
 				$this->deleteTemp($data['hash']);
-				return;
+				die("Repeat Reply Hash");
 			}
 			$data['replyType'] = trim($payload['reply_type']);
 			$data['toHash']    = trim($payload['to_hash']);
@@ -145,7 +146,7 @@ class HashReadModel extends Model {
 								'$data[hash]', '$data[toHash]', '$data[replyHash]', '$data[replyType]', '$data[toAddress]', 
 								'$data[sender]', '$data[receipt]', '$data[mbTime]', '$data[amount]', '$data[content]'
 							)";
-			$upSql  = "UPDATE $this->wet_comment SET comment_num = comment_num + 1 WHERE hash = '$data[toHash]'";
+			$upSql  = "UPDATE $this->wet_comment SET comment_sum = comment_sum + 1 WHERE hash = '$data[toHash]'";
 			$active = $bsConfig['replyActive'];
 		}
 
@@ -175,7 +176,7 @@ class HashReadModel extends Model {
         	$getRow		= $this->db->query($selectHash)-> getRow();
 			if ($getRow) {
 				$this->deleteTemp($data['hash']);
-				return;
+				die("Repeat Portrait Hash");
 			}
 
 			$verify = $this->UserModel-> isUser($data['sender']);
@@ -200,7 +201,7 @@ class HashReadModel extends Model {
         	$getRow		= $this->db->query($selectHash)-> getRow();
 			if ($getRow) {
 				$this->deleteTemp($data['hash']);
-				return;
+				die("Repeat Drift Hash");
 			}
 			$data['replyType'] = trim($payload['reply_type']);
 			$data['toHash']    = trim($payload['to_hash']);
@@ -212,10 +213,10 @@ class HashReadModel extends Model {
 								'$data[hash]', '$data[toHash]', '$data[replyHash]', '$data[replyType]', '$data[toAddress]', 
 								'$data[sender]', '$data[receipt]', '$data[mbTime]', '$data[amount]', '$data[content]'
 							)";
-			$upSql  = "UPDATE $this->wet_comment SET comment_num = comment_num + 1 WHERE hash = '$data[toHash]'";
+			$upSql  = "UPDATE $this->wet_comment SET comment_sum = comment_sum + 1 WHERE hash = '$data[toHash]'";
 			$active = $bsConfig['replyActive'];
 		}
-		else return;
+		else die(0);
 
 		$this->db->query($insertSql);
 		
@@ -235,7 +236,7 @@ class HashReadModel extends Model {
 	{//获取tx 发送人
         $json = $this->getTxDetails($hash);
 		if (empty($json)) {
-        	return;
+        	die("empty");
         }
 		return $json['tx']['sender_id'];
 	}
@@ -245,14 +246,15 @@ class HashReadModel extends Model {
 		$bsConfig = $this->ConfigModel-> backendConfig();
 		$url = $bsConfig['backendServiceNode'].'v2/transactions/'.$hash;
 		$num = 0;
+		@$get = file_get_contents($url);
 		while ( !$get && $num < 10 ) {
 			@$get = file_get_contents($url);
 			$num++;
-			sleep(1);
+			sleep(5);
 		}
 
         if (empty($get)) {
-        	return;
+        	die("empty");
         }
 
         $json = (array) json_decode($get, true);

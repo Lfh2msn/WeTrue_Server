@@ -1,25 +1,22 @@
 <?php namespace App\Models;
 
-use CodeIgniter\Model;
-use App\Models\BloomModel;
-use App\Models\UserModel;
+use App\Models\ComModel;
 use App\Models\PraiseModel;
 use App\Models\StarModel;
 use App\Models\FocusModel;
-use App\Models\DisposeModel;
 
-class ContentModel extends Model {
-//主贴Model
+class ContentModel extends ComModel
+{//主贴Model
 
-	public function __construct(){
+	public function __construct()
+	{
         parent::__construct();
-        $this->tablename    = 'wet_content';
-		$this->bloom	    = new BloomModel();
-		$this->user	   	    = new UserModel();
-		$this->praise	    = new PraiseModel();
-		$this->star		    = new StarModel();
-		$this->focus	    = new FocusModel();
-		$this->DisposeModel = new DisposeModel();
+        $this->tablename 	= 'wet_content';
+		$this->DisposeModel	= new DisposeModel();
+		$this->PraiseModel  = new PraiseModel();
+		$this->StarModel	= new StarModel();
+		$this->FocusModel	= new FocusModel();
+		$this->UserModel	= new UserModel();
     }
 
 	public function txContent($hash, $opt=[])
@@ -34,9 +31,10 @@ class ContentModel extends Model {
 							$payload,
 							img_tx,
 							utctime,
-							comment_num,
+							comment_sum,
 							praise,
-							star
+							star_sum,
+							read_sum
 				FROM $this->tablename WHERE hash='$hash' LIMIT 1";
 
         $query = $this-> db-> query($sql);
@@ -48,19 +46,25 @@ class ContentModel extends Model {
 			$data['imgTx']			= $row->img_tx ? "https://api.wetrue.io/Image/toimg/".$hash : "";
 			$data['utcTime']		= (int) $row-> utctime;
 			$data['praise']			= (int) $row-> praise;
-			$data['star']			= (int) $row-> star;
+			$data['star']			= (int) $row-> star_sum;
+			$data['read']			= (int) $row-> read_sum;
 			if ($opt['userLogin']) {
-				$data['isPraise']	= $this->praise-> isPraise($hash, $opt['userLogin']);
-				$data['isStar']		= $this->star-> isStar($hash, $opt['userLogin']);
-				$data['isFocus']	= $this->focus-> isFocus($sender_id, $opt['userLogin']);
+				$data['isPraise']	= $this->PraiseModel-> isPraise($hash, $opt['userLogin']);
+				$data['isStar']		= $this->StarModel-> isStar($hash, $opt['userLogin']);
+				$data['isFocus']	= $this->FocusModel-> isFocus($sender_id, $opt['userLogin']);
 			} else {
 				$data['isPraise']	= false;
 				$data['isStar']		= false;
 				$data['isFocus']	= false;
 			}
 			
-			$data['commentNumber']  = (int) $row-> comment_num;
-			$data['users']			= $this->user-> getUser($sender_id);
+			$data['commentNumber']  = (int) $row-> comment_sum;
+			$data['users']			= $this->UserModel-> getUser($sender_id);
+			if ($opt['read']) {
+				$upReadSql = "UPDATE $this->tablename SET read_sum = read_sum + 1 WHERE hash = '$hash'";
+				$this->db-> query($upReadSql);
+			}
+			
         }
 
     return $data;

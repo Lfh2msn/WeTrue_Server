@@ -12,7 +12,8 @@ class CommentModel extends Model {
 
 	public function __construct()
 	{
-        parent::__construct();
+        //parent::__construct();
+		$this->db 			= \Config\Database::connect('default');
         $this->wet_comment  = 'wet_comment';
 		$this->wet_reply    = 'wet_reply';
 		$this->bloom	    = new BloomModel();
@@ -28,7 +29,7 @@ class CommentModel extends Model {
 					sender_id,
 					payload,
 					utctime,
-					comment_num,
+					comment_sum,
 					praise
 				FROM $this->wet_comment WHERE hash='$hash' LIMIT 1";
         $query = $this->db->query($sql);
@@ -39,7 +40,7 @@ class CommentModel extends Model {
 			$sender_id       	 = $row-> sender_id;
 			$data['payload']	 = $this->DisposeModel-> delete_xss($row-> payload);
 			$data['utcTime']	 = (int) $row-> utctime;
-			$data['replyNumber'] = (int) $row-> comment_num;
+			$data['replyNumber'] = (int) $row-> comment_sum;
 			$data['praise']		 = (int) $row-> praise;
 			$data['isPraise']	 = $opt['userLogin'] ? $this->praise-> isPraise($hash, $opt['userLogin']) : false;
 			$data['users'] = $this->user-> getUser($sender_id);
