@@ -1,52 +1,24 @@
 <?php
 
 /**
- * CodeIgniter
+ * This file is part of the CodeIgniter 4 framework.
  *
- * An open source application development framework for PHP
+ * (c) CodeIgniter Foundation <admin@codeigniter.com>
  *
- * This content is released under the MIT License (MIT)
- *
- * Copyright (c) 2014-2019 British Columbia Institute of Technology
- * Copyright (c) 2019-2020 CodeIgniter Foundation
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in
- * all copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
- * THE SOFTWARE.
- *
- * @package    CodeIgniter
- * @author     CodeIgniter Dev Team
- * @copyright  2019-2020 CodeIgniter Foundation
- * @license    https://opensource.org/licenses/MIT	MIT License
- * @link       https://codeigniter.com
- * @since      Version 4.0.0
- * @filesource
+ * For the full copyright and license information, please view the LICENSE
+ * file that was distributed with this source code.
  */
 
 namespace CodeIgniter\HTTP;
 
 use CodeIgniter\HTTP\Exceptions\HTTPException;
+use InvalidArgumentException;
 
 /**
  * Abstraction for a uniform resource identifier (URI).
  */
 class URI
 {
-
 	/**
 	 * Sub-delimiters used in query strings and fragments.
 	 *
@@ -153,6 +125,127 @@ class URI
 	 */
 	protected $showPassword = false;
 
+	/**
+	 * If true, will continue instead of throwing exceptions.
+	 *
+	 * @var boolean
+	 */
+	protected $silent = false;
+
+	/**
+	 * If true, will use raw query string.
+	 *
+	 * @var boolean
+	 */
+	protected $rawQueryString = false;
+
+	//--------------------------------------------------------------------
+
+	/**
+	 * Builds a representation of the string from the component parts.
+	 *
+	 * @param string $scheme
+	 * @param string $authority
+	 * @param string $path
+	 * @param string $query
+	 * @param string $fragment
+	 *
+	 * @return string
+	 */
+	public static function createURIString(string $scheme = null, string $authority = null, string $path = null, string $query = null, string $fragment = null): string
+	{
+		$uri = '';
+		if (! empty($scheme))
+		{
+			$uri .= $scheme . '://';
+		}
+
+		if (! empty($authority))
+		{
+			$uri .= $authority;
+		}
+
+		if (isset($path) && $path !== '')
+		{
+			$uri .= substr($uri, -1, 1) !== '/' ? '/' . ltrim($path, '/') : ltrim($path, '/');
+		}
+
+		if ($query)
+		{
+			$uri .= '?' . $query;
+		}
+
+		if ($fragment)
+		{
+			$uri .= '#' . $fragment;
+		}
+
+		return $uri;
+	}
+
+	/**
+	 * Used when resolving and merging paths to correctly interpret and
+	 * remove single and double dot segments from the path per
+	 * RFC 3986 Section 5.2.4
+	 *
+	 * @see http://tools.ietf.org/html/rfc3986#section-5.2.4
+	 *
+	 * @param string $path
+	 *
+	 * @return   string
+	 * @internal
+	 */
+	public static function removeDotSegments(string $path): string
+	{
+		if ($path === '' || $path === '/')
+		{
+			return $path;
+		}
+
+		$output = [];
+
+		$input = explode('/', $path);
+
+		if ($input[0] === '')
+		{
+			unset($input[0]);
+			$input = array_values($input);
+		}
+
+		// This is not a perfect representation of the
+		// RFC, but matches most cases and is pretty
+		// much what Guzzle uses. Should be good enough
+		// for almost every real use case.
+		foreach ($input as $segment)
+		{
+			if ($segment === '..')
+			{
+				array_pop($output);
+			}
+			elseif ($segment !== '.' && $segment !== '')
+			{
+				$output[] = $segment;
+			}
+		}
+
+		$output = implode('/', $output);
+		$output = trim($output, '/ ');
+
+		// Add leading slash if necessary
+		if (strpos($path, '/') === 0)
+		{
+			$output = '/' . $output;
+		}
+
+		// Add trailing slash if necessary
+		if ($output !== '/' && substr($path, -1, 1) === '/')
+		{
+			$output .= '/';
+		}
+
+		return $output;
+	}
+
 	//--------------------------------------------------------------------
 
 	/**
@@ -160,7 +253,7 @@ class URI
 	 *
 	 * @param string $uri
 	 *
-	 * @throws \InvalidArgumentException
+	 * @throws InvalidArgumentException
 	 */
 	public function __construct(string $uri = null)
 	{
@@ -168,6 +261,40 @@ class URI
 		{
 			$this->setURI($uri);
 		}
+	}
+
+	//--------------------------------------------------------------------
+
+	/**
+	 * If $silent == true, then will not throw exceptions and will
+	 * attempt to continue gracefully.
+	 *
+	 * @param boolean $silent
+	 *
+	 * @return URI
+	 */
+	public function setSilent(bool $silent = true)
+	{
+		$this->silent = $silent;
+
+		return $this;
+	}
+
+	//--------------------------------------------------------------------
+
+	/**
+	 * If $raw == true, then will use parseStr() method
+	 * instead of native parse_str() function.
+	 *
+	 * @param boolean $raw
+	 *
+	 * @return URI
+	 */
+	public function useRawQueryString(bool $raw = true)
+	{
+		$this->rawQueryString = $raw;
+
+		return $this;
 	}
 
 	//--------------------------------------------------------------------
@@ -187,6 +314,11 @@ class URI
 
 			if ($parts === false)
 			{
+				if ($this->silent)
+				{
+					return $this;
+				}
+
 				throw HTTPException::forUnableToParseURI($uri);
 			}
 
@@ -254,14 +386,11 @@ class URI
 			$authority = $this->getUserInfo() . '@' . $authority;
 		}
 
-		if (! empty($this->port) && ! $ignorePort)
+		// Don't add port if it's a standard port for
+		// this scheme
+		if (! empty($this->port) && ! $ignorePort && $this->port !== $this->defaultPorts[$this->scheme])
 		{
-			// Don't add port if it's a standard port for
-			// this scheme
-			if ($this->port !== $this->defaultPorts[$this->scheme])
-			{
-				$authority .= ':' . $this->port;
-			}
+			$authority .= ':' . $this->port;
 		}
 
 		$this->showPassword = false;
@@ -335,7 +464,7 @@ class URI
 	 */
 	public function getHost(): string
 	{
-		return $this->host;
+		return $this->host ?? '';
 	}
 
 	//--------------------------------------------------------------------
@@ -389,7 +518,7 @@ class URI
 	 */
 	public function getPath(): string
 	{
-		return (is_null($this->path)) ? '' : $this->path;
+		return $this->path ?? '';
 	}
 
 	//--------------------------------------------------------------------
@@ -449,7 +578,7 @@ class URI
 	 */
 	public function getFragment(): string
 	{
-		return is_null($this->fragment) ? '' : $this->fragment;
+		return $this->fragment ?? '';
 	}
 
 	//--------------------------------------------------------------------
@@ -469,23 +598,24 @@ class URI
 	/**
 	 * Returns the value of a specific segment of the URI path.
 	 *
-	 * @param integer $number
+	 * @param integer $number  Segment number
+	 * @param string  $default Default value
 	 *
 	 * @return string     The value of the segment. If no segment is found,
 	 *                    throws InvalidArgumentError
 	 */
-	public function getSegment(int $number): string
+	public function getSegment(int $number, string $default = ''): string
 	{
 		// The segment should treat the array as 1-based for the user
 		// but we still have to deal with a zero-based array.
 		$number -= 1;
 
-		if ($number > count($this->segments))
+		if ($number > count($this->segments) && ! $this->silent)
 		{
 			throw HTTPException::forURISegmentOutOfRange($number);
 		}
 
-		return $this->segments[$number] ?? '';
+		return $this->segments[$number] ?? $default;
 	}
 
 	/**
@@ -505,6 +635,11 @@ class URI
 
 		if ($number > count($this->segments) + 1)
 		{
+			if ($this->silent)
+			{
+				return $this;
+			}
+
 			throw HTTPException::forURISegmentOutOfRange($number);
 		}
 
@@ -529,65 +664,53 @@ class URI
 	//--------------------------------------------------------------------
 
 	/**
-	 * Allow the URI to be output as a string by simply casting it to a string
-	 * or echoing out.
+	 * Formats the URI as a string.
+	 *
+	 * Warning: For backwards-compatability this method
+	 * assumes URIs with the same host as baseURL should
+	 * be relative to the project's configuration.
+	 * This aspect of __toString() is deprecated and should be avoided.
+	 *
+	 * @return string
 	 */
 	public function __toString(): string
 	{
+		$path   = $this->getPath();
+		$scheme = $this->getScheme();
+
+		// Check if this is an internal URI
+		$config  = config('App');
+		$baseUri = new self($config->baseURL);
+
+		// If the hosts matches then assume this should be relative to baseURL
+		if ($this->getHost() === $baseUri->getHost())
+		{
+			// Check for additional segments
+			$basePath = trim($baseUri->getPath(), '/') . '/';
+			$trimPath = ltrim($path, '/');
+
+			if ($basePath !== '/' && strpos($trimPath, $basePath) !== 0)
+			{
+				$path = $basePath . $trimPath;
+			}
+
+			// Check for forced HTTPS
+			if ($config->forceGlobalSecureRequests)
+			{
+				$scheme = 'https';
+			}
+		}
+
 		return static::createURIString(
-						$this->getScheme(), $this->getAuthority(), $this->getPath(), // Absolute URIs should use a "/" for an empty path
-						$this->getQuery(), $this->getFragment()
+			$scheme, $this->getAuthority(), $path, // Absolute URIs should use a "/" for an empty path
+			$this->getQuery(), $this->getFragment()
 		);
 	}
 
 	//--------------------------------------------------------------------
 
 	/**
-	 * Builds a representation of the string from the component parts.
-	 *
-	 * @param string $scheme
-	 * @param string $authority
-	 * @param string $path
-	 * @param string $query
-	 * @param string $fragment
-	 *
-	 * @return string
-	 */
-	public static function createURIString(string $scheme = null, string $authority = null, string $path = null, string $query = null, string $fragment = null): string
-	{
-		$uri = '';
-		if (! empty($scheme))
-		{
-			$uri .= $scheme . '://';
-		}
-
-		if (! empty($authority))
-		{
-			$uri .= $authority;
-		}
-
-		if ($path !== '')
-		{
-			$uri .= substr($uri, -1, 1) !== '/' ? '/' . ltrim($path, '/') : $path;
-		}
-
-		if ($query)
-		{
-			$uri .= '?' . $query;
-		}
-
-		if ($fragment)
-		{
-			$uri .= '#' . $fragment;
-		}
-
-		return $uri;
-	}
-
-	//--------------------------------------------------------------------
-
-	/**
-	 * Parses the given string an saves the appropriate authority pieces.
+	 * Parses the given string and saves the appropriate authority pieces.
 	 *
 	 * @param string $str
 	 *
@@ -605,7 +728,7 @@ class URI
 		if (empty($parts['host']) && $parts['path'] !== '')
 		{
 			$parts['host'] = $parts['path'];
-			unset($parts['path']);
+			unset($parts['path']); // @phpstan-ignore-line
 		}
 
 		$this->applyParts($parts);
@@ -623,7 +746,7 @@ class URI
 	 *
 	 * @see https://www.iana.org/assignments/uri-schemes/uri-schemes.xhtml
 	 *
-	 * @param $str
+	 * @param string $str
 	 *
 	 * @return $this
 	 */
@@ -689,6 +812,11 @@ class URI
 
 		if ($port <= 0 || $port > 65535)
 		{
+			if ($this->silent)
+			{
+				return $this;
+			}
+
 			throw HTTPException::forInvalidPort($port);
 		}
 
@@ -720,8 +848,6 @@ class URI
 	/**
 	 * Sets the path portion of the URI based on segments.
 	 *
-	 * @param string $path
-	 *
 	 * @return $this
 	 */
 	public function refreshPath()
@@ -749,6 +875,11 @@ class URI
 	{
 		if (strpos($query, '#') !== false)
 		{
+			if ($this->silent)
+			{
+				return $this;
+			}
+
 			throw HTTPException::forMalformedQueryString();
 		}
 
@@ -758,7 +889,14 @@ class URI
 			$query = substr($query, 1);
 		}
 
-		parse_str($query, $this->query);
+		if ($this->rawQueryString)
+		{
+			$this->query = $this->parseStr($query);
+		}
+		else
+		{
+			parse_str($query, $this->query);
+		}
 
 		return $this;
 	}
@@ -771,7 +909,7 @@ class URI
 	 *
 	 * @param array $query
 	 *
-	 * @return \CodeIgniter\HTTP\URI
+	 * @return URI
 	 */
 	public function setQueryArray(array $query)
 	{
@@ -802,7 +940,7 @@ class URI
 	/**
 	 * Removes one or more query vars from the URI.
 	 *
-	 * @param array ...$params
+	 * @param string ...$params
 	 *
 	 * @return $this
 	 */
@@ -822,7 +960,7 @@ class URI
 	 * Filters the query variables so that only the keys passed in
 	 * are kept. The rest are removed from the object.
 	 *
-	 * @param array ...$params
+	 * @param string ...$params
 	 *
 	 * @return $this
 	 */
@@ -832,7 +970,7 @@ class URI
 
 		foreach ($this->query as $key => $value)
 		{
-			if (! in_array($key, $params))
+			if (! in_array($key, $params, true))
 			{
 				continue;
 			}
@@ -870,7 +1008,7 @@ class URI
 	 * While dot segments have valid uses according to the spec,
 	 * this URI class does not allow them.
 	 *
-	 * @param $path
+	 * @param string|null $path
 	 *
 	 * @return string
 	 */
@@ -883,7 +1021,7 @@ class URI
 		$path = urldecode($path);
 
 		// Remove dot segments
-		$path = $this->removeDotSegments($path);
+		$path = self::removeDotSegments($path);
 
 		// Fix up some leading slash edge cases...
 		if (strpos($orig, './') === 0)
@@ -946,14 +1084,11 @@ class URI
 		}
 
 		// Port
-		if (isset($parts['port']))
+		if (isset($parts['port']) && ! is_null($parts['port']))
 		{
-			if (! is_null($parts['port']))
-			{
-				// Valid port numbers are enforced by earlier parse_url or setPort()
-				$port       = $parts['port'];
-				$this->port = $port;
-			}
+			// Valid port numbers are enforced by earlier parse_url or setPort()
+			$port       = $parts['port'];
+			$this->port = $port;
 		}
 
 		if (isset($parts['pass']))
@@ -980,7 +1115,7 @@ class URI
 	 *
 	 * @param string $uri
 	 *
-	 * @return \CodeIgniter\HTTP\URI
+	 * @return URI
 	 */
 	public function resolveRelativeURI(string $uri)
 	{
@@ -988,7 +1123,7 @@ class URI
 		 * NOTE: We don't use removeDotSegments in this
 		 * algorithm since it's already done by this line!
 		 */
-		$relative = new URI();
+		$relative = new self();
 		$relative->setURI($uri);
 
 		if ($relative->getScheme() === $this->getScheme())
@@ -1072,7 +1207,7 @@ class URI
 		}
 
 		array_pop($path);
-		array_push($path, $reference->getPath());
+		$path[] = $reference->getPath();
 
 		return implode('/', $path);
 	}
@@ -1080,69 +1215,35 @@ class URI
 	//--------------------------------------------------------------------
 
 	/**
-	 * Used when resolving and merging paths to correctly interpret and
-	 * remove single and double dot segments from the path per
-	 * RFC 3986 Section 5.2.4
+	 * This is equivalent to the native PHP parse_str() function.
+	 * This version allows the dot to be used as a key of the query string.
 	 *
-	 * @see http://tools.ietf.org/html/rfc3986#section-5.2.4
+	 * @param string $query
 	 *
-	 * @param string $path
-	 *
-	 * @return   string
-	 * @internal param \CodeIgniter\HTTP\URI $uri
+	 * @return array
 	 */
-	public function removeDotSegments(string $path): string
+	protected function parseStr(string $query): array
 	{
-		if ($path === '' || $path === '/')
+		$return = [];
+		$query  = explode('&', $query);
+
+		$params = array_map(function (string $chunk) {
+			return preg_replace_callback('/^(?<key>[^&=]+?)(?:\[[^&=]*\])?=(?<value>[^&=]+)/', function (array $match) {
+				return str_replace($match['key'], bin2hex($match['key']), $match[0]);
+			}, urldecode($chunk));
+		}, $query);
+
+		$params = implode('&', $params);
+		parse_str($params, $params);
+
+		foreach ($params as $key => $value)
 		{
-			return $path;
+			$return[hex2bin($key)] = $value;
 		}
 
-		$output = [];
+		$query = $params = null;
 
-		$input = explode('/', $path);
-
-		if ($input[0] === '')
-		{
-			unset($input[0]);
-			$input = array_values($input);
-		}
-
-		// This is not a perfect representation of the
-		// RFC, but matches most cases and is pretty
-		// much what Guzzle uses. Should be good enough
-		// for almost every real use case.
-		foreach ($input as $segment)
-		{
-			if ($segment === '..')
-			{
-				array_pop($output);
-			}
-			else if ($segment !== '.' && $segment !== '')
-			{
-				array_push($output, $segment);
-			}
-		}
-
-		$output = implode('/', $output);
-		$output = ltrim($output, '/ ');
-
-		if ($output !== '/')
-		{
-			// Add leading slash if necessary
-			if (strpos($path, '/') === 0)
-			{
-				$output = '/' . $output;
-			}
-
-			// Add trailing slash if necessary
-			if (substr($path, -1, 1) === '/')
-			{
-				$output .= '/';
-			}
-		}
-
-		return $output;
+		return $return;
 	}
 
 	//--------------------------------------------------------------------

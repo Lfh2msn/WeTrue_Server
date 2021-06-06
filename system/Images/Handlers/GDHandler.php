@@ -1,56 +1,29 @@
 <?php
+
 /**
- * CodeIgniter
+ * This file is part of the CodeIgniter 4 framework.
  *
- * An open source application development framework for PHP
+ * (c) CodeIgniter Foundation <admin@codeigniter.com>
  *
- * This content is released under the MIT License (MIT)
- *
- * Copyright (c) 2014-2019 British Columbia Institute of Technology
- * Copyright (c) 2019-2020 CodeIgniter Foundation
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in
- * all copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
- * THE SOFTWARE.
- *
- * @package    CodeIgniter
- * @author     CodeIgniter Dev Team
- * @copyright  2019-2020 CodeIgniter Foundation
- * @license    https://opensource.org/licenses/MIT    MIT License
- * @link       https://codeigniter.com
- * @since      Version 4.0.0
- * @filesource
+ * For the full copyright and license information, please view the LICENSE
+ * file that was distributed with this source code.
  */
 
 namespace CodeIgniter\Images\Handlers;
 
 use CodeIgniter\Images\Exceptions\ImageException;
+use Config\Images;
 
 /**
  * Image handler for GD package
  */
 class GDHandler extends BaseHandler
 {
-
 	/**
 	 * Constructor.
 	 *
-	 * @param  type $config
-	 * @throws type
+	 * @param  Images|null $config
+	 * @throws ImageException
 	 */
 	public function __construct($config = null)
 	{
@@ -151,49 +124,9 @@ class GDHandler extends BaseHandler
 	{
 		$srcImg = $this->createImage();
 
-		$width  = $this->image()->origWidth;
-		$height = $this->image()->origHeight;
+		$angle = $direction === 'horizontal' ? IMG_FLIP_HORIZONTAL : IMG_FLIP_VERTICAL;
 
-		if ($direction === 'horizontal')
-		{
-			for ($i = 0; $i < $height; $i ++)
-			{
-				$left  = 0;
-				$right = $width - 1;
-
-				while ($left < $right)
-				{
-					$cl = imagecolorat($srcImg, $left, $i);
-					$cr = imagecolorat($srcImg, $right, $i);
-
-					imagesetpixel($srcImg, $left, $i, $cr);
-					imagesetpixel($srcImg, $right, $i, $cl);
-
-					$left ++;
-					$right --;
-				}
-			}
-		}
-		else
-		{
-			for ($i = 0; $i < $width; $i ++)
-			{
-				$top    = 0;
-				$bottom = $height - 1;
-
-				while ($top < $bottom)
-				{
-					$ct = imagecolorat($srcImg, $i, $top);
-					$cb = imagecolorat($srcImg, $i, $bottom);
-
-					imagesetpixel($srcImg, $i, $top, $cb);
-					imagesetpixel($srcImg, $i, $bottom, $ct);
-
-					$top ++;
-					$bottom --;
-				}
-			}
-		}
+		imageflip($srcImg, $angle);
 
 		$this->resource = $srcImg;
 
@@ -211,9 +144,9 @@ class GDHandler extends BaseHandler
 	{
 		if (function_exists('gd_info'))
 		{
-			$gd_version = @gd_info();
+			$gdVersion = @gd_info();
 
-			return preg_replace('/\D/', '', $gd_version['GD Version']);
+			return preg_replace('/\D/', '', $gdVersion['GD Version']);
 		}
 
 		return false;
@@ -224,9 +157,9 @@ class GDHandler extends BaseHandler
 	/**
 	 * Resizes the image.
 	 *
-	 * @return boolean|\CodeIgniter\Images\Handlers\GDHandler
+	 * @return GDHandler
 	 */
-	public function _resize()
+	public function _resize(bool $maintainRatio = false)
 	{
 		return $this->process('resize');
 	}
@@ -236,7 +169,7 @@ class GDHandler extends BaseHandler
 	/**
 	 * Crops the image.
 	 *
-	 * @return boolean|\CodeIgniter\Images\Handlers\GDHandler
+	 * @return GDHandler
 	 */
 	public function _crop()
 	{
@@ -250,7 +183,7 @@ class GDHandler extends BaseHandler
 	 *
 	 * @param string $action
 	 *
-	 * @return $this|bool
+	 * @return $this
 	 */
 	protected function process(string $action)
 	{
@@ -286,7 +219,8 @@ class GDHandler extends BaseHandler
 
 		$dest = $create($this->width, $this->height);
 
-		if ($this->image()->imageType === IMAGETYPE_PNG) // png we can actually preserve transparency
+		// for png and webp we can actually preserve transparency
+		if (in_array($this->image()->imageType, $this->supportTransparency, true))
 		{
 			imagealphablending($dest, false);
 			imagesavealpha($dest, true);
@@ -318,14 +252,32 @@ class GDHandler extends BaseHandler
 	 */
 	public function save(string $target = null, int $quality = 90): bool
 	{
-		$target = empty($target) ? $this->image()->getPathname() : $target;
+		$original = $target;
+		$target   = empty($target) ? $this->image()->getPathname() : $target;
+
+		// If no new resource has been created, then we're
+		// simply copy the existing one.
+		if (empty($this->resource) && $quality === 100)
+		{
+			if ($original === null)
+			{
+				return true;
+			}
+
+			$name = basename($target);
+			$path = pathinfo($target, PATHINFO_DIRNAME);
+
+			return $this->image()->copy($path, $name);
+		}
+
+		$this->ensureResource();
 
 		switch ($this->image()->imageType)
 		{
 			case IMAGETYPE_GIF:
 				if (! function_exists('imagegif'))
 				{
-					throw ImageException::forInvalidImageCreate(lang('images.gifNotSupported'));
+					throw ImageException::forInvalidImageCreate(lang('Images.gifNotSupported'));
 				}
 
 				if (! @imagegif($this->resource, $target))
@@ -336,7 +288,7 @@ class GDHandler extends BaseHandler
 			case IMAGETYPE_JPEG:
 				if (! function_exists('imagejpeg'))
 				{
-					throw ImageException::forInvalidImageCreate(lang('images.jpgNotSupported'));
+					throw ImageException::forInvalidImageCreate(lang('Images.jpgNotSupported'));
 				}
 
 				if (! @imagejpeg($this->resource, $target, $quality))
@@ -347,10 +299,21 @@ class GDHandler extends BaseHandler
 			case IMAGETYPE_PNG:
 				if (! function_exists('imagepng'))
 				{
-					throw ImageException::forInvalidImageCreate(lang('images.pngNotSupported'));
+					throw ImageException::forInvalidImageCreate(lang('Images.pngNotSupported'));
 				}
 
 				if (! @imagepng($this->resource, $target))
+				{
+					throw ImageException::forSaveFailed();
+				}
+				break;
+			case IMAGETYPE_WEBP:
+				if (! function_exists('imagewebp'))
+				{
+					throw ImageException::forInvalidImageCreate(lang('Images.webpNotSupported'));
+				}
+
+				if (! @imagewebp($this->resource, $target))
 				{
 					throw ImageException::forSaveFailed();
 				}
@@ -396,29 +359,68 @@ class GDHandler extends BaseHandler
 			$imageType = $this->image()->imageType;
 		}
 
+		return $this->getImageResource($path, $imageType);
+	}
+
+	//--------------------------------------------------------------------
+
+	/**
+	 * Make the image resource object if needed
+	 */
+	protected function ensureResource()
+	{
+		if ($this->resource === null)
+		{
+			// if valid image type, make corresponding image resource
+			$this->resource = $this->getImageResource(
+				$this->image()->getPathname(), $this->image()->imageType
+			);
+		}
+	}
+
+	//--------------------------------------------------------------------
+
+	/**
+	 * Check if image type is supported and return image resource
+	 *
+	 * @param string  $path      Image path
+	 * @param integer $imageType Image type
+	 *
+	 * @return resource|boolean
+	 * @throws ImageException
+	 */
+	protected function getImageResource(string $path, int $imageType)
+	{
 		switch ($imageType)
 		{
 			case IMAGETYPE_GIF:
 				if (! function_exists('imagecreatefromgif'))
 				{
-					throw ImageException::forInvalidImageCreate(lang('images.gifNotSupported'));
+					throw ImageException::forInvalidImageCreate(lang('Images.gifNotSupported'));
 				}
 
 				return imagecreatefromgif($path);
 			case IMAGETYPE_JPEG:
 				if (! function_exists('imagecreatefromjpeg'))
 				{
-					throw ImageException::forInvalidImageCreate(lang('images.jpgNotSupported'));
+					throw ImageException::forInvalidImageCreate(lang('Images.jpgNotSupported'));
 				}
 
 				return imagecreatefromjpeg($path);
 			case IMAGETYPE_PNG:
 				if (! function_exists('imagecreatefrompng'))
 				{
-					throw ImageException::forInvalidImageCreate(lang('images.pngNotSupported'));
+					throw ImageException::forInvalidImageCreate(lang('Images.pngNotSupported'));
 				}
 
 				return imagecreatefrompng($path);
+			case IMAGETYPE_WEBP:
+				if (! function_exists('imagecreatefromwebp'))
+				{
+					throw ImageException::forInvalidImageCreate(lang('Images.webpNotSupported'));
+				}
+
+				return imagecreatefromwebp($path);
 			default:
 				throw ImageException::forInvalidImageCreate('Ima');
 		}
@@ -489,7 +491,7 @@ class GDHandler extends BaseHandler
 		if ($options['vAlign'] === 'middle')
 		{
 			// Don't apply padding when you're in the middle of the image.
-			$yAxis += ($this->image()->origHeight / 2) + ($fontheight / 2) - $options['padding'];
+			$yAxis += ($this->image()->origHeight / 2) + ($fontheight / 2) - $options['padding'] - $fontheight - $options['shadowOffset'];
 		}
 		elseif ($options['vAlign'] === 'bottom')
 		{
@@ -529,6 +531,8 @@ class GDHandler extends BaseHandler
 	 * @param string  $text
 	 * @param array   $options
 	 * @param boolean $isShadow Whether we are drawing the dropshadow or actual text
+	 *
+	 * @return void
 	 */
 	protected function textOverlay(string $text, array $options = [], bool $isShadow = false)
 	{
@@ -545,6 +549,13 @@ class GDHandler extends BaseHandler
 		imagealphablending($src, true);
 
 		$color = $isShadow ? $options['shadowColor'] : $options['color'];
+
+		// shorthand hex, #f00
+		if (strlen($color) === 3)
+		{
+			$color = implode('', array_map('str_repeat', str_split($color), [2, 2, 2]));
+		}
+
 		$color = str_split(substr($color, 0, 6), 2);
 		$color = imagecolorclosestalpha($src, hexdec($color[0]), hexdec($color[1]), hexdec($color[2]), $opacity);
 
@@ -586,5 +597,4 @@ class GDHandler extends BaseHandler
 	{
 		return imagesy($this->resource);
 	}
-
 }

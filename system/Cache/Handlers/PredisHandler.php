@@ -1,64 +1,31 @@
 <?php
+
 /**
- * CodeIgniter
+ * This file is part of the CodeIgniter 4 framework.
  *
- * An open source application development framework for PHP
+ * (c) CodeIgniter Foundation <admin@codeigniter.com>
  *
- * This content is released under the MIT License (MIT)
- *
- * Copyright (c) 2014-2019 British Columbia Institute of Technology
- * Copyright (c) 2019-2020 CodeIgniter Foundation
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in
- * all copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
- * THE SOFTWARE.
- *
- * @package    CodeIgniter
- * @author     CodeIgniter Dev Team
- * @copyright  2019-2020 CodeIgniter Foundation
- * @license    https://opensource.org/licenses/MIT	MIT License
- * @link       https://codeigniter.com
- * @since      Version 4.0.0
- * @filesource
+ * For the full copyright and license information, please view the LICENSE
+ * file that was distributed with this source code.
  */
 
 namespace CodeIgniter\Cache\Handlers;
 
-use CodeIgniter\Cache\CacheInterface;
 use CodeIgniter\Exceptions\CriticalError;
+use Config\Cache;
+use Exception;
+use Predis\Client;
+use Predis\Collection\Iterator\Keyspace;
 
 /**
  * Predis cache handler
  */
-class PredisHandler implements CacheInterface
+class PredisHandler extends BaseHandler
 {
-
-	/**
-	 * Prefixed to all cache names.
-	 *
-	 * @var string
-	 */
-	protected $prefix;
-
 	/**
 	 * Default config
 	 *
-	 * @static
-	 * @var    array
+	 * @var array
 	 */
 	protected $config = [
 		'scheme'   => 'tcp',
@@ -71,7 +38,7 @@ class PredisHandler implements CacheInterface
 	/**
 	 * Predis connection
 	 *
-	 * @var Predis
+	 * @var Client
 	 */
 	protected $redis;
 
@@ -80,12 +47,11 @@ class PredisHandler implements CacheInterface
 	/**
 	 * Constructor.
 	 *
-	 * @param  type $config
-	 * @throws type
+	 * @param Cache $config
 	 */
-	public function __construct($config)
+	public function __construct(Cache $config)
 	{
-		$this->prefix = $config->prefix ?: '';
+		$this->prefix = $config->prefix;
 
 		if (isset($config->redis))
 		{
@@ -105,12 +71,12 @@ class PredisHandler implements CacheInterface
 		try
 		{
 			// Create a new instance of Predis\Client
-			$this->redis = new \Predis\Client($this->config, ['prefix' => $this->prefix]);
+			$this->redis = new Client($this->config, ['prefix' => $this->prefix]);
 
 			// Check if the connection is valid by trying to get the time.
 			$this->redis->time();
 		}
-		catch (\Exception $e)
+		catch (Exception $e)
 		{
 			// thrown if can't connect to redis server.
 			throw new CriticalError('Cache: Predis connection refused (' . $e->getMessage() . ').');
@@ -128,10 +94,13 @@ class PredisHandler implements CacheInterface
 	 */
 	public function get(string $key)
 	{
+		$key = static::validateKey($key);
+
 		$data = array_combine([
 			'__ci_type',
 			'__ci_value',
-		], $this->redis->hmget($key, ['__ci_type', '__ci_value'])
+		],
+			$this->redis->hmget($key, ['__ci_type', '__ci_value'])
 		);
 
 		if (! isset($data['__ci_type'], $data['__ci_value']) || $data['__ci_value'] === false)
@@ -165,11 +134,13 @@ class PredisHandler implements CacheInterface
 	 * @param mixed   $value The data to save
 	 * @param integer $ttl   Time To Live, in seconds (default 60)
 	 *
-	 * @return mixed
+	 * @return boolean Success or failure
 	 */
 	public function save(string $key, $value, int $ttl = 60)
 	{
-		switch ($data_type = gettype($value))
+		$key = static::validateKey($key);
+
+		switch ($dataType = gettype($value))
 		{
 			case 'array':
 			case 'object':
@@ -186,7 +157,7 @@ class PredisHandler implements CacheInterface
 				return false;
 		}
 
-		if (! $this->redis->hmset($key, ['__ci_type' => $data_type, '__ci_value' => $value]))
+		if (! $this->redis->hmset($key, ['__ci_type' => $dataType, '__ci_value' => $value]))
 		{
 			return false;
 		}
@@ -203,11 +174,34 @@ class PredisHandler implements CacheInterface
 	 *
 	 * @param string $key Cache item name
 	 *
-	 * @return mixed
+	 * @return boolean Success or failure
 	 */
 	public function delete(string $key)
 	{
-		return ($this->redis->del($key) === 1);
+		$key = static::validateKey($key);
+
+		return $this->redis->del($key) === 1;
+	}
+
+	//--------------------------------------------------------------------
+
+	/**
+	 * Deletes items from the cache store matching a given pattern.
+	 *
+	 * @param string $pattern Cache items glob-style pattern
+	 *
+	 * @return integer The number of deleted items
+	 */
+	public function deleteMatching(string $pattern)
+	{
+		$matchedKeys = [];
+
+		foreach (new Keyspace($this->redis, $pattern) as $key)
+		{
+			$matchedKeys[] = $key;
+		}
+
+		return $this->redis->del($matchedKeys);
 	}
 
 	//--------------------------------------------------------------------
@@ -218,10 +212,12 @@ class PredisHandler implements CacheInterface
 	 * @param string  $key    Cache ID
 	 * @param integer $offset Step/value to increase by
 	 *
-	 * @return mixed
+	 * @return integer
 	 */
 	public function increment(string $key, int $offset = 1)
 	{
+		$key = static::validateKey($key);
+
 		return $this->redis->hincrby($key, 'data', $offset);
 	}
 
@@ -233,10 +229,12 @@ class PredisHandler implements CacheInterface
 	 * @param string  $key    Cache ID
 	 * @param integer $offset Step/value to increase by
 	 *
-	 * @return mixed
+	 * @return integer
 	 */
 	public function decrement(string $key, int $offset = 1)
 	{
+		$key = static::validateKey($key);
+
 		return $this->redis->hincrby($key, 'data', -$offset);
 	}
 
@@ -245,11 +243,11 @@ class PredisHandler implements CacheInterface
 	/**
 	 * Will delete all items in the entire cache.
 	 *
-	 * @return mixed
+	 * @return boolean Success or failure
 	 */
 	public function clean()
 	{
-		return $this->redis->flushdb();
+		return $this->redis->flushdb()->getPayload() === 'OK';
 	}
 
 	//--------------------------------------------------------------------
@@ -260,7 +258,7 @@ class PredisHandler implements CacheInterface
 	 * The information returned and the structure of the data
 	 * varies depending on the handler.
 	 *
-	 * @return mixed
+	 * @return array
 	 */
 	public function getCacheInfo()
 	{
@@ -274,21 +272,29 @@ class PredisHandler implements CacheInterface
 	 *
 	 * @param string $key Cache item name.
 	 *
-	 * @return mixed
+	 * @return array|false|null
+	 *   Returns null if the item does not exist, otherwise array<string, mixed>
+	 *   with at least the 'expire' key for absolute epoch expiry (or null).
 	 */
 	public function getMetaData(string $key)
 	{
+		$key = static::validateKey($key);
+
 		$data = array_combine(['__ci_value'], $this->redis->hmget($key, ['__ci_value']));
 
 		if (isset($data['__ci_value']) && $data['__ci_value'] !== false)
 		{
+			$time = time();
+			$ttl  = $this->redis->ttl($key);
+
 			return [
-				'expire' => time() + $this->redis->ttl($key),
+				'expire' => $ttl > 0 ? time() + $ttl : null,
+				'mtime'  => $time,
 				'data'   => $data['__ci_value'],
 			];
 		}
 
-		return false;
+		return null;
 	}
 
 	//--------------------------------------------------------------------
@@ -302,5 +308,4 @@ class PredisHandler implements CacheInterface
 	{
 		return class_exists('\Predis\Client');
 	}
-
 }

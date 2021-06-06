@@ -1,40 +1,12 @@
 <?php
 
 /**
- * CodeIgniter
+ * This file is part of the CodeIgniter 4 framework.
  *
- * An open source application development framework for PHP
+ * (c) CodeIgniter Foundation <admin@codeigniter.com>
  *
- * This content is released under the MIT License (MIT)
- *
- * Copyright (c) 2014-2019 British Columbia Institute of Technology
- * Copyright (c) 2019-2020 CodeIgniter Foundation
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in
- * all copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
- * THE SOFTWARE.
- *
- * @package    CodeIgniter
- * @author     CodeIgniter Dev Team
- * @copyright  2019-2020 CodeIgniter Foundation
- * @license    https://opensource.org/licenses/MIT	MIT License
- * @link       https://codeigniter.com
- * @since      Version 4.0.0
- * @filesource
+ * For the full copyright and license information, please view the LICENSE
+ * file that was distributed with this source code.
  */
 
 namespace CodeIgniter\HTTP;
@@ -46,7 +18,7 @@ use Config\Mimes;
 /**
  * HTTP response when a download is requested.
  */
-class DownloadResponse extends Message implements ResponseInterface
+class DownloadResponse extends Response
 {
 	/**
 	 * Download file name
@@ -58,7 +30,7 @@ class DownloadResponse extends Message implements ResponseInterface
 	/**
 	 * Download for file
 	 *
-	 * @var File?
+	 * @var File|null
 	 */
 	private $file;
 
@@ -72,16 +44,9 @@ class DownloadResponse extends Message implements ResponseInterface
 	/**
 	 * Download for binary
 	 *
-	 * @var string
+	 * @var string|null
 	 */
 	private $binary;
-
-	/**
-	 * Download reason
-	 *
-	 * @var string
-	 */
-	private $reason = 'OK';
 
 	/**
 	 * Download charset
@@ -91,11 +56,18 @@ class DownloadResponse extends Message implements ResponseInterface
 	private $charset = 'UTF-8';
 
 	/**
-	 * pretend
+	 * Download reason
 	 *
-	 * @var boolean
+	 * @var string
 	 */
-	private $pretend = false;
+	protected $reason = 'OK';
+
+	/**
+	 * The current status code for this response.
+	 *
+	 * @var integer
+	 */
+	protected $statusCode = 200;
 
 	/**
 	 * Constructor.
@@ -105,8 +77,13 @@ class DownloadResponse extends Message implements ResponseInterface
 	 */
 	public function __construct(string $filename, bool $setMime)
 	{
+		parent::__construct(config('App'));
+
 		$this->filename = $filename;
 		$this->setMime  = $setMime;
+
+		// Make sure the content type is either specified or detected
+		$this->removeHeader('Content-Type');
 	}
 
 	/**
@@ -163,7 +140,8 @@ class DownloadResponse extends Message implements ResponseInterface
 		{
 			return strlen($this->binary);
 		}
-		elseif ($this->file instanceof File)
+
+		if ($this->file instanceof File)
 		{
 			return $this->file->getSize();
 		}
@@ -179,13 +157,10 @@ class DownloadResponse extends Message implements ResponseInterface
 		$mime    = null;
 		$charset = '';
 
-		if ($this->setMime === true)
+		if ($this->setMime === true && ($lastDotPosition = strrpos($this->filename, '.')) !== false)
 		{
-			if (($last_dot_position = strrpos($this->filename, '.')) !== false)
-			{
-				$mime    = Mimes::guessTypeFromExtension(substr($this->filename, $last_dot_position + 1));
-				$charset = $this->charset;
-			}
+			$mime    = Mimes::guessTypeFromExtension(substr($this->filename, $lastDotPosition + 1));
+			$charset = $this->charset;
 		}
 
 		if (! is_string($mime))
@@ -233,37 +208,32 @@ class DownloadResponse extends Message implements ResponseInterface
 	 */
 	private function getContentDisposition() : string
 	{
-		$download_filename = $this->getDownloadFileName();
+		$downloadFilename = $this->getDownloadFileName();
 
-		$utf8_filename = $download_filename;
+		$utf8Filename = $downloadFilename;
 
 		if (strtoupper($this->charset) !== 'UTF-8')
 		{
-			$utf8_filename = mb_convert_encoding($download_filename, 'UTF-8', $this->charset);
+			$utf8Filename = mb_convert_encoding($downloadFilename, 'UTF-8', $this->charset);
 		}
 
-		$result = sprintf('attachment; filename="%s"', $download_filename);
+		$result = sprintf('attachment; filename="%s"', $downloadFilename);
 
-		if (isset($utf8_filename))
+		if ($utf8Filename)
 		{
-			$result .= '; filename*=UTF-8\'\'' . rawurlencode($utf8_filename);
+			$result .= '; filename*=UTF-8\'\'' . rawurlencode($utf8Filename);
 		}
 
 		return $result;
 	}
 
-	/**
-	 * {@inheritDoc}
-	 */
-	public function getStatusCode(): int
-	{
-		return 200;
-	}
-
 	//--------------------------------------------------------------------
 
 	/**
-	 * {@inheritDoc}
+	 * Disallows status changing.
+	 *
+	 * @param integer $code
+	 * @param string  $reason
 	 *
 	 * @throws DownloadException
 	 */
@@ -273,48 +243,20 @@ class DownloadResponse extends Message implements ResponseInterface
 	}
 
 	//--------------------------------------------------------------------
-
 	/**
-	 * {@inheritDoc}
-	 */
-	public function getReason(): string
-	{
-		return $this->reason;
-	}
-
-	//--------------------------------------------------------------------
-	//--------------------------------------------------------------------
-	// Convenience Methods
-	//--------------------------------------------------------------------
-
-	/**
-	 * {@inheritDoc}
-	 */
-	public function setDate(\DateTime $date)
-	{
-		$date->setTimezone(new \DateTimeZone('UTC'));
-
-		$this->setHeader('Date', $date->format('D, d M Y H:i:s') . ' GMT');
-
-		return $this;
-	}
-
-	//--------------------------------------------------------------------
-
-	/**
-	 * {@inheritDoc}
+	 * Sets the Content Type header for this response with the mime type
+	 * and, optionally, the charset.
+	 *
+	 * @param string $mime
+	 * @param string $charset
+	 *
+	 * @return ResponseInterface
 	 */
 	public function setContentType(string $mime, string $charset = 'UTF-8')
 	{
-		// add charset attribute if not already there and provided as parm
-		if ((strpos($mime, 'charset=') < 1) && ! empty($charset))
-		{
-			$mime .= '; charset=' . $charset;
-		}
+		parent::setContentType($mime, $charset);
 
-		$this->removeHeader('Content-Type'); // replace existing content type
-		$this->setHeader('Content-Type', $mime);
-		if (! empty($charset))
+		if ($charset !== '')
 		{
 			$this->charset = $charset;
 		}
@@ -323,7 +265,8 @@ class DownloadResponse extends Message implements ResponseInterface
 	}
 
 	/**
-	 * {@inheritDoc}
+	 * Sets the appropriate headers to ensure this response
+	 * is not cached by the browsers.
 	 */
 	public function noCache(): self
 	{
@@ -337,7 +280,9 @@ class DownloadResponse extends Message implements ResponseInterface
 	//--------------------------------------------------------------------
 
 	/**
-	 * {@inheritDoc}
+	 * Disables cache configuration.
+	 *
+	 * @param array $options
 	 *
 	 * @throws DownloadException
 	 */
@@ -347,45 +292,13 @@ class DownloadResponse extends Message implements ResponseInterface
 	}
 
 	//--------------------------------------------------------------------
-
-	/**
-	 * {@inheritDoc}
-	 */
-	public function setLastModified($date)
-	{
-		if ($date instanceof \DateTime)
-		{
-			$date->setTimezone(new \DateTimeZone('UTC'));
-			$this->setHeader('Last-Modified', $date->format('D, d M Y H:i:s') . ' GMT');
-		}
-		elseif (is_string($date))
-		{
-			$this->setHeader('Last-Modified', $date);
-		}
-
-		return $this;
-	}
-
-	//--------------------------------------------------------------------
-	//--------------------------------------------------------------------
 	// Output Methods
 	//--------------------------------------------------------------------
 
 	/**
-	 * For unit testing, don't actually send headers.
-	 *
-	 * @param  boolean $pretend
-	 * @return $this
-	 */
-	public function pretend(bool $pretend = true)
-	{
-		$this->pretend = $pretend;
-
-		return $this;
-	}
-
-	/**
 	 * {@inheritDoc}
+	 *
+	 * @todo Do downloads need CSP or Cookies? Compare with ResponseTrait::send()
 	 */
 	public function send()
 	{
@@ -409,41 +322,8 @@ class DownloadResponse extends Message implements ResponseInterface
 		$this->setHeader('Content-Disposition', $this->getContentDisposition());
 		$this->setHeader('Expires-Disposition', '0');
 		$this->setHeader('Content-Transfer-Encoding', 'binary');
-		$this->setHeader('Content-Length', (string)$this->getContentLength());
+		$this->setHeader('Content-Length', (string) $this->getContentLength());
 		$this->noCache();
-	}
-
-	/**
-	 * Sends the headers of this HTTP request to the browser.
-	 *
-	 * @return DownloadResponse
-	 */
-	public function sendHeaders()
-	{
-		// Have the headers already been sent?
-		if ($this->pretend || headers_sent())
-		{
-			return $this;
-		}
-
-		// Per spec, MUST be sent with each request, if possible.
-		// http://www.w3.org/Protocols/rfc2616/rfc2616-sec13.html
-		if (! isset($this->headers['Date']))
-		{
-			$this->setDate(\DateTime::createFromFormat('U', time()));
-		}
-
-		// HTTP Status
-		header(sprintf('HTTP/%s %s %s', $this->protocolVersion, $this->getStatusCode(), $this->getReason()), true,
-				$this->getStatusCode());
-
-		// Send all of our headers
-		foreach ($this->getHeaders() as $name => $values)
-		{
-			header($name . ': ' . $this->getHeaderLine($name), false, $this->getStatusCode());
-		}
-
-		return $this;
 	}
 
 	/**
@@ -459,7 +339,8 @@ class DownloadResponse extends Message implements ResponseInterface
 		{
 			return $this->sendBodyByBinary();
 		}
-		elseif ($this->file !== null)
+
+		if ($this->file !== null)
 		{
 			return $this->sendBodyByFilePath();
 		}
@@ -474,10 +355,10 @@ class DownloadResponse extends Message implements ResponseInterface
 	 */
 	private function sendBodyByFilePath()
 	{
-		$spl_file_object = $this->file->openFile('rb');
+		$splFileObject = $this->file->openFile('rb');
 
 		// Flush 1MB chunks of data
-		while (! $spl_file_object->eof() && ($data = $spl_file_object->fread(1048576)) !== false)
+		while (! $splFileObject->eof() && ($data = $splFileObject->fread(1048576)) !== false)
 		{
 			echo $data;
 		}

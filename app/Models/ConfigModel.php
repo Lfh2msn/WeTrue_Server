@@ -1,20 +1,20 @@
 <?php namespace App\Models;
 
-use CodeIgniter\Model;
-use App\Models\DisposeModel;
+use App\Models\ComModel;
 
-class ConfigModel extends Model {
+class ConfigModel extends ComModel {
 //配置Model
 
 	public function __construct(){
         parent::__construct();
-		$this->DisposeModel = new DisposeModel();
+		$this->tablename	= 'wet_amount';
+		$this->DisposeModel	= new DisposeModel();
     }
 
     public function backendConfig()
 	{//后端配置
 		return array(
-			'version'			 => '2.0.0',  //当前版本号
+			'version'			 => '2.1.2',  //当前版本号
 			'requireVersion'	 => '2.0.0',  //最低要求版本号
 			'topicAmount'        => 1e15,  //默认，发帖消耗AE 1e17 = 0.1ae
 			'commentAmount'      => 1e14,  //默认，评论消耗AE
@@ -30,17 +30,18 @@ class ConfigModel extends Model {
 			'adminUser_2'        => 'ak_2kxt6D65giv4yNt4oa44SjW4jEXfoHMviPFvAreSEXvz25Q3QQ',  // Admin User 2
 			'adminUser_3'        => 'ak_2kxt6D65giv4yNt4oa44SjW4jEXfoHMviPFvAreSEXvz25Q3QQ',  // Admin User 3
 			'gateioApiUrl'       => 'https://data.gateapi.io/api2/1/ticker/ae_usdt',  //Gate.io AE API
-			'AeasyAirdropAE'     => false,  //是否开启Aeasy空投 true = 开启, false = 关闭
+			'AeasyAirdropAE'     => true,  //是否开启Aeasy空投 true = 开启, false = 关闭
 			'AeasyApiUrl'        => 'https://aeasy.io/api/wallet/transfer',  //Aeasy.io API
 			'AeasyAppID'         => '',  //Aeasy.io appid
 			'AeasyAmount'        => '0.1',  //活动金额
 			'AeasySecretKey'     => '',  //私钥
-			'airdropWttRatio'    => 3,  //WTT空投比例
-			'hotRecDay'          => 20,  //热点推荐天数
+			'airdropWTTRatio'    => 1,  //WTT空投比例
+			'hotRecDay'          => 15,  //热点推荐天数
 			'factorPraise'		 => 1,  //点赞因子,越大权重越大
 			'factorComment'		 => 3,  //评论因子,越大权重越大
 			'factorStar'		 => 5,  //收藏因子,越大权重越大
-			'factorTime'		 => 0.2,  //时间因子,越大权重越小
+			'factorRead'		 => 0.1,  //阅读量因子,越大权重越大
+			'factorTime'		 => 0.5,  //时间因子,越大权重越小
 			'topicActive'        => 5,  //发帖 +活跃度
 			'commentActive'      => 2,  //评论 +活跃度
 			'replyActive'        => 2,  //回复 +活跃度
@@ -65,7 +66,7 @@ class ConfigModel extends Model {
 								reply, 
 								nickname, 
 								portrait
-							FROM wet_amount WHERE address = '$akToken' LIMIT 1";
+							FROM $this->tablename WHERE address = '$akToken' LIMIT 1";
 			$query  = $this->db->query($selectSql);
 			$getRow = $query-> getRow();
 		}
