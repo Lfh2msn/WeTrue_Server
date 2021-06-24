@@ -68,8 +68,6 @@ class PraiseModel extends Model {
 			}
 			$this->db->query($updateSql);
 			$this->db->query($praiseSql);
-			//统计用户发帖总数量--临时
-			$this->UserModel-> countTopic($akToken);
 			//用户活跃入库
 			$backendConfig = $this->configModel-> backendConfig();
 			$praiseActive  = $backendConfig['praiseActive'];

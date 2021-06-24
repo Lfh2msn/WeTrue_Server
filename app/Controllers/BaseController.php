@@ -48,8 +48,6 @@ class BaseController extends Controller {
 		// E.g.:
 		// $this->session = \Config\Services::session();
 		//$message->header = CodeIgniter\HTTP\Message;
-		//header("Access-Control-Allow-Origin: *");
-		//header("Access-Control-Allow-Headers: ak-token");
 		$this->request 		= $request;
 		//$this->request = service('request');
 		$this->response 	= $response;
@@ -59,6 +57,7 @@ class BaseController extends Controller {
 		$this->UserModel	= new UserModel();
 		$this->response->setHeader('Access-Control-Allow-Origin', '*');
 		$this->response->setHeader('Access-Control-Allow-Headers', 'ak-token');
+		//$this->response->setHeader('Content-Type', 'application/json; charset=utf-8');
 	}
 
 }

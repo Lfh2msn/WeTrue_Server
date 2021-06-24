@@ -139,10 +139,31 @@ class DisposeModel extends Model {
 		}
 	}
 
+    public function getRealIP()
+    {//获取IP
+        $ip = FALSE;
+        if(!empty($_SERVER["HTTP_CLIENT_IP"])){
+            $ip = $_SERVER["HTTP_CLIENT_IP"];
+        }
+        if (!empty($_SERVER['HTTP_X_FORWARDED_FOR'])) {
+            $ips = explode (", ", $_SERVER['HTTP_X_FORWARDED_FOR']);
+            if ($ip) { array_unshift($ips, $ip); $ip = FALSE; }
+            for ($i = 0; $i < count($ips); $i++) {
+                if (!eregi ("^(10│172.16│192.168).", $ips[$i])) {
+                    $ip = $ips[$i];
+                    break;
+                }
+            }
+        }
+        return ($ip ? $ip : $_SERVER['REMOTE_ADDR']);
+    }
+
     public function delete_xss($string)
     {//xss删除函数
         $string = strip_tags($string);
         $string = htmlspecialchars($string, ENT_QUOTES);
+        $string = str_replace("\n\n\n","\n",$string);
+        $string = str_replace("\n\n\n","\n",$string);
         $string = str_replace("\n","<br>",$string);
         return $string;
     }
@@ -173,24 +194,35 @@ class DisposeModel extends Model {
         return $string;
     }
 
-    public function getRealIP()
-    {//获取IP
-        $ip = FALSE;
-        if(!empty($_SERVER["HTTP_CLIENT_IP"])){
-            $ip = $_SERVER["HTTP_CLIENT_IP"];
+    public function sensitive($string)
+    {/*敏感词过滤
+    * @todo 敏感词过滤，返回结果
+    * @param array $list  定义敏感词一维数组
+    * @param string $string 要过滤的内容
+    * @return string $log 处理结果
+    */
+        //$matchingList = ['习近平','操B','操逼','操你','操你','草B','草逼','草你','草你','艹B','艹逼','艹你','艹你','你他妈','骚娘','骚女','鸡巴','鸡8'];  //敏感词
+        $sensitive = file_get_contents("keyWords.txt"); // 读取关键字文本信息
+        $matchingList = explode("\n",$sensitive); // 把关键字转换为数组
+
+        $count        = 0; //违规词的个数
+        //$sensitiveWord = '';  //违规词
+        $stringAfter  = $string;  //替换后的内容
+        $pattern      = "/".implode("|", $matchingList)."/i"; //定义正则表达式
+        if(preg_match_all($pattern, $string, $matches)){ //匹配到了结果
+            $patternList = $matches[0];  //匹配到的数组
+            $count       = count($patternList);
+            //$sensitiveWord = implode(',', $patternList); //敏感词数组转字符串
+            $replaceArray  = array_combine($patternList,array_fill(0, count($patternList), '**')); //把匹配到的数组进行合并，替换使用
+            $stringAfter   = strtr($string, $replaceArray); //结果替换
         }
-        if (!empty($_SERVER['HTTP_X_FORWARDED_FOR'])) {
-            $ips = explode (", ", $_SERVER['HTTP_X_FORWARDED_FOR']);
-            if ($ip) { array_unshift($ips, $ip); $ip = FALSE; }
-            for ($i = 0; $i < count($ips); $i++) {
-                if (!eregi ("^(10│172.16│192.168).", $ips[$i])) {
-                    $ip = $ips[$i];
-                    break;
-                }
-            }
+
+        if ($count == 0) {
+            $log = $string;
+        } else {
+            $log = $stringAfter."<br><br>Tips:{$count} sensitive word.";
         }
-        return ($ip ? $ip : $_SERVER['REMOTE_ADDR']);
+        return $log;
     }
 
 }
-

@@ -5,17 +5,20 @@ use App\Models\ConfigModel;
 use App\Models\DisposeModel;
 use App\Models\UserModel;
 use App\Models\BloomModel;
+use App\Models\TopicModel;
 
 class HashReadModel extends Model {
 //链上hash入库Model
 
 	public function __construct(){
-        //parent::__construct();
 		$this->db = \Config\Database::connect('default');
 		$this->ConfigModel   = new ConfigModel();
 		$this->DisposeModel  = new DisposeModel();
 		$this->UserModel	 = new UserModel();
-		$this->bloom	     = new BloomModel();
+		$this->BloomModel	 = new BloomModel();
+		$this->TopicModel	 = new TopicModel();
+		$this->wet_topic_content = 'wet_topic_content';
+		$this->wet_topic_tag = 'wet_topic_tag';
 		$this->wet_temporary = 'wet_temporary';
 		$this->wet_behavior  = 'wet_behavior';
 		$this->wet_content 	 = 'wet_content';
@@ -31,57 +34,84 @@ class HashReadModel extends Model {
 		if (!$query) {  //写入临时缓存
 			$insertTempSql = "INSERT INTO $this->wet_temporary(tp_hash) VALUES ('$hash')";
 			$this->db->query($insertTempSql);
+			$data['code'] = 200;
+			$data['msg']  = 'success';
+			echo json_encode($data);
+		} else {
+			$data['code'] = 406;
+			$data['msg']  = 'repeat';
+			log_message('error_repeat_'.$hash, 4);
+			return $data;
 		}
+		$delTempSql = "DELETE FROM $this->wet_temporary WHERE tp_time <= now()-interval '1 D'";
+		$this->db->query($delTempSql);
 
-		$json = $this->getTxDetails($hash);
-		$bloomAddress = $this->bloom ->addressBloom( $json['tx']['sender_id'] );
+		$hashSql = "SELECT tp_hash FROM $this->wet_temporary ORDER BY tp_time DESC";
+		$query  = $this->db-> query($hashSql);
+		foreach ($query-> getResult() as $row) {
+			$tp_hash  = $row-> tp_hash;
+			$json 	  = $this->getTxDetails($tp_hash);
+			$bloomAddress = $this->BloomModel ->addressBloom( $json['tx']['sender_id'] );
 
-        if ( !$json || $bloomAddress ) {
-        	die(0);
-        }
+			if ( !$json || $bloomAddress) {
+				log_message('bloomAddress'.$tp_hash, 4);
+				continue;
+			}
 
-        if ( empty(  //过滤无效预设钱包
-				$json['tx']['recipient_id'] == $bsConfig['receivingAccount'] || 
-				$json['tx']['type'] == 'SpendTx' || 
-				$json['tx']['payload'] == null || 
-				$json['tx']['payload'] == "ba_Xfbg4g=="
-			) ){
-				$this->deleteTemp($data['hash']);  //删除临时缓存
-				die(0);
-        }
-
-		$data = $this->decodeContent($json);
-		return $data;
+			if ( empty(  //过滤无效预设钱包
+					$json['tx']['recipient_id'] == $bsConfig['receivingAccount'] || 
+					$json['tx']['type'] == 'SpendTx' || 
+					$json['tx']['payload'] == null || 
+					$json['tx']['payload'] == "ba_Xfbg4g=="
+				) ){
+					$this->deleteTemp($data['hash']);  //删除临时缓存
+					log_message('错误类型'.$data['hash'], 4);
+					continue;
+			}
+			$this->decodeContent($json);
+		}
 	}
 
 	public function decodeContent($json)
 	{//重构及内容分配
-		$bsConfig 		 = $this->ConfigModel-> backendConfig();
-        $microBlock      = $json['block_hash'];
-        $microBlockUrl   = $bsConfig['backendServiceNode'].'v2/micro-blocks/hash/'.$microBlock.'/header';
-        @$microBlockJson = file_get_contents($microBlockUrl);
-        $microBlockArray = (array) json_decode($microBlockJson, true);
-		$json['mb_time'] = $microBlockArray['time'];
-
-		$payload = $this->DisposeModel ->decodePayload($json['tx']['payload']);
+		$bsConfig 	= $this->ConfigModel-> backendConfig();
+        $microBlock = $json['block_hash'];
+		if(!$microBlock){
+			log_message('block_hash'.$microBlock, 4);
+			$data['code'] = 406;
+			$data['msg']  = 'error_block_hash';
+			return $data;
+		}
+		$utcTime = $this->getMicroBlockTime($microBlock);
+		$json['mb_time'] = $utcTime;
+		$payload = $this->DisposeModel-> decodePayload($json['tx']['payload']);
 		$hash	 = $json['hash'];
 		$WeTrue  = $payload['WeTrue'];
 		$require = $bsConfig['requireVersion'];
-		$version = $this->DisposeModel ->versionCompare($WeTrue, $require);  //版本检测
+		$version = $this->DisposeModel-> versionCompare($WeTrue, $require);  //版本检测
 		if (!$version)
 		{  //版本号错误或低
 			if(!$WeTrue){ //非WeTrue
-				$this->deleteTemp($data['hash']);  //删除临时缓存
-				die("is Not WeTrue");
+				$this->deleteTemp($data['hash']);
+				log_message('非WeTrue格式-'.$hash, 4);
+				$data['code'] = 406;
+				$data['msg']  = 'error_WeTrue';
+				return $data;
 			}
 
-			$versionLow = "versionLow";
-			$updateSql  = "UPDATE $this->wet_temporary SET tp_source = '$versionLow' WHERE tp_hash = '$hash'";
+			$updateSql  = "UPDATE $this->wet_temporary SET tp_source = 'versionError' WHERE tp_hash = '$hash'";
 	        $this->db-> query($updateSql);
-			die(0);
+			log_message('版本号异常-'.$hash, 4);
+			$data['code'] = 406;
+			$data['msg']  = 'error_version';
+			return $data;
 		}
 
 		$data['WeTrue']  = $WeTrue;
+		$isSource		 = $payload['source'];// ?? 'WeTrue';
+		$sourceDelXSS 	 = $this->DisposeModel-> delete_xss($isSource);
+		$sourceSubstr	 = substr($sourceDelXSS, 0, 10);
+		$data['source']  = $sourceSubstr;
 		$data['type']    = $payload['type'];
 		$data['hash']    = $hash;
 		$data['receipt'] = $json['tx']['recipient_id'];
@@ -89,6 +119,22 @@ class HashReadModel extends Model {
 		$data['amount']  = $json['tx']['amount'];
 		$data['mbTime']  = $json['mb_time'];
 		$data['content'] = $payload['content'];
+
+		//用户费用检测
+		$ftConfig = $this->ConfigModel-> frontConfig($data['sender']);
+		if ($data['type'] == 'topic')    $userAmount = $ftConfig['topicAmount'];
+		if ($data['type'] == 'comment')  $userAmount = $ftConfig['commentAmount'];
+		if ($data['type'] == 'reply')    $userAmount = $ftConfig['replyAmount'];
+		if ($data['type'] == 'nickname') $userAmount = $ftConfig['nicknameAmount'];
+		if ($data['type'] == 'portrait') $userAmount = $ftConfig['portraitAmount'];
+
+		if ($data['amount'] < $userAmount) {
+			$this->deleteTemp($data['hash']);
+			log_message('费用异常-'.$data['hash'], 4);
+			$data['code'] = 406;
+			$data['msg']  = 'error_amount';
+			return $data;
+		}
 		//内容分配
 		if( $data['type'] == 'topic' )
 		{//主贴
@@ -96,17 +142,35 @@ class HashReadModel extends Model {
         	$getRow = $this->db->query($selectHash)-> getRow();
 			if ($getRow) {
 				$this->deleteTemp($data['hash']);
-				die("Repeat Content Hash");
-			}
+				log_message('Repeat_Content_Hash:'.$data['hash'], 4);
+			} else {
+				$data['imgList'] = trim($payload['img_list']);
+				$insertData = [
+								'hash'		   => $data['hash'],
+								'sender_id'	   => $data['sender'],
+								'recipient_id' => $data['receipt'],
+								'utctime'	   => $data['mbTime'],
+								'amount'	   => $data['amount'],
+								'type' 		   => $data['type'],
+								'payload' 	   => $data['content'],
+								'img_tx' 	   => $data['imgList'],
+								'source' 	   => $data['source']
+							];
+				$insertTable = $this->wet_content;
+				$upSql       = "UPDATE $this->wet_users SET topic_sum = topic_sum + 1 WHERE address = '$data[sender]'";
+				$active      = $bsConfig['topicActive'];
 
-			$data['imgList'] = trim($payload['img_list']);
-			$insertSql = "INSERT INTO $this->wet_content(
-								hash, sender_id, recipient_id, utctime, amount, type, payload, img_tx
-							) VALUES (   
-								'$data[hash]', '$data[sender]', '$data[receipt]', '$data[mbTime]', '$data[amount]', '$data[type]', '$data[content]', '$data[imgList]'
-							)";
-			$upSql  = "UPDATE $this->wet_users SET topic_sum = topic_sum + 1 WHERE address = '$data[sender]'";
-			$active = $bsConfig['topicActive'];
+				$isTopic = $this->TopicModel-> isTopic($data['content']);
+				if($isTopic) {
+					$topic = [
+						'hash'		=> $data['hash'],
+						'content'   => $data['content'],
+						'sender_id' => $data['sender'],
+						'utctime'   => $data['mbTime']
+						];
+					$isTopic = $this->TopicModel-> insertTopic($topic);
+				}
+			}
 		}
 
 		elseif ( $data['type'] == 'comment' )
@@ -115,17 +179,23 @@ class HashReadModel extends Model {
         	$getRow = $this->db->query($selectHash)-> getRow();
 			if ($getRow) {
 				$this->deleteTemp($data['hash']);
-				die("Repeat Comment Hash");
+				log_message('重复评论hash:'.$data['hash'], 4);
+			} else {
+				$data['toHash'] = trim($payload['toHash']);
+				$insertData = [
+					'hash'		   => $data['hash'],
+					'to_hash'	   => $data['toHash'],
+					'sender_id'	   => $data['sender'],
+					'recipient_id' => $data['receipt'],
+					'utctime'	   => $data['mbTime'],
+					'amount'	   => $data['amount'],
+					'type' 		   => $data['type'],
+					'payload' 	   => $data['content']
+				];
+				$insertTable = $this->wet_comment;
+				$upSql  	 = "UPDATE $this->wet_content SET comment_sum = comment_sum + 1 WHERE hash = '$data[toHash]'";
+				$active 	 = $bsConfig['commentActive'];
 			}
-
-			$data['toHash'] = trim($payload['toHash']);
-			$insertSql = "INSERT INTO $this->wet_comment(
-								hash, to_hash, sender_id, recipient_id, utctime, amount, type, payload
-							) VALUES (
-								'$data[hash]', '$data[toHash]', '$data[sender]', '$data[receipt]', '$data[mbTime]', '$data[amount]', '$data[type]', '$data[content]'
-							)";
-			$upSql  = "UPDATE $this->wet_content SET comment_sum = comment_sum + 1 WHERE hash = '$data[toHash]'";
-			$active = $bsConfig['commentActive'];
 		}
 
 		elseif ( $data['type'] == 'reply' )
@@ -134,39 +204,53 @@ class HashReadModel extends Model {
         	$getRow = $this->db->query($selectHash)-> getRow();
 			if ($getRow) {
 				$this->deleteTemp($data['hash']);
-				die("Repeat Reply Hash");
+				log_message('Repeat_Reply_Hash:'.$data['hash'], 4);
+			} else {
+				$data['replyType'] = trim($payload['reply_type']);
+				$data['toHash']    = trim($payload['to_hash']);
+				$data['toAddress'] = trim($payload['to_address']);
+				$data['replyHash'] = trim($payload['reply_hash']);
+				$insertData = [
+					'hash'		   => $data['hash'],
+					'to_hash'	   => $data['toHash'],
+					'reply_hash'   => $data['replyHash'],
+					'reply_type'   => $data['replyType'],
+					'to_address'   => $data['toAddress'],
+					'sender_id'	   => $data['sender'],
+					'recipient_id' => $data['receipt'],
+					'utctime'	   => $data['mbTime'],
+					'amount'	   => $data['amount'],
+					'payload' 	   => $data['content']
+				];
+				$insertTable = $this->wet_reply;
+				$upSql  	 = "UPDATE $this->wet_comment SET comment_sum = comment_sum + 1 WHERE hash = '$data[toHash]'";
+				$active 	 = $bsConfig['replyActive'];
 			}
-			$data['replyType'] = trim($payload['reply_type']);
-			$data['toHash']    = trim($payload['to_hash']);
-			$data['toAddress'] = trim($payload['to_address']);
-			$data['replyHash'] = trim($payload['reply_hash']);
-			$insertSql = "INSERT INTO $this->wet_reply(
-								hash, to_hash, reply_hash, reply_type, to_address, sender_id, recipient_id, utctime, amount, payload
-							) VALUES (
-								'$data[hash]', '$data[toHash]', '$data[replyHash]', '$data[replyType]', '$data[toAddress]', 
-								'$data[sender]', '$data[receipt]', '$data[mbTime]', '$data[amount]', '$data[content]'
-							)";
-			$upSql  = "UPDATE $this->wet_comment SET comment_sum = comment_sum + 1 WHERE hash = '$data[toHash]'";
-			$active = $bsConfig['replyActive'];
 		}
 
 		elseif ( $data['type'] == 'nickname' )
 		{//昵称
 			$data['content'] = trim($payload['content']);
 			$verify = $this->UserModel-> isUser($data['sender']);
-			if($verify){  //是否存在
-				$insertSql = "UPDATE $this->wet_users 
-								SET nickname = '$data[content]' 
-								WHERE address = '$data[sender]'";
-			}else{
-				$insertSql = "INSERT INTO $this->wet_users(
-					address, nickname
-				) VALUES (
-					'$data[sender]', '$data[content]'
-				)";
+			$isNickname = $this->UserModel-> isNickname($data['content']);
+			if ($isNickname) {
+				$this->deleteTemp($data['hash']);
+				log_message('Repeat_Nickname:'.$data['hash'], 4);
+			} else {
+				if($verify){  //用户是否存在
+					$updateSql = "UPDATE $this->wet_users 
+									SET nickname = '$data[content]' 
+									WHERE address = '$data[sender]'";
+					$this->db->query($updateSql);
+				}else{
+					$insertData = [
+						'address'  => $data['sender'],
+						'nickname' => $data['content']
+					];
+					$insertTable = $this->wet_users;
+				}
+				$active = $bsConfig['nicknameActive'];
 			}
-			
-			$active = $bsConfig['nicknameActive'];
 		}
 
 		elseif ( $data['type'] == 'portrait' )
@@ -176,23 +260,24 @@ class HashReadModel extends Model {
         	$getRow		= $this->db->query($selectHash)-> getRow();
 			if ($getRow) {
 				$this->deleteTemp($data['hash']);
-				die("Repeat Portrait Hash");
-			}
-
-			$verify = $this->UserModel-> isUser($data['sender']);
-			if ($verify) {
-				$insertSql = "UPDATE $this->wet_users 
-								SET portrait = '$data[content]', maxportrait = '$data[hash]' 
-								WHERE address = '$data[sender]'";
+				log_message('Repeat_Portrait_Hash:'.$data['hash'], 4);
 			} else {
-				$insertSql = "INSERT INTO $this->wet_users(
-					address, portrait, maxportrait
-				) VALUES (
-					'$data[sender]', '$data[content]', '$data[hash]'
-				)";
+				$verify = $this->UserModel-> isUser($data['sender']);
+				if ($verify) {
+					$updateSql = "UPDATE $this->wet_users 
+									SET portrait = '$data[content]', maxportrait = '$data[hash]' 
+									WHERE address = '$data[sender]'";
+					$this->db->query($updateSql);
+				} else {
+					$insertData = [
+						'address'     => $data['sender'],
+						'portrait'    => $data['content'],
+						'maxportrait' => $data['hash']
+					];
+					$insertTable = $this->wet_users;
+				}
+				$active = $bsConfig['portraitActive'];
 			}
-			
-			$active = $bsConfig['portraitActive'];
 		}
 
 		elseif ( $data['type'] == 'drift' )
@@ -201,64 +286,112 @@ class HashReadModel extends Model {
         	$getRow		= $this->db->query($selectHash)-> getRow();
 			if ($getRow) {
 				$this->deleteTemp($data['hash']);
-				die("Repeat Drift Hash");
+				log_message('Repeat_Drift_Hash:'.$data['hash'], 4);
+			} else {
+				$data['replyType'] = trim($payload['reply_type']);
+				$data['toHash']    = trim($payload['to_hash']);
+				$data['toAddress'] = trim($payload['to_address']);
+				$data['replyHash'] = trim($payload['reply_hash']);
+				$insertData = [
+					'hash'		   => $data['hash'],
+					'to_hash'	   => $data['toHash'],
+					'reply_hash'   => $data['replyHash'],
+					'reply_type'   => $data['replyType'],
+					'to_address'   => $data['toAddress'],
+					'sender_id'	   => $data['sender'],
+					'recipient_id' => $data['receipt'],
+					'utctime'	   => $data['mbTime'],
+					'amount'	   => $data['amount'],
+					'payload' 	   => $data['content']
+				];
+				$insertTable = $this->wet_reply;
+				$upSql  = "UPDATE $this->wet_comment SET comment_sum = comment_sum + 1 WHERE hash = '$data[toHash]'";
+				$active = $bsConfig['replyActive'];
 			}
-			$data['replyType'] = trim($payload['reply_type']);
-			$data['toHash']    = trim($payload['to_hash']);
-			$data['toAddress'] = trim($payload['to_address']);
-			$data['replyHash'] = trim($payload['reply_hash']);
-			$insertSql = "INSERT INTO $this->wet_reply(
-								hash, to_hash, reply_hash, reply_type, to_address, sender_id, recipient_id, utctime, amount, payload
-							) VALUES (
-								'$data[hash]', '$data[toHash]', '$data[replyHash]', '$data[replyType]', '$data[toAddress]', 
-								'$data[sender]', '$data[receipt]', '$data[mbTime]', '$data[amount]', '$data[content]'
-							)";
-			$upSql  = "UPDATE $this->wet_comment SET comment_sum = comment_sum + 1 WHERE hash = '$data[toHash]'";
-			$active = $bsConfig['replyActive'];
+		} else {
+			$this->deleteTemp($data['hash']);
+			log_message("data[type]标签错误".$hash, 4);
 		}
-		else die(0);
 
-		$this->db->query($insertSql);
-		
-		//入库行为记录
-		$insetrBehaviorSql = "INSERT INTO $this->wet_behavior(
-									address, hash, thing, influence, toaddress
-								) VALUES (
-									'$data[sender]', '$data[hash]', '$data[type]', '$active', '$data[receipt]'
-								)";
-		$this->db->query($insetrBehaviorSql);
-		$this->UserModel-> userActive($data['sender'], $active, $e = TRUE);
-		$this->db->query($upSql);
-		$this->deleteTemp($data['hash']);
+		try{
+			$this->db->table($insertTable)->insert($insertData);
+			//入库行为记录
+			$insetrBehaviorDate = [
+				'address'   => $data['sender'],
+				'hash'      => $data['hash'],
+				'thing'     => $data['type'],
+				'influence' => $active,
+				'toaddress' => $data['receipt']
+			];
+			$this->db->table($this->wet_behavior)->insert($insetrBehaviorDate);
+			$this->UserModel-> userActive($data['sender'], $active, $e = TRUE);
+			$this->db->query($upSql);
+			$this->deleteTemp($data['hash']);
+			$data['code'] = 200;
+			$data['msg']  = 'success';
+		} catch (Exception $err) {
+			$this->deleteTemp($data['hash']);
+			log_message('error:'.$err, 4);
+		}
+		//return $data;
     }
 
 	public function getSenderId($hash)
 	{//获取tx 发送人
         $json = $this->getTxDetails($hash);
 		if (empty($json)) {
-        	die("empty");
+			log_message('查不到发送人:'.$hash, 4);
+        	return "empty";
         }
 		return $json['tx']['sender_id'];
 	}
 
-	public function getTxDetails($hash)
-	{//获取tx 详情
-		$bsConfig = $this->ConfigModel-> backendConfig();
-		$url = $bsConfig['backendServiceNode'].'v2/transactions/'.$hash;
+	public function getMicroBlockTime($microBlock)
+	{//微块时间
+        $bsConfig = $this->ConfigModel-> backendConfig();
+        $url	  = $bsConfig['backendServiceNode'].'v2/micro-blocks/hash/'.$microBlock.'/header';
+        @$get	  = file_get_contents($url);
 		$num = 0;
-		@$get = file_get_contents($url);
-		while ( !$get && $num < 10 ) {
+		while ( !$get && $num < 20 ) {
 			@$get = file_get_contents($url);
 			$num++;
-			sleep(5);
+			log_message('读取micro_blocks失败:'.$url, 4);
+			sleep(6);
 		}
 
-        if (empty($get)) {
-        	die("empty");
+		if (empty($get)) {
+			log_message('读取微块时间失败:'.$url, 4);
+        	return "Get MicroBlock Time Error";
         }
 
         $json = (array) json_decode($get, true);
-		return $json ;
+		$utcTime = $json['time'];
+		return $utcTime;
+	}
+
+	public function getTxDetails($hash)
+	{//获取tx 详情
+		$bsConfig  = $this->ConfigModel-> backendConfig();
+		$url 	   = $bsConfig['backendServiceNode'].'v2/transactions/'.$hash;
+		@$get	   = file_get_contents($url);
+		$json	   = (array) json_decode($get, true);
+		$blockHash = substr($json['block_hash'], 0, 3);
+		$number	   = 0;
+		while ( !$get && $number < 20 || $blockHash != "mh_") {
+			@$get	   = file_get_contents($url);
+			$json	   = (array) json_decode($get, true);
+			$blockHash = substr($json['block_hash'], 0, 3);
+			$number++;
+			sleep(6);
+		}
+
+        if (!$get || $blockHash != "mh_") {
+			log_message('节点读取错误:'.$hash, 4);
+        	return "Node Data Error";
+        }
+
+        $json = (array) json_decode($get, true);
+		return $json;
 	}
 
 	public function deleteTemp($hash)

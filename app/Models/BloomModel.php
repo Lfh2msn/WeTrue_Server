@@ -70,7 +70,7 @@ class BloomModel extends Model {
 		}
 
         $isComplain = (new ComplainModel())-> isComplain($hash);
-        if ($isComplain) {
+        if (!$isComplain) {
             $data['code'] = 401;
 			$data['msg']  = 'error_no_complain';
 			return json_encode($data);

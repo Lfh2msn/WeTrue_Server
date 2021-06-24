@@ -36,25 +36,24 @@ class PagesModel extends Model {
 		$size = max(1, (int)$size);
 		$akToken   = $_SERVER['HTTP_AK_TOKEN'];
 		$isAkToken = $this->DisposeModel-> checkAddress($akToken);
-		if ( $isAkToken )
-		{
-			$opt['userLogin'] = $akToken;
-		}
-		
+		if ($isAkToken) $opt['userLogin'] = $akToken;
 		$opt['substr']	  = 160; //限制输出
 
 		if ( $opt['type'] == 'contentList' )
 		{//主贴列表
 			$this->tablename = "wet_content";
 			$countSql		 = "SELECT count(hash) FROM $this->tablename";
+			/*$limitSql		 = "SELECT hash FROM $this->tablename 
+									ORDER BY utctime DESC LIMIT $size OFFSET ".($page-1) * $size;*/
 			$limitSql		 = "SELECT hash FROM $this->tablename 
-									ORDER BY utctime DESC LIMIT $size OFFSET ".($page-1) * $size;
+									ORDER BY (
+										(praise + star_sum) * 300000 + read_sum * 10 + utctime
+									) DESC LIMIT $size OFFSET ".($page-1) * $size;
 			$opt['select']	 = "content";
 
-			$upReadSql = "UPDATE $this->tablename SET read_sum = CASE hash
-							when hash then read_sum + 1 
-							end
-							where hash in ($limitSql)";
+			$upReadSql = "UPDATE $this->tablename 
+							SET read_sum = CASE hash WHEN hash THEN read_sum + 1 
+											END WHERE hash IN ($limitSql)";
 			$this->db-> query($upReadSql);
 		}
 
@@ -63,7 +62,9 @@ class PagesModel extends Model {
 			$this->tablename = "wet_comment";
 			$countSql		 = "SELECT count(to_hash) FROM $this->tablename WHERE to_hash = '$opt[hash]'";
 			$limitSql		 = "SELECT hash FROM $this->tablename WHERE to_hash = '$opt[hash]' 
-									ORDER BY uid DESC LIMIT $size OFFSET ".($page-1) * $size;
+									ORDER BY (
+										(praise + comment_sum) * 300000 + utctime
+									) DESC LIMIT $size OFFSET ".($page-1) * $size;
 			$opt['select']	 = "comment";
 		}
 
@@ -72,7 +73,7 @@ class PagesModel extends Model {
 			$this->tablename = "wet_reply";
 			$countSql		 = "SELECT count(to_hash) FROM $this->tablename WHERE to_hash = '$opt[hash]'";
 			$limitSql		 = "SELECT hash FROM $this->tablename WHERE to_hash = '$opt[hash]' 
-									ORDER BY uid DESC LIMIT $size OFFSET ".($page-1) * $size;
+									ORDER BY utctime DESC LIMIT $size OFFSET ".($page-1) * $size;
 			$opt['select']	 = "reply";
 		}
 
@@ -81,7 +82,9 @@ class PagesModel extends Model {
 			$this->tablename = "wet_content";
 			$countSql		 = "SELECT count(hash) FROM $this->tablename WHERE img_tx <> ''";
 			$limitSql		 = "SELECT hash FROM $this->tablename WHERE img_tx <> '' 
-									ORDER BY utctime DESC LIMIT $size OFFSET ".($page-1) * $size;
+									ORDER BY (
+										(praise + star_sum) * 300000 + read_sum * 10 + utctime
+									) DESC LIMIT $size OFFSET ".($page-1) * $size;
 			$opt['select']	 = "content";
 		}
 
@@ -98,13 +101,20 @@ class PagesModel extends Model {
 			$nowTime		 = time() * 1000;
 			$cycleTime 	 	 = $nowTime - (86400000 * $hotRecDay);  //当前时间 - 86400000毫秒 * 天 //1614950034235 1621087508000
 			$countSql		 = "SELECT count(hash) FROM $this->tablename WHERE utctime >= $cycleTime";
-			$limitSql		 = "SELECT hash FROM $this->tablename WHERE utctime >= $cycleTime 
+			$limitSql		 = "SELECT hash FROM $this->tablename WHERE utctime >= $cycleTime  
 									ORDER BY (
-											   (praise * $factorPraise)
-											 + (comment_sum * $factorComment)
-											 + (star_sum * $factorStar)
-											 + (read_sum * $factorRead)
-											 - ( ( ($nowTime - utctime) / 86400000) * $factorTime)
+												(
+													  (praise * $factorPraise)
+													+ (
+														(SELECT count(distinct wet_comment.sender_id) 
+															FROM wet_comment, wet_content 
+															WHERE wet_comment.utctime >= wet_content.utctime AND wet_comment.to_hash = wet_content.hash
+														) * $factorComment)
+													+ (star_sum * $factorStar)
+													+ (read_sum * $factorRead)
+													+ (comment_sum * $factorComment)
+												) * 300000 
+													- ( ( ($nowTime - utctime) / 86400000 ) * $factorTime)
 											) DESC LIMIT $size OFFSET ".($page-1) * $size;
 			$opt['select']	 = "content";
 		}
@@ -114,7 +124,9 @@ class PagesModel extends Model {
 			$this->tablename = "wet_content";
 			$countSql		 = "SELECT count(sender_id) FROM $this->tablename WHERE sender_id = '$opt[publicKey]'";
 			$limitSql		 = "SELECT hash FROM $this->tablename WHERE sender_id = '$opt[publicKey]' 
-									ORDER BY utctime DESC LIMIT $size OFFSET ".($page-1) * $size;
+									ORDER BY (
+										(praise + star_sum) * 300000 + read_sum * 10 + utctime
+									) DESC LIMIT $size OFFSET ".($page-1) * $size;
 			$opt['select']	 = "content";
 		}
 
@@ -126,9 +138,12 @@ class PagesModel extends Model {
 							ON wet_content.sender_id = wet_focus.focus 
 							AND wet_focus.fans = '$akToken'";
 			$limitSql = "SELECT wet_content.hash FROM wet_content 
-							INNER JOIN wet_focus ON wet_content.sender_id = wet_focus.focus 
+							INNER JOIN wet_focus 
+							ON wet_content.sender_id = wet_focus.focus 
 							AND wet_focus.fans = '$akToken' 
-							ORDER BY wet_content.uid DESC LIMIT $size OFFSET ".($page-1) * $size;
+							ORDER BY (
+								(wet_content.praise + wet_content.star_sum) * 300000 + wet_content.read_sum * 10 + wet_content.utctime
+							) DESC LIMIT $size OFFSET ".($page-1) * $size;
 			$opt['select'] = "content";
 		}
 
@@ -186,7 +201,7 @@ class PagesModel extends Model {
 		$data['data'] = $this->pages($page, $size, $countSql);
 		$query = $this->db-> query($limitSql);
 		$data['data']['data'] = [];
-		foreach ($query-> getResult() as $row){
+		foreach ($query-> getResult() as $row) {
 			$hash  = $row -> hash;
 			$txBloom = $this->bloom-> txBloom($hash);
 			if (!$txBloom) {

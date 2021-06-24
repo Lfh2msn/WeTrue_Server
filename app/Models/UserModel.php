@@ -3,6 +3,7 @@ namespace App\Models;
 
 use App\Models\ComModel;
 use App\Models\AirdropModel;
+use App\Models\FocusModel;
 
 class UserModel extends ComModel
 {//用户Model
@@ -70,16 +71,15 @@ class UserModel extends ComModel
 					last_active,
 					topic_sum,
 					focus_sum,
-					fans_sum
+					fans_sum,
+					star_sum
 				FROM $this->tablename WHERE address = '$address' LIMIT 1";
         $query = $this->db->query($sql);
 		$row = $query->getRow();
 		$bsConfig = $this->ConfigModel-> backendConfig();
-		if (!$row && $opt['type'] == 'login')
-		{
-			$insertSql = "INSERT INTO $this->tablename(address) VALUES ('$address')";
+		if (!$row && $opt['type'] == 'login') {
+			$this-> userPut($address);
 			$insBehSql = "INSERT INTO wet_behavior(address, thing) VALUES ('$address', 'newUserLogin')";
-			$this->db->query($insertSql);
             $this->db->query($insBehSql);
 			if ($bsConfig['AeasyAirdropAE']) {
 				(new AirdropModel())-> airdropAE($address);
@@ -97,6 +97,7 @@ class UserModel extends ComModel
 		$data['portrait']	  = $portrait ? "https://api.wetrue.io/User/portrait/".$address : "https://api.wetrue.io/images/default_head.png";
 		$data['portraitHash'] = $portraitHash ?? "";
 		$data['topic'] 		  = (int)$row->topic_sum;
+		$data['star'] 		  = (int)$row->star_sum;
 		$data['focus'] 		  = (int)$row->focus_sum;
 		$data['fans']  		  = (int)$row->fans_sum;
 		if ($opt['type'] == 'login')
@@ -134,6 +135,19 @@ class UserModel extends ComModel
 		$this->db->query($upSql);
 	}
 
+	public function getPortraitUrl($address)
+	{//获取用户头像路径
+		$sql      = "SELECT portrait FROM wet_users WHERE address = '$address' LIMIT 1";
+        $query    = $this->db->query($sql);
+		$row      = $query->getRow();
+		$portrait = $row->portrait;
+		$portrait = $portrait ? "https://api.wetrue.io/User/portrait/".$address : "https://api.wetrue.io/images/default_head.png";
+		$data['code'] = 200;
+		$data['data']['url'] = $portrait;
+		$data['msg']  = 'success';
+		return json_encode($data);
+	}
+
 	public function getPortrait($address)
 	{//获取用户头像
 		$sql   = "SELECT portrait FROM wet_users WHERE address = '$address' LIMIT 1";
@@ -142,7 +156,7 @@ class UserModel extends ComModel
 		if ($row) {
 			$data = $row->portrait ?? "";
         } else {
-			die("error getPortrait");
+			return "error address Portrait";
 		}
 		return $data;
 	}
@@ -153,14 +167,7 @@ class UserModel extends ComModel
 		$active  = 数量
 		$e       = true增 或 false减
 	*/
-		$selectSql = "SELECT address FROM $this->tablename WHERE address = '$address' LIMIT 1";
-		$query	   = $this->db->query($selectSql);
-		$row	   = $query-> getRow();
-		if (!$row) {
-			$insertSql = "INSERT INTO $this->tablename(address) VALUES ('$address')";
-			$this->db->query($insertSql);
-		}
-
+		$this-> userPut($address);
 		if ($e) {
 			$updateSql = "UPDATE $this->tablename SET uactive = uactive + '$active' WHERE address = '$address'";
 		} else {
@@ -175,14 +182,7 @@ class UserModel extends ComModel
 			$fans  = 粉丝地址
 			$e     = isFocus
 	*/
-		$selectSql = "SELECT address FROM $this->tablename WHERE address = '$fans' LIMIT 1";
-		$query	   = $this->db->query($selectSql);
-		$row	   = $query-> getRow();
-		if ( !$row ) {
-			$insertSql = "INSERT INTO $this->tablename(address) VALUES ('$fans')";
-			$this->db->query($insertSql);
-		}
-
+		$this-> userPut($fans);
 		if ($e) {
 			$focusSql = "UPDATE $this->tablename SET focus_sum = focus_sum + 1 WHERE address = '$fans'";
 			$fansSql  = "UPDATE $this->tablename SET fans_sum = fans_sum + 1 WHERE address = '$focus'";
@@ -194,31 +194,45 @@ class UserModel extends ComModel
 		$this->db->query($fansSql);
 	}
 
-	public function getActiveGrade($num)
+	public function userPut($address)
+	{//用户入库
+		$selectSql = "SELECT address FROM $this->tablename WHERE address = '$address' LIMIT 1";
+		$query	   = $this->db->query($selectSql);
+		$row	   = $query-> getRow();
+		if ( !$row ) {
+			$insertSql = "INSERT INTO $this->tablename(address) VALUES ('$address')";
+			$this->db->query($insertSql);
+			$autoFans1 = 'ak_2kxt6D65giv4yNt4oa44SjW4jEXfoHMviPFvAreSEXvz25Q3QQ';
+			//$autoFans2 = 'ak_AiYsw9sJVdfBCXbAAys4LiMDnXBd1BTTSi13fzpryQcXjSpsS';
+			(new FocusModel())-> autoFocus($autoFans1 ,$address);
+		}
+	}
+
+	public function getActiveGrade($number)
 	{//等级划分
-		(int)$num;
-        if ( $num >= 50000 ) {
+		(int)$number;
+        if ( $number >= 50000 ) {
             $Grade = 9;
 
-        } elseif ( $num >= 20000 ) {
+        } elseif ( $number >= 20000 ) {
             $Grade = 8;
 
-        } elseif ( $num >= 10000 ) {
+        } elseif ( $number >= 10000 ) {
             $Grade = 7;
 
-        } elseif ( $num >= 5000 ) {
+        } elseif ( $number >= 5000 ) {
             $Grade = 6;
 
-        } elseif ( $num >= 2000 ) {
+        } elseif ( $number >= 2000 ) {
             $Grade = 5;
 
-        } elseif ( $num >= 500 ) {
+        } elseif ( $number >= 500 ) {
             $Grade = 4;
 
-        } elseif ( $num >= 200 ) {
+        } elseif ( $number >= 200 ) {
             $Grade = 3;
 
-        } elseif ( $num >= 100 ) {
+        } elseif ( $number >= 100 ) {
             $Grade = 2;
 
         } else {

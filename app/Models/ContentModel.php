@@ -22,9 +22,10 @@ class ContentModel extends ComModel
 	public function txContent($hash, $opt=[])
 	{//获取主贴内容
 		if ( (int) $opt['substr'] ) {
-			$payload = "substring(payload for '$opt[substr]') as payload";
+			$payload  = "substring(payload for '$opt[substr]') as payload";
+			$strCount = true;
 		} else {
-			$payload = "payload";
+			$payload  = "payload";
 		}
 
 		$sql = "SELECT sender_id,
@@ -34,7 +35,8 @@ class ContentModel extends ComModel
 							comment_sum,
 							praise,
 							star_sum,
-							read_sum
+							read_sum,
+							source
 				FROM $this->tablename WHERE hash='$hash' LIMIT 1";
 
         $query = $this-> db-> query($sql);
@@ -42,9 +44,13 @@ class ContentModel extends ComModel
         if ($row) {
 			$data['hash'] = $hash;
 			$sender_id	  = $row-> sender_id;
-			$data['payload']		= $this->DisposeModel-> delete_xss($row-> payload);
+			$operation				= mb_strlen($row->payload,'UTF8') >= $opt['substr'] ? $row->payload.'...' : $row->payload;
+			$isStrCount				= $strCount ? $operation : $row->payload;
+			$deleteXss				= $this->DisposeModel-> delete_xss($isStrCount);
+			$data['payload']		= $this->DisposeModel-> sensitive($deleteXss);
 			$data['imgTx']			= $row->img_tx ? "https://api.wetrue.io/Image/toimg/".$hash : "";
 			$data['utcTime']		= (int) $row-> utctime;
+			$data['commentNumber']  = (int) $row-> comment_sum;
 			$data['praise']			= (int) $row-> praise;
 			$data['star']			= (int) $row-> star_sum;
 			$data['read']			= (int) $row-> read_sum;
@@ -57,8 +63,7 @@ class ContentModel extends ComModel
 				$data['isStar']		= false;
 				$data['isFocus']	= false;
 			}
-			
-			$data['commentNumber']  = (int) $row-> comment_sum;
+			$data['source']			= $row->source ? $row->source : "WeTrue";
 			$data['users']			= $this->UserModel-> getUser($sender_id);
 			if ($opt['read']) {
 				$upReadSql = "UPDATE $this->tablename SET read_sum = read_sum + 1 WHERE hash = '$hash'";

@@ -69,15 +69,24 @@ class User extends BaseController {
 		}
 	}
 
+	public function portraitUrl($address)
+	{//获取头像地址
+		$isAddress = $this->DisposeModel-> checkAddress($address);
+		if ($isAddress) {
+			$data = $this->UserModel-> getPortraitUrl($address);
+			echo $data;
+		}
+	}
+
 	public function portrait($address)
 	{//获取头像
 		$portrait = $this->UserModel-> getPortrait($address);
-        $portrait = str_replace("data:image/jpeg;base64,","",$portrait);
-    	$portrait = base64_decode($portrait);
+		$portrait = str_replace("data:image/jpeg;base64,","",$portrait);
+		$portrait = base64_decode($portrait);
 		$this->response->setHeader('Expires', date(DATE_RFC1123, strtotime("+7 day") ) );
 		$this->response->setHeader('Content-type', 'image/jpeg');
-    	echo $portrait;
-		$this->cachePage(10);
+		echo $portrait;
+		$this->cachePage(30);
 	}
 
 	public function isNickname()

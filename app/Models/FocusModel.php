@@ -127,6 +127,22 @@ class FocusModel extends Model {
 		return json_encode($data);
 	}
 
+	public function autoFocus($focus ,$fans)
+	{//自动A账户关注B账户
+		$verify = $this->isFocus($focus, $fans);
+		if (!$verify) {
+			$focusSql = "INSERT INTO $this->tablename(focus, fans) VALUES ('$focus', '$fans')";
+			$e = true;
+		} else {
+			die("isFocus Error");
+		}
+		$this->db-> query($focusSql);
+		$this->userModel-> userFocus($focus, $fans, $e);
+		//入库行为记录
+		$focusBehaviorSql = "INSERT INTO wet_behavior(address, thing, toaddress) 
+								VALUES ('$fans', 'autoFocus', '$focus')";
+		$this->db->query($focusBehaviorSql);
+	}
 
 }
 
