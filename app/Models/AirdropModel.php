@@ -2,6 +2,7 @@
 namespace App\Models;
 
 use App\Models\ComModel;
+use App\Models\AecliModel;
 
 class AirdropModel extends ComModel
 {//空投Model
@@ -9,16 +10,17 @@ class AirdropModel extends ComModel
 	public function __construct()
 	{
 		parent::__construct();
-		$this->tablename = 'wet_bloom';
-		$this->wet_users = 'wet_users';
-		$this->session   = \Config\Services::session();
-		$this->UserModel = new UserModel();
+		$this->tablename  = 'wet_bloom';
+		$this->wet_users  = 'wet_users';
+		$this->session    = \Config\Services::session();
+		$this->UserModel  = new UserModel();
+		$this->AecliModel = new AecliModel();
     }
 
 	public function airdropAE($address)
 	{//新用户空投AE
 		$bsConfig  = (new ConfigModel())-> backendConfig();
-		$isAirdrop = $bsConfig['AeasyAirdropAE'];
+		$isAirdrop = $bsConfig['airdropAE'];
 		$NewUser   = $this->session-> get('NewUser');
 		$getIP	   = (new DisposeModel())-> getRealIP();
 		$ipBloom   = (new BloomModel())-> ipBloom($getIP);
@@ -27,18 +29,19 @@ class AirdropModel extends ComModel
 			if ($isAirdrop) {
 				$this->session-> set("NewUser","Repeat");
 			}
-			return "Repeat IP";
+			return "Repeat IP OR Off Airdrop";
 		}
 
 		$url = $bsConfig['backendServiceNode'].'v2/accounts/'.$address;
 		@$GetUrl = file_get_contents($url);
+		$amount = $bsConfig['airdropAEAmount'];
 
 		if (!$GetUrl) {
-			$AeasyApiUrl = $bsConfig['AeasyApiUrl'];
+			/*$AeasyApiUrl = $bsConfig['AeasyApiUrl'];
 			$post_data   = array(
 				'app_id'     => $bsConfig['AeasyAppID'],
 				'address'    => $address,
-				'amount'     => $bsConfig['AeasyAmount'],
+				'amount'     => $amount,
 				'signingKey' => $bsConfig['AeasySecretKey'],
 			);
 			$postdata = http_build_query($post_data);
@@ -47,13 +50,14 @@ class AirdropModel extends ComModel
 											'method'  => 'POST',
 											'header'  => 'Content-type:application/x-www-form-urlencoded',
 											'content' => $postdata,
-											'timeout' => 60 // 超时时间（单位:s）
+											'timeout' => 30 // 超时时间（单位:s）
 									));
 			$context = stream_context_create($options);
 			$result  = file_get_contents($AeasyApiUrl, false, $context);
 			$dejson  = (array) json_decode($result, true);
-			$code    = $dejson['code'];
-
+			$code    = $dejson['code'];*/
+			
+			$code = $this->AecliModel-> spendAE($address, $amount);
 			if ($code == 200) {
 				$this->session ->set("NewUser","Repeat");
 				$inSql = "INSERT INTO $this->tablename(bf_ip, bf_reason) VALUES ('$getIP','airdropAE')";
@@ -63,7 +67,7 @@ class AirdropModel extends ComModel
 	}
 
 	public function airdropWTT($opt = [])
-	{//空投WTT
+	{//空投WTT写入txt
 		$akToken   = $_SERVER['HTTP_AK_TOKEN'];
 		$isAkToken = (new DisposeModel())-> checkAddress($akToken);
 		$isAdmin   = $this->UserModel-> isAdmin($akToken);
@@ -112,7 +116,6 @@ class AirdropModel extends ComModel
 		foreach ($readFile as $v) {
 			array_push($list, $v);
 		}
-
 		return json_encode($list);
 	}
 
