@@ -201,7 +201,6 @@ class DisposeModel extends Model {
     * @param string $string 要过滤的内容
     * @return string $log 处理结果
     */
-        //$matchingList = ['习近平','操B','操逼','操你','操你','草B','草逼','草你','草你','艹B','艹逼','艹你','艹你','你他妈','骚娘','骚女','鸡巴','鸡8'];  //敏感词
         $sensitive = file_get_contents("keyWords.txt"); // 读取关键字文本信息
         $matchingList = explode("\n",$sensitive); // 把关键字转换为数组
 
