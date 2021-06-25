@@ -28,7 +28,7 @@ class TopicModel extends ComModel
 		$isTopic = $this->isTopic($keyword);
 		if ($isTopic) {
 			$selectTag = "SELECT keywords, img_icon, describe, sender_id, state, utctime, topic_sum 
-							FROM $this->wet_topic_tag WHERE keywords ilike '%$keyword%' AND state = '0' LIMIT 1";
+							FROM $this->wet_topic_tag WHERE keywords ilike '%$keyword%' AND state = '1' LIMIT 1";
 			$getTagRow = $this->db->query($selectTag)-> getRow();
 			$data['code'] = 200;
 			$data['data']  = [
@@ -63,7 +63,7 @@ class TopicModel extends ComModel
 			$selectTag = "SELECT topic_sum 
 							FROM $this->wet_topic_tag 
 							WHERE keywords ilike '%$keyword%' 
-							AND state = '0' LIMIT 1";
+							AND state = '1' LIMIT 1";
 			$getTagRow = $this->db->query($selectTag)-> getRow();
 			$data['code'] = 200;
 			$data['data']  = [
@@ -77,7 +77,7 @@ class TopicModel extends ComModel
 								FROM wet_topic_content 
 								INNER JOIN wet_topic_tag 
 								ON wet_topic_content.tag_uid = wet_topic_tag.uid 
-								AND wet_topic_content.state = '0' 
+								AND wet_topic_content.state = '1' 
 								AND wet_topic_tag.keywords ilike '%$keyword%'
 								ORDER BY wet_topic_content.utctime DESC 
 								LIMIT $size OFFSET ".($page-1) * $size;

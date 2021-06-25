@@ -22,7 +22,7 @@ class AecliModel extends ComModel
 		$json = json_decode($arr[0], true);
 		$hash = $json['tx']['hash'];
 		$textFile   = fopen("airdrop/AE/".date("Y-m-d").".txt", "a");
-		$appendText = $address.":".(int)($amount / 1000000000000000000).":".$hash."\r\n";
+		$appendText = $address.":".(int)($amount / 1e18).":".$hash."\r\n";
 		fwrite($textFile, $appendText);
 		fclose($textFile);
 		return $hash ? 200 : 406;
@@ -63,7 +63,7 @@ class AecliModel extends ComModel
 		$password		 = $bsConfig['walletPassword'];
 		$aex9Source		 = $bsConfig['aex9Source'];
 		$contractAddress = $bsConfig['WTTContractAddress'];
-		$aettos			 = (int)($amount * 1000000000000000000);
+		$aettos			 = (int)($amount * 1e18);
 		$str = "tolink/aecli contract call {$wallet} transfer {$address} {$aettos} --contractAddress {$contractAddress} --contractSource {$aex9Source} -u {$nodeUrl} --compilerUrl {$compilerUrl} -P {$password} --json";
 		exec($str, $arr);
 		$json 		= json_decode($arr[0], true);

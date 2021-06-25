@@ -10,9 +10,11 @@ class MiningModel extends ComModel
 	public function __construct()
 	{
 		parent::__construct();
-		$this->wet_users  = 'wet_users';
-		$this->AecliModel = new AecliModel();
-		$this->UserModel  = new UserModel();
+		$this->wet_users    = 'wet_users';
+		$this->wet_mapping  = 'wet_mapping';
+		$this->AecliModel   = new AecliModel();
+		$this->UserModel    = new UserModel();
+		$this->DisposeModel = new DisposeModel();
     }
 
 	public function isMapAccount($address)
@@ -21,6 +23,22 @@ class MiningModel extends ComModel
         $query = $this->db->query($sql);
 		$row   = $query->getRow();
 		return $row->is_map ? true : false;
+	}
+
+	public function isMapping($address)
+	{//验证是否已经映射
+		$sql   = "SELECT address FROM $this->wet_mapping WHERE address = '$address' LIMIT 1";
+        $query = $this->db->query($sql);
+		$row   = $query->getRow();
+		return $row ? true : false;
+	}
+
+	public function isMapState($address)
+	{//验证黑名单
+		$sql   = "SELECT state FROM $this->wet_mapping WHERE address = '$address' LIMIT 1";
+        $query = $this->db->query($sql);
+		$row   = $query->getRow();
+		return $row->state ? true : false;
 	}
 
 	public function openAccount($hash)
@@ -53,7 +71,7 @@ class MiningModel extends ComModel
 			$this->db->query($updateSql);
 
 			$textFile   = fopen("mining/".date("Y-m-d").".txt", "a");
-			$appendText = $sender_id.":".(int)($amount / 1000000000000000000).":".$block_height.":".$hash."\r\n";
+			$appendText = "{$sender_id}:{(int)($amount / 1e18)}:{$block_height}:{$hash}\r\n";
 			fwrite($textFile, $appendText);
 			fclose($textFile);
 			$data['code'] = 200;
@@ -67,18 +85,31 @@ class MiningModel extends ComModel
 
 	public function mapping($aeAmount)
 	{//用户映射挖矿
-		$bsConfig  = (new ConfigModel())-> backendConfig();
-		$aettos    = (int)($aeAmount * 1000000000000000000);
-		$data['code'] = 200;
-		$akToken   = $_SERVER['HTTP_AK_TOKEN'];
-		$isAkToken = $this->DisposeModel-> checkAddress($akToken);
-		$isMapAccount = $this-> isMapAccount($isAkToken);
+		$bsConfig     = (new ConfigModel())-> backendConfig();
+		$mappingWTT = $bsConfig['mappingWTT'];
+		if (!$mappingWTT) {
+			$data['code'] = 406;
+			$data['msg']  = 'close_mapping';
+			return json_encode($data);
+		}
+
+		$akToken      = $_SERVER['HTTP_AK_TOKEN'];
+		$isAkToken    = $this->DisposeModel-> checkAddress($akToken);
+		$isMapAccount = $this-> isMapAccount($akToken);
 		if (!$isAkToken && !$isMapAccount) {
 			$data['code'] = 406;
 			$data['msg']  = 'did_not_open_mapping';
 			return json_encode($data);
 		}
 
+		$isMapping = $this-> isMapping($akToken);
+		if ($isMapping) {
+			$data['code'] = 406;
+			$data['msg']  = 'repeat_mapping';
+			return json_encode($data);
+		}
+
+		$aettos    	  = (int)($aeAmount * 1e18);
 		$accountsUrl  = $bsConfig['backendServiceNode'].'v2/accounts/'.$akToken;
 		@$getBalance  = file_get_contents($accountsUrl);
 		$accountsJson = (array) json_decode($getBalance, true);
@@ -92,15 +123,84 @@ class MiningModel extends ComModel
 		$blocksUrl    = $bsConfig['backendServiceNode'].'v2/blocks/top';
 		@$getTop	  = file_get_contents($blocksUrl);
 		$blocksJson   = (array) json_decode($getTop, true);
-		$blockHeight  = $blocksJson['micro_block']['height'];
+		$blockHeight  = $blocksJson['key_block']['height'];
 		if (empty($blockHeight)) {
 			$data['code'] = 406;
 			$data['msg']  = 'get_block_height_error';
         	return json_encode($data);
         }
 
-		
+		$insertData = [
+			'address'	 => $akToken,
+			'height_map' => (int) ($blockHeight),
+			'amount'     => (int) $aettos,
+			'utctime'    => (int) (time() * 1000)
+		];
+		$this->db->table($this->wet_mapping)->insert($insertData);
+
+		$data['code'] = 200;
+		$data['msg']  = 'success';
+		return json_encode($data);
+	}
+
+	public function checkMapping($address)
+	{//映射信息查询
+		$isMapping = $this-> isMapping($address);
+		if (!$isMapping) {
+			$data = 'address_not_mapping';
+			return $data;
+		}
+
+		$bsConfig     = (new ConfigModel())-> backendConfig();
+		$blocksUrl    = $bsConfig['backendServiceNode'].'v2/blocks/top';
+		@$getTop	  = file_get_contents($blocksUrl);
+		$blocksJson   = (array) json_decode($getTop, true);
+		$blockHeight  = (int)$blocksJson['key_block']['height'];
+		$sql   = "SELECT height_map, 
+						 height_check, 
+						 state, 
+						 amount, 
+						 earning
+					FROM $this->wet_mapping WHERE address = '$address' LIMIT 1";
+        $query = $this->db->query($sql);
+		$row   = $query->getRow();
+		$heightCheckOld = (int)$row->height_check;
+		$isMapState 	= $this-> isMapState($address);  //黑屋验证
+		if ($blockHeight && $row && $heightCheckOld <= $blockHeight && $isMapState) { //链上状态正常 及 链上高度大于上次校验高度
+			if (!$heightCheckOld || $heightCheckOld == 0) {
+				$heightCheckOld	= (int)$row->height_map;
+			}
+
+			$accountsUrl  = $bsConfig['backendServiceNode'].'v2/accounts/'.$address;
+			@$getBalance  = file_get_contents($accountsUrl);
+			$accountsJson = (array) json_decode($getBalance, true);
+			$chainBalance = $accountsJson['balance'];  //链上金额
+			$mapAmount 	  = $row->amount;  //映射金额
+			if($chainBalance && $chainBalance < $mapAmount) {  //对比[映射]及[链上]金额
+				$inData = [
+					'state'   => 0,
+					'earning' => 0
+				];
+				$this->db->table($this->wet_mapping)->where('address', $address)->update($inData);
+				$query = $this->db->query($sql);
+				$row   = $query->getRow();
+				return $row;
+			}
+
+			$pastHeight = (int)($blockHeight - $heightCheckOld);
+			$aettos    	= ($mapAmount / 1e18);
+			$earningOld = $row->earning ?? 0;
+			$earningNew	= ( $earningOld + ($pastHeight * $aettos * 14e12) );
+
+			$insertData = [
+				'height_check' => $blockHeight,
+				'earning' 	   => $earningNew
+			];
+			$this->db->table($this->wet_mapping)->where('address', $address)->update($insertData);
+			$query = $this->db->query($sql);
+			$row   = $query->getRow();
+        }
+		return $row;
 	}
 
 }
-
