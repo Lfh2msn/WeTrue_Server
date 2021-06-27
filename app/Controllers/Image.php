@@ -1,6 +1,8 @@
 <?php
 namespace App\Controllers;
 
+use App\Models\ConfigModel;
+
 class Image extends BaseController
 {
 	public function list()
@@ -14,33 +16,33 @@ class Image extends BaseController
 	
 	public function toimg($hash)
 	{//Tx转照片
+        $isHash = $this->DisposeModel-> checkAddress($hash);
 
-        $url = 'https://node.aechina.io/v2/transactions/'.$hash;
-        //检测是否th_开头
-        $inhash = "tt".$hash;
-        if(stripos($inhash,"th_")<1 || strlen($inhash)<48){ 
+        if (!$isHash) { 
 			echo '无效Hash';
 			return;
         }
 
+        $bsConfig = (NEW ConfigModel())-> backendConfig();
+        $url = $bsConfig['backendServiceNode'].'v2/transactions/'.$hash;
 		//屏蔽错误,防止节点暴露（屏蔽符：@ ）
-        @$json = file_get_contents($url);
+        @$json_data = file_get_contents($url);
 
 		//过滤无效hash
-        if(empty($json)){
+        if(empty($json_data)){
 			echo 'Node报错，无Hash记录';
 			return;
         }
 
-        $hasharr = (array) json_decode($json,true);
+        $data = (array) json_decode($json_data,true);
 
         //过滤空或无效Payload
-        if($hasharr['tx']['payload']===null||$hasharr['tx']['payload']==="ba_Xfbg4g=="){
+        if( $data['tx']['payload']===null || $data['tx']['payload']==="ba_Xfbg4g==" ){
 			echo '非法Hash';
 			return;
         }
 
-        $wetPayload = !empty($hasharr['tx']['payload'])?$hasharr['tx']['payload']:null;
+        $wetPayload = !empty($data['tx']['payload'])?$data['tx']['payload']:null;
         $strpl = bin2hex(base64_decode(str_replace("ba_","",$wetPayload)));
         $hexPayload = hex2bin(substr($strpl,0,strlen($strpl)-8));
 

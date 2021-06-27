@@ -21,6 +21,7 @@ class AirdropModel extends ComModel
 	{//新用户空投AE
 		$bsConfig  = (new ConfigModel())-> backendConfig();
 		$isAirdrop = $bsConfig['airdropAE'];
+		$amount = $bsConfig['airdropAeAmount'];
 		$NewUser   = $this->session-> get('NewUser');
 		$getIP	   = (new DisposeModel())-> getRealIP();
 		$ipBloom   = (new BloomModel())-> ipBloom($getIP);
@@ -34,7 +35,6 @@ class AirdropModel extends ComModel
 
 		$url = $bsConfig['backendServiceNode'].'v2/accounts/'.$address;
 		@$GetUrl = file_get_contents($url);
-		$amount = $bsConfig['airdropAEAmount'];
 
 		if (!$GetUrl) {
 			/*$AeasyApiUrl = $bsConfig['AeasyApiUrl'];
@@ -57,7 +57,8 @@ class AirdropModel extends ComModel
 			$dejson  = (array) json_decode($result, true);
 			$code    = $dejson['code'];*/
 			
-			$code = $this->AecliModel-> spendAE($address, $amount);
+			$hash = $this->AecliModel-> spendAE($address, $amount);
+			$code = $this->DisposeModel-> checkAddress($hash) ? 200 : 406;
 			if ($code == 200) {
 				$this->session ->set("NewUser","Repeat");
 				$inSql = "INSERT INTO $this->tablename(bf_ip, bf_reason) VALUES ('$getIP','airdropAE')";

@@ -6,7 +6,7 @@ use App\Models\MiningModel;
 
 class Mining extends BaseController {
 
-	public function info()
+	public function mapInfo()
 	{//获取用户映射挖矿信息
         $userAddress = $this->request->getPost('userAddress');
 		$isUserAddress = $this->DisposeModel-> checkAddress($userAddress);

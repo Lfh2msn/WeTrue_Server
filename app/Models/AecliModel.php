@@ -17,15 +17,15 @@ class AecliModel extends ComModel
 		$wallet   = $bsConfig['walletPath'];
 		$password = $bsConfig['walletPassword'];
 		$payload  = $bsConfig['airdropPayload'];
-		$str = "tolink/aecli account spend {$wallet} {$address} {$amount} --payload '{$payload}' -u {$nodeUrl} -P {$password} --json";
+		$str = "tolink/aecli account spend -u {$nodeUrl} {$wallet} --password {$password} {$address} {$amount} --payload '{$payload}' --json";
 		exec($str, $arr);
 		$json = json_decode($arr[0], true);
 		$hash = $json['tx']['hash'];
 		$textFile   = fopen("airdrop/AE/".date("Y-m-d").".txt", "a");
-		$appendText = $address.":".(int)($amount / 1e18).":".$hash."\r\n";
+		$appendText = $address.":".$amount.":".$hash."\r\n";
 		fwrite($textFile, $appendText);
 		fclose($textFile);
-		return $hash ? 200 : 406;
+		return $hash;
 
 		/*
 		Array(
@@ -72,7 +72,7 @@ class AecliModel extends ComModel
 		$appendText = $address.":".$amount.":".$hash."\r\n";
 		fwrite($textFile, $appendText);
 		fclose($textFile);
-		return $hash ? $hash : 406;
+		return $hash;
 
 		/*
 		Array(

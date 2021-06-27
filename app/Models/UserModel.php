@@ -81,7 +81,7 @@ class UserModel extends ComModel
 			$this-> userPut($address);
 			$insBehSql = "INSERT INTO wet_behavior(address, thing) VALUES ('$address', 'newUserLogin')";
             $this->db->query($insBehSql);
-			if ($bsConfig['AeasyAirdropAE']) {
+			if ($bsConfig['airdropAE']) {
 				(new AirdropModel())-> airdropAE($address);
 			}
 		}
