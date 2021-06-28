@@ -25,6 +25,14 @@ class MiningModel extends ComModel
 		return $row->is_map ? true : false;
 	}
 
+	public function isMapAddress($address)
+	{//验证映射地址是否存在
+		$sql   = "SELECT address FROM $this->wet_mapping WHERE address = '$address' LIMIT 1";
+        $query = $this->db->query($sql);
+		$row   = $query->getRow();
+		return $row ? true : false;
+	}
+
 	public function isMapState($address)
 	{//验证是否已经映射
 		$sql   = "SELECT state FROM $this->wet_mapping WHERE address = '$address' LIMIT 1";
@@ -78,7 +86,7 @@ class MiningModel extends ComModel
 		return json_encode($data);
 	}
 
-	public function mapping($aeAmount)
+	public function inMapping($address, $amount)
 	{//用户映射挖矿
 		$bsConfig   = (new ConfigModel())-> backendConfig();
 		$mappingWTT = $bsConfig['mappingWTT'];
@@ -88,28 +96,26 @@ class MiningModel extends ComModel
 			return json_encode($data);
 		}
 
-		$akToken      = $_SERVER['HTTP_AK_TOKEN'];
-		$isAkToken    = $this->DisposeModel-> checkAddress($akToken);
-		$isMapAccount = $this-> isMapAccount($akToken);
-		if (!$isAkToken && !$isMapAccount) {
+		$isAddress    = $this->DisposeModel-> checkAddress($address);
+		$isMapAccount = $this-> isMapAccount($address);
+		if (!$isAddress && !$isMapAccount) {
 			$data['code'] = 406;
 			$data['msg']  = 'did_not_open_mapping';
 			return json_encode($data);
 		}
 
-		$isMapping = $this-> isMapState($akToken);
+		$isMapping = $this-> isMapState($address);
 		if ($isMapping) {
 			$data['code'] = 406;
 			$data['msg']  = 'repeat_mapping';
 			return json_encode($data);
 		}
 
-		$aettos    	  = (int)($aeAmount * 1e18);
-		$accountsUrl  = $bsConfig['backendServiceNode'].'v2/accounts/'.$akToken;
+		$accountsUrl  = $bsConfig['backendServiceNode'].'v2/accounts/'.$address;
 		@$getJson     = file_get_contents($accountsUrl);
 		$accountsJson = (array) json_decode($getJson, true);
 
-		if (empty($getJson) && $accountsJson['balance'] <= $aettos) {
+		if (empty($getJson) && $accountsJson['balance'] <= $amount) {
 			$data['code'] = 406;
 			$data['msg']  = 'error_amount';
         	return json_encode($data);
@@ -124,26 +130,120 @@ class MiningModel extends ComModel
 			$data['msg']  = 'get_block_height_error';
         	return json_encode($data);
         }
-
-		$insertData = [
-			'address'	 => $akToken,
-			'height_map' => (int) ($blockHeight),
-			'amount'     => (int) $aettos,
-			'state'		 => 1,
-			'utctime'    => (int) (time() * 1000)
-		];
-		$this->db->table($this->wet_mapping)->insert($insertData);
-
+		$isMapAddress = $this-> isMapAddress($address);
+		if ($isMapAddress) {
+			$upDate = [
+				'height_map'   => $blockHeight,
+				'height_check' => $blockHeight,
+				'amount'       => $amount,
+				'state'		   => 1,
+				'utctime'      => (time() * 1000)
+			];
+			$this->db->table($this->wet_mapping)->where('address', $address)->update($upDate);
+		} else {
+			$insertData = [
+				'address'	   => $address,
+				'height_map'   => $blockHeight,
+				'height_check' => $blockHeight,
+				'amount'       => $amount,
+				'state'		   => 1,
+				'utctime'      => (time() * 1000)
+			];
+			$this->db->table($this->wet_mapping)->insert($insertData);
+		}
 		$data['code'] = 200;
+		$data['data']['state'] = true;
 		$data['msg']  = 'success';
+		return json_encode($data);
+	}
+
+	public function unMapping($address)
+	{//用户解除映射
+		$checkRow = $this-> checkMapping($address);
+		if (!$checkRow) {
+			$data['code'] = 406;
+			$data['msg']  = 'error_unknown';
+			return json_encode($data);
+		}
+
+		
+		if ($checkRow->state == 0) {
+			$data['code'] = 406;
+			$data['data']['state'] = false;
+			$data['msg']  = 'no_mapping';
+			return json_encode($data);
+		}
+
+		$checEarning = $checkRow->earning;
+		$hash = $this->AecliModel-> spendWTT($address, $checEarning);
+		$code = $this->DisposeModel-> checkAddress($hash) ? 200 : 406;
+		$data['code'] = $code;
+		$data['msg']  = 'error_unknown';
+		if ($code == 200) {
+			$upData = [
+				'height_map'   => 0,
+				'height_check' => 0,
+				'state' 	   => 0,
+				'amount'       => 0,
+				'earning'      => 0,
+				'utctime'      => (int)(time() * 1000)
+			];
+			$this->db->table($this->wet_mapping)->where('address', $address)->update($upData);
+			$data['data']['earning'] = $checEarning;
+			$data['msg'] = 'success';
+			$textFile   = fopen("mining/earning.txt", "a");
+			$textTime   = date("Y-m-d h:i:s");
+			$appendText = "账户:{$address}\r\n领取:{$checEarning}\r\n时间:{$blockHeight}--{$textTime}\r\n\r\n";
+			fwrite($textFile, $appendText);
+			fclose($textFile);
+		}
+		
+		return json_encode($data);
+	}
+
+	public function getEarning($address)
+	{//用户领取收益
+		$checkRow = $this-> checkMapping($address);
+		if (!$checkRow) {
+			$data['code'] = 406;
+			$data['msg']  = 'error_unknown';
+			return json_encode($data);
+		}
+
+		if ($checkRow->state == 0) {
+			$data['code'] = 406;
+			$data['data']['state'] = false;
+			$data['msg']  = 'no_mapping';
+			return json_encode($data);
+		}
+
+		$checEarning = $checkRow->earning;
+		$hash = $this->AecliModel-> spendWTT($address, $checEarning);
+		$code = $this->DisposeModel-> checkAddress($hash) ? 200 : 406;
+		$data['code'] = $code;
+		$data['msg']  = 'error_unknown';
+		if ($code == 200) {
+			$upData = [
+				'earning' => 0
+			];
+			$this->db->table($this->wet_mapping)->where('address', $address)->update($upData);
+			$data['data']['earning'] = $checEarning;
+			$data['msg']  = 'success';
+			$textFile   = fopen("mining/earning.txt", "a");
+			$textTime   = date("Y-m-d h:i:s");
+			$appendText = "账户:{$address}\r\n领取:{$checEarning}\r\n时间:{$blockHeight}--{$textTime}\r\n\r\n";
+			fwrite($textFile, $appendText);
+			fclose($textFile);
+		}
+		
 		return json_encode($data);
 	}
 
 	public function checkMapping($address)
 	{//映射信息查询
-		$isMapping = $this-> isMapState($address);
-		if (!$isMapping) {
-			$data = 'address_not_mapping';
+		$isMapState = $this-> isMapState($address);
+		if (!$isMapState) {
+			$data['state'] = $isMapState;
 			return $data;
 		}
 
@@ -163,14 +263,13 @@ class MiningModel extends ComModel
 		$row   = $query->getRow();
 		$heightCheckOld = (int)$row->height_check;
 		$heightMap	    = (int)$row->height_map;
-		$isMapState 	= $this-> isMapState($address);  //黑屋验证
-		if ( 
-				$blockHeight &&
-				$row &&
-				$heightCheckOld <= $blockHeight &&
-				$isMapState &&
-				$heightMap <> 0
-			) { //链上状态正常 及 链上高度大于上次校验高度
+		if (
+				$row && //获取数据信息
+				$isMapState && //已映射
+				$blockHeight && //链上高度正常
+				$heightCheckOld < $blockHeight &&
+				$heightMap <> 0 //映射高度正常
+			) {
 
 			if (!$heightCheckOld || $heightCheckOld == 0) {
 				$heightCheckOld	= $heightMap;
@@ -183,14 +282,18 @@ class MiningModel extends ComModel
 			$mapAmount 	  = $row->amount;  //映射金额
 			if($chainBalance && $chainBalance < $mapAmount) {  //对比[映射]及[链上]金额
 				$textFile   = fopen("mining/black-house.txt", "a");
-				$appendText = "账户:{$address}\r\n链上:{$chainBalance}\r\n映射:{$mapAmount}\r\n时间:{$blockHeight}-{time()}\r\n\r\n";
+				$textTime   = date("Y-m-d h:i:s");
+				$appendText = "账户:{$address}\r\n链上:{$chainBalance}\r\n映射:{$mapAmount}\r\n时间:{$blockHeight}--{$textTime}\r\n\r\n";
 				fwrite($textFile, $appendText);
 				fclose($textFile);
-				$inMapData = [
-					'earning' => 0,
-					'amount'  => 0
+				$upMapData = [
+					'height_map'   => 0,
+					'height_check' => 0,
+					'earning' 	   => 0,
+					'state'   	   => 0,
+					'amount'  	   => 0
 				];
-				$this->db->table($this->wet_mapping)->where('address', $address)->update($inMapData);
+				$this->db->table($this->wet_mapping)->where('address', $address)->update($upMapData);
 				$this->db->table($this->wet_users)->where('address', $address)->update( ['is_map' => 0] );
 				$query = $this->db->query($sql);
 				$row   = $query->getRow();
@@ -202,38 +305,15 @@ class MiningModel extends ComModel
 			$earningOld = $row->earning ?? 0;
 			$earningNew	= ( $earningOld + ($pastHeight * $aettos * 14e12) );
 
-			$insertData = [
+			$upData = [
 				'height_check' => $blockHeight,
 				'earning' 	   => $earningNew
 			];
-			$this->db->table($this->wet_mapping)->where('address', $address)->update($insertData);
+			$this->db->table($this->wet_mapping)->where('address', $address)->update($upData);
 			$query = $this->db->query($sql);
 			$row   = $query->getRow();
         }
 		return $row;
-	}
-
-	public function unMapping($address)
-	{//用户解除映射
-		$bsConfig     = (new ConfigModel())-> backendConfig();
-		$mappingWTT = $bsConfig['mappingWTT'];
-		if (!$mappingWTT) {
-			$data['code'] = 406;
-			$data['msg']  = 'close_mapping';
-			return json_encode($data);
-		}
-
-		$insertData = [
-			'address'	 => $akToken,
-			'height_map' => (int) ($blockHeight),
-			'amount'     => (int) $aettos,
-			'utctime'    => (int) (time() * 1000)
-		];
-		$this->db->table($this->wet_mapping)->insert($insertData);
-
-		$data['code'] = 200;
-		$data['msg']  = 'success';
-		return json_encode($data);
 	}
 
 }

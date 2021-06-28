@@ -72,7 +72,8 @@ class UserModel extends ComModel
 					topic_sum,
 					focus_sum,
 					fans_sum,
-					star_sum
+					star_sum,
+					is_map
 				FROM $this->tablename WHERE address = '$address' LIMIT 1";
         $query = $this->db->query($sql);
 		$row = $query->getRow();
@@ -100,11 +101,12 @@ class UserModel extends ComModel
 		$data['star'] 		  = (int)$row->star_sum;
 		$data['focus'] 		  = (int)$row->focus_sum;
 		$data['fans']  		  = (int)$row->fans_sum;
+		$data['is_map']  	  = $row->is_map ? true : false;
 		if ($opt['type'] == 'login')
 		{
 			$isAdmin = $this->isAdmin($address);
 			if ($isAdmin) {
-				$data['isAdmin']  = TRUE;
+				$data['isAdmin']  = true;
 			}
 		}
 		

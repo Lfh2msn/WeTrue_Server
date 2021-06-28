@@ -63,15 +63,11 @@ class AecliModel extends ComModel
 		$password		 = $bsConfig['walletPassword'];
 		$aex9Source		 = $bsConfig['aex9Source'];
 		$contractAddress = $bsConfig['WTTContractAddress'];
-		$aettos			 = (int)($amount * 1e18);
-		$str = "tolink/aecli contract call {$wallet} transfer {$address} {$aettos} --contractAddress {$contractAddress} --contractSource {$aex9Source} -u {$nodeUrl} --compilerUrl {$compilerUrl} -P {$password} --json";
+		//$aettos			 = (int)($amount * 1e18);
+		$str = "tolink/aecli contract call {$wallet} --password {$password} transfer {$address} {$amount} --contractAddress {$contractAddress} --contractSource {$aex9Source} -u {$nodeUrl} --compilerUrl {$compilerUrl} --json";
 		exec($str, $arr);
 		$json 		= json_decode($arr[0], true);
 		$hash 		= $json['hash'];
-		$textFile   = fopen("airdrop/extrWTT/".date("Y-m-d").".txt", "a");
-		$appendText = $address.":".$amount.":".$hash."\r\n";
-		fwrite($textFile, $appendText);
-		fclose($textFile);
 		return $hash;
 
 		/*
