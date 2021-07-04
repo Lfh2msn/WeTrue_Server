@@ -35,6 +35,7 @@ class UserModel extends ComModel
 	{//获取用户头像、昵称、等级
 		$sql="SELECT 
 					nickname,
+					sex,
 					uactive,
 					last_active,
 					portrait
@@ -44,12 +45,13 @@ class UserModel extends ComModel
 		if ($row) {
 			$data['userAddress'] = $address;
 			$nickname = $this->DisposeModel-> delete_xss($row->nickname);
-			$data['nickname'] = $nickname ?? "";
-			$userActive = (int)$row->uactive;
-            $data['active'] = $userActive;
+			$data['nickname']   = $nickname ?? "";
+			$data['sex'] 	    = (int)$row->sex;
+			$userActive 	    = (int)$row->uactive;
+            $data['active']     = $userActive;
 			$data['userActive'] = $this->getActiveGrade($userActive);
-			$portrait = $row->portrait;
-			$data['portrait'] = $portrait ? "https://api.wetrue.io/User/portrait/".$address : "https://api.wetrue.io/images/default_head.png";
+			$portrait 			= $row->portrait;
+			$data['portrait']   = $portrait ? "https://api.wetrue.io/User/portrait/".$address : "https://api.wetrue.io/images/default_head.png";
 			
         } else {
 			die("error getUser");
@@ -65,6 +67,7 @@ class UserModel extends ComModel
 		];*/
 		$sql="SELECT 
 					nickname,
+					sex,
 					uactive,
 					portrait,
 					portrait_hash,
@@ -92,6 +95,7 @@ class UserModel extends ComModel
 		$portraitHash = $row->portrait_hash;
 		$data['userAddress']  = $address;
 		$data['nickname']     = $nickname ?? "";
+		$data['sex'] 	      = (int)$row->sex;
 		$data['active'] 	  = $userActive;
 		$data['userActive']   = $this->getActiveGrade($userActive);
 		$data['lastActive']   = ($userActive - $row->last_active) * $bsConfig['airdropWttRatio'];

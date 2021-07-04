@@ -59,14 +59,16 @@ class Submit extends BaseController {
 		$isHash = $this->DisposeModel-> checkAddress($hash);
 		if ($isHash) {
             $data = (new HashReadModel())-> split($hash);
+			echo $data;
         } elseif (!$hash) {
 			$data['code'] = 406;
 			$data['msg']  = 'error_type';
+			echo json_encode($data);
 		} else {
 			$data['code'] = 406;
 			$data['msg']  = 'error_hash';
+			echo json_encode($data);
 		}
-		echo json_encode($data);
 	}
 
 	public function complain()

@@ -38,8 +38,6 @@ class FocusModel extends Model {
 		$size = max(1, (int)$size);
 		$akToken   = $_SERVER['HTTP_AK_TOKEN'];
 		$isAkToken = $this->DisposeModel-> checkAddress($akToken);
-		$data['code'] = 200;
-		$data['data']['data'] = [];
 		if (!$isAkToken) {
 			$data['code'] = 401;
 			$data['msg']  = 'error_login';
@@ -60,16 +58,19 @@ class FocusModel extends Model {
 			}
 			$countSql = "SELECT count($field) FROM $this->tablename WHERE $field = '$akToken'";
 			$limitSql = "SELECT $contrary AS contrary FROM $this->tablename 
-								WHERE $field='$akToken' ORDER BY uid DESC LIMIT $size OFFSET ".($page-1) * $size;
+								WHERE $field='$akToken' 
+								ORDER BY focus_time DESC LIMIT $size OFFSET ".($page-1) * $size;
 		}
-
+		
 		$data = $this->cycle($page, $size, $countSql, $limitSql, $opt);
 		return json_encode($data);
     }
 
 	private function cycle($page, $size, $countSql, $limitSql, $opt)
 	{  //用户列表循环
+		$data['code'] = 200;
 		$data['data'] = $this->pages($page, $size, $countSql);
+		$data['data']['data'] = [];
 		$query = $this-> db-> query($limitSql);
 		foreach ($query-> getResult() as $row) {
 			$userAddress  = $row -> contrary;
@@ -123,7 +124,6 @@ class FocusModel extends Model {
 		$isFocus = $this->isFocus($userAddress, $akToken);
 		$data['data']['isFocus'] = $isFocus;
 		$data['msg'] = 'success';
-		
 		return json_encode($data);
 	}
 

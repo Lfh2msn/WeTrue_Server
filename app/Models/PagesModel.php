@@ -201,7 +201,8 @@ class PagesModel extends Model {
 		$data['data'] = $this->pages($page, $size, $countSql);
 		$query = $this->db-> query($limitSql);
 		$data['data']['data'] = [];
-		foreach ($query-> getResult() as $row) {
+		$getResult = $query-> getResult();
+		foreach ($getResult as $row) {
 			$hash  = $row -> hash;
 			$txBloom = $this->bloom-> txBloom($hash);
 			if (!$txBloom) {
