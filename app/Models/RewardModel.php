@@ -17,6 +17,18 @@ class RewardModel extends Model {
 		$this->wet_content = "wet_content";
 		$this->wet_reward  = "wet_reward";
     }
+
+	public function rewardList($hash)
+	{//打赏列表
+		$sql   = "SELECT hash,
+						 amount,
+						 sender_id,
+						 block_height
+						FROM $this->wet_reward WHERE to_hash = '$hash'";
+        $query = $this->db->query($sql);
+		$data  = $query->getResult();
+		return $data ? $data : [];
+	}
 	
 	public function reward($hash, $to_hash)
 	{//打赏
@@ -43,12 +55,12 @@ class RewardModel extends Model {
 		$json = (array) json_decode($contents, true);
 		$sender_id 	  = $json['sender_id'];
 		$recipient_id = $json['recipient_id'];
-		$amount 	  = (int)$json['amount'];
+		$amount 	  = $json['amount'];
 		$return_type  = $json['return_type'];
 		$block_height = (int)$json['block_height'];
 		$contract_id  = $json['contract_id'];
 
-		$sql   = "SELECT sender_id FROM wet_content WHERE hash = '$to_hash' LIMIT 1";
+		$sql   = "SELECT sender_id FROM $this->wet_content WHERE hash = '$to_hash' LIMIT 1";
         $query = $this->db->query($sql);
 		$row   = $query->getRow();
 		$conID = $row-> sender_id;
@@ -66,7 +78,7 @@ class RewardModel extends Model {
 				'block_height' => $block_height
 			];
 			$this->db->table($this->wet_reward)->insert($inData);
-			$updateSql = "UPDATE $this->wet_content SET reward_sum = (reward_sum + $amount) WHERE hash = '$hash'";
+			$updateSql = "UPDATE $this->wet_content SET reward_sum = (reward_sum + $amount) WHERE hash = '$to_hash'";
 			$this->db->query($updateSql);
 			$data['code'] = 200;
 			$data['msg']  = 'success';

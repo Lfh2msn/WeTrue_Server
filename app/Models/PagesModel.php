@@ -178,6 +178,7 @@ class PagesModel extends Model {
 		$data['data'] = '';
 
 		if($opt['select'] == 'content') {
+			$opt['rewardList'] = true;
 			$Content = $this->content-> txContent($hash, $opt);
 		}
 

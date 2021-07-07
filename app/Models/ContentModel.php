@@ -2,6 +2,7 @@
 
 use App\Models\ComModel;
 use App\Models\ValidModel;
+use App\Models\RewardModel;
 
 class ContentModel extends ComModel
 {//主贴Model
@@ -13,6 +14,7 @@ class ContentModel extends ComModel
 		$this->DisposeModel	= new DisposeModel();
 		$this->ValidModel   = new ValidModel();
 		$this->UserModel	= new UserModel();
+		$this->RewardModel	= new RewardModel();
     }
 
 	public function txContent($hash, $opt=[])
@@ -51,7 +53,10 @@ class ContentModel extends ComModel
 			$data['praise']			= (int) $row-> praise;
 			$data['star']			= (int) $row-> star_sum;
 			$data['read']			= (int) $row-> read_sum;
-			$data['reward']			= (int) $row-> reward_sum;
+			$data['reward']			= $row-> reward_sum;
+			if ($opt['rewardList']) {
+				$data['rewardList']	= $this->RewardModel-> rewardList($hash);
+			}
 			if ($opt['userLogin']) {
 				$data['isPraise']	= $this->ValidModel-> isPraise($hash, $opt['userLogin']);
 				$data['isStar']		= $this->ValidModel-> isStar($hash, $opt['userLogin']);
