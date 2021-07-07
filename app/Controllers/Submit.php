@@ -4,6 +4,7 @@ namespace App\Controllers;
 use App\Models\PraiseModel;
 use App\Models\StarModel;
 use App\Models\HashReadModel;
+use App\Models\RewardModel;
 use App\Models\ComplainModel;
 use App\Models\SearchModel;
 
@@ -65,6 +66,23 @@ class Submit extends BaseController {
 			$data['msg']  = 'error_type';
 			echo json_encode($data);
 		} else {
+			$data['code'] = 406;
+			$data['msg']  = 'error_hash';
+			echo json_encode($data);
+		}
+	}
+
+	public function reward()
+	{//打赏
+		$hash  	  = $this->request->getPost('hash');
+		$to_hash  = $this->request->getPost('toHash');
+		$isHash   = $this->DisposeModel-> checkAddress($hash);
+		$isToHash = $this->DisposeModel-> checkAddress($to_hash);
+
+		if ($isHash && $isToHash) {
+            $data = (new RewardModel())-> reward($hash, $to_hash);
+			echo $data;
+        } else {
 			$data['code'] = 406;
 			$data['msg']  = 'error_hash';
 			echo json_encode($data);

@@ -18,7 +18,7 @@ class DriftModel extends Model {
     }
 
     public function limit($page, $size)
-	{//回复分页
+	{//分页
 		$page = max(1, (int)$page);
 		$size = max(1, (int)$size);
 

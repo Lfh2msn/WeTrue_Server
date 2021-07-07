@@ -113,7 +113,6 @@ class UserModel extends ComModel
 				$data['isAdmin']  = true;
 			}
 		}
-		
 		return $data;
 	}
 

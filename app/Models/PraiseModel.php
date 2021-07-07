@@ -4,6 +4,7 @@ use CodeIgniter\Model;
 use App\Models\UserModel;
 use App\Models\ConfigModel;
 use App\Models\DisposeModel;
+use App\Models\ValidModel;
 
 class PraiseModel extends Model {
 //点赞Model
@@ -12,17 +13,10 @@ class PraiseModel extends Model {
         //parent::__construct();
 		$this->db = \Config\Database::connect('default');
 		$this->UserModel    = new UserModel();
-		$this->configModel  = new ConfigModel();
+		$this->ConfigModel  = new ConfigModel();
 		$this->DisposeModel = new DisposeModel();
+		$this->ValidModel   = new ValidModel();
     }
-
-    public function isPraise($hash, $address)
-	{//是否点赞
-		$sql   = "SELECT hash FROM wet_praise WHERE hash = '$hash' and sender_id = '$address' LIMIT 1";
-        $query = $this->db->query($sql);
-		$row   = $query->getRow();
-		return $row ? TRUE : FALSE;
-	}
 	
 	public function praise($hash, $type)
 	{//点赞
@@ -56,7 +50,7 @@ class PraiseModel extends Model {
 		if(!$row) {
 			$data['msg']  = 'error_hash';
 		} else {
-			$verify = $this->isPraise($hash, $akToken);
+			$verify = $this->ValidModel-> isPraise($hash, $akToken);
 			if(!$verify) {
 				$updateSql = "UPDATE $this->tablename SET praise = praise + 1 WHERE hash = '$hash'";
 				$praiseSql = "INSERT INTO wet_praise(hash, sender_id) VALUES ('$hash', '$akToken')";
@@ -69,7 +63,7 @@ class PraiseModel extends Model {
 			$this->db->query($updateSql);
 			$this->db->query($praiseSql);
 			//用户活跃入库
-			$backendConfig = $this->configModel-> backendConfig();
+			$backendConfig = $this->ConfigModel-> backendConfig();
 			$praiseActive  = $backendConfig['praiseActive'];
 			$this->UserModel-> userActive($akToken, $praiseActive, $e);
 			//入库行为记录
@@ -79,7 +73,7 @@ class PraiseModel extends Model {
 			$query = $this->db-> query($isHashSql);
 			$row = $query-> getRow();
 			$data['data']['praise']  = (int)$row->praise;
-			$isPraise = $this-> isPraise($hash, $akToken);
+			$isPraise = $this->ValidModel-> isPraise($hash, $akToken);
 			$data['data']['isPraise'] = $isPraise;
 			$data['msg'] = 'success';
 		}

@@ -1,9 +1,7 @@
 <?php namespace App\Models;
 
 use App\Models\ComModel;
-use App\Models\PraiseModel;
-use App\Models\StarModel;
-use App\Models\FocusModel;
+use App\Models\ValidModel;
 
 class ContentModel extends ComModel
 {//主贴Model
@@ -13,9 +11,7 @@ class ContentModel extends ComModel
         parent::__construct();
         $this->tablename 	= 'wet_content';
 		$this->DisposeModel	= new DisposeModel();
-		$this->PraiseModel  = new PraiseModel();
-		$this->StarModel	= new StarModel();
-		$this->FocusModel	= new FocusModel();
+		$this->ValidModel   = new ValidModel();
 		$this->UserModel	= new UserModel();
     }
 
@@ -36,6 +32,7 @@ class ContentModel extends ComModel
 							praise,
 							star_sum,
 							read_sum,
+							reward_sum,
 							source
 				FROM $this->tablename WHERE hash='$hash' LIMIT 1";
 
@@ -54,10 +51,11 @@ class ContentModel extends ComModel
 			$data['praise']			= (int) $row-> praise;
 			$data['star']			= (int) $row-> star_sum;
 			$data['read']			= (int) $row-> read_sum;
+			$data['reward']			= (int) $row-> reward_sum;
 			if ($opt['userLogin']) {
-				$data['isPraise']	= $this->PraiseModel-> isPraise($hash, $opt['userLogin']);
-				$data['isStar']		= $this->StarModel-> isStar($hash, $opt['userLogin']);
-				$data['isFocus']	= $this->FocusModel-> isFocus($sender_id, $opt['userLogin']);
+				$data['isPraise']	= $this->ValidModel-> isPraise($hash, $opt['userLogin']);
+				$data['isStar']		= $this->ValidModel-> isStar($hash, $opt['userLogin']);
+				$data['isFocus']	= $this->ValidModel-> isFocus($sender_id, $opt['userLogin']);
 			} else {
 				$data['isPraise']	= false;
 				$data['isStar']		= false;

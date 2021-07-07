@@ -6,6 +6,7 @@ use App\Models\DisposeModel;
 use App\Models\UserModel;
 use App\Models\BloomModel;
 use App\Models\TopicModel;
+use App\Models\ValidModel;
 
 class HashReadModel extends Model {
 //链上hash入库Model
@@ -17,6 +18,7 @@ class HashReadModel extends Model {
 		$this->UserModel	 = new UserModel();
 		$this->BloomModel	 = new BloomModel();
 		$this->TopicModel	 = new TopicModel();
+		$this->ValidModel	 = new ValidModel();
 		$this->wet_topic_content = 'wet_topic_content';
 		$this->wet_topic_tag = 'wet_topic_tag';
 		$this->wet_temporary = 'wet_temporary';
@@ -43,6 +45,9 @@ class HashReadModel extends Model {
 			log_message('error_repeat_'.$hash, 4);
 			echo json_encode($data);
 		}
+
+		//fastcgi_finish_request(); //冲刷增速
+		
 		$delTempSql = "DELETE FROM $this->wet_temporary WHERE tp_time <= now()-interval '1 D'";
 		$this->db->query($delTempSql);
 
@@ -135,16 +140,19 @@ class HashReadModel extends Model {
 			$data['msg']  = 'error_amount';
 			return json_encode($data);
 		}
-		//内容分配
-		if( $data['type'] == 'topic' )
-		{//主贴
-			$selectHash = "SELECT hash FROM $this->wet_content WHERE hash = '$data[hash]' LIMIT 1";
-        	$getRow = $this->db->query($selectHash)-> getRow();
-			if ($getRow) {
-				$this->deleteTemp($data['hash']);
-				log_message('Repeat_Content_Hash:'.$data['hash'], 4);
-				return;
-			} else {
+		try{
+			//内容分配
+			if( $data['type'] == 'topic' )
+			{//主贴
+				$isContentHash = $this->ValidModel-> isContentHash($data['hash']);
+				if ($isContentHash) {
+					$this->deleteTemp($data['hash']);
+					log_message('Repeat_Content_Hash:'.$data['hash'], 4);
+					$data['code'] = 406;
+					$data['msg']  = 'error';
+					return json_encode($data);
+				}
+
 				$data['imgList'] = trim($payload['img_list']);
 				$insertData = [
 								'hash'		   => $data['hash'],
@@ -158,6 +166,7 @@ class HashReadModel extends Model {
 								'source' 	   => $data['source']
 							];
 				$insertTable = $this->wet_content;
+				$this->db->table($insertTable)->insert($insertData);
 				$upSql       = "UPDATE $this->wet_users SET topic_sum = topic_sum + 1 WHERE address = '$data[sender]'";
 				$active      = $bsConfig['topicActive'];
 
@@ -172,17 +181,18 @@ class HashReadModel extends Model {
 					$isTopic = $this->TopicModel-> insertTopic($topic);
 				}
 			}
-		}
 
-		elseif ( $data['type'] == 'comment' )
-		{//评论
-			$selectHash = "SELECT hash FROM $this->wet_comment WHERE hash = '$data[hash]' LIMIT 1";
-        	$getRow = $this->db->query($selectHash)-> getRow();
-			if ($getRow) {
-				$this->deleteTemp($data['hash']);
-				log_message('重复评论hash:'.$data['hash'], 4);
-				return;
-			} else {
+			elseif ( $data['type'] == 'comment' )
+			{//评论
+				$isContentHash = $this->ValidModel-> isCommentHash($data['hash']);
+				if ($isCommentHash) {
+					$this->deleteTemp($data['hash']);
+					log_message('重复评论hash:'.$data['hash'], 4);
+					$data['code'] = 406;
+					$data['msg']  = 'error';
+					return json_encode($data);
+				}
+
 				$data['toHash'] = trim($payload['toHash']);
 				$insertData = [
 					'hash'		   => $data['hash'],
@@ -195,20 +205,22 @@ class HashReadModel extends Model {
 					'payload' 	   => $data['content']
 				];
 				$insertTable = $this->wet_comment;
+				$this->db->table($insertTable)->insert($insertData);
 				$upSql  	 = "UPDATE $this->wet_content SET comment_sum = comment_sum + 1 WHERE hash = '$data[toHash]'";
 				$active 	 = $bsConfig['commentActive'];
 			}
-		}
 
-		elseif ( $data['type'] == 'reply' )
-		{//回复
-			$selectHash = "SELECT hash FROM $this->wet_reply WHERE hash = '$data[hash]' LIMIT 1";
-        	$getRow = $this->db->query($selectHash)-> getRow();
-			if ($getRow) {
-				$this->deleteTemp($data['hash']);
-				log_message('Repeat_Reply_Hash:'.$data['hash'], 4);
-				return;
-			} else {
+			elseif ( $data['type'] == 'reply' )
+			{//回复
+				$isReplyHash = $this->ValidModel-> isReplyHash($data['hash']);
+				if ($isReplyHash) {
+					$this->deleteTemp($data['hash']);
+					log_message('Repeat_Reply_Hash:'.$data['hash'], 4);
+					$data['code'] = 406;
+					$data['msg']  = 'error';
+					return json_encode($data);
+				}
+
 				$data['replyType'] = trim($payload['reply_type']);
 				$data['toHash']    = trim($payload['to_hash']);
 				$data['toAddress'] = trim($payload['to_address']);
@@ -226,21 +238,24 @@ class HashReadModel extends Model {
 					'payload' 	   => $data['content']
 				];
 				$insertTable = $this->wet_reply;
+				$this->db->table($insertTable)->insert($insertData);
 				$upSql  	 = "UPDATE $this->wet_comment SET comment_sum = comment_sum + 1 WHERE hash = '$data[toHash]'";
 				$active 	 = $bsConfig['replyActive'];
 			}
-		}
 
-		elseif ( $data['type'] == 'nickname' )
-		{//昵称
-			$data['content'] = trim($payload['content']);
-			$verify = $this->UserModel-> isUser($data['sender']);
-			$isNickname = $this->UserModel-> isNickname($data['content']);
-			if ($isNickname) {
-				$this->deleteTemp($data['hash']);
-				log_message('Repeat_Nickname:'.$data['hash'], 4);
-				return;
-			} else {
+			elseif ( $data['type'] == 'nickname' )
+			{//昵称
+				$data['content'] = trim($payload['content']);
+				$verify = $this->UserModel-> isUser($data['sender']);
+				$isNickname = $this->UserModel-> isNickname($data['content']);
+				if ($isNickname) {
+					$this->deleteTemp($data['hash']);
+					log_message('Repeat_Nickname:'.$data['hash'], 4);
+					$data['code'] = 406;
+					$data['msg']  = 'error';
+					return json_encode($data);
+				}
+
 				if($verify){  //用户是否存在
 					$upData = [ 'nickname' => $data['content'] ];
 					$this->db->table($this->wet_users)->where('address', $data['sender'])->update($upData);
@@ -250,43 +265,50 @@ class HashReadModel extends Model {
 						'nickname' => $data['content']
 					];
 					$insertTable = $this->wet_users;
+					$this->db->table($insertTable)->insert($insertData);
 				}
 				$active = $bsConfig['nicknameActive'];
 			}
-		}
 
-		elseif ( $data['type'] == 'sex' )
-		{//性别
-			$data['content'] = (int) trim($payload['content']);
-			if (!is_numeric($data['content']) || $data['content'] >= 3){
-				$this->deleteTemp($data['hash']);
-				log_message('no_sex:'.$data['hash'], 4);
-				return;
-			}
-			$verify = $this->UserModel-> isUser($data['sender']);
-			if ($verify) {
-				$upData = [ 'sex' => $data['content'] ];
-				$this->db->table($this->wet_users)->where('address', $data['sender'])->update($upData);
-			} else {
-				$insertData = [
-					'address' => $data['sender'],
-					'sex'     => $data['content']
-				];
-				$insertTable = $this->wet_users;
-			}
-			$active = $bsConfig['sexActive'];
-		}
+			elseif ( $data['type'] == 'sex' )
+			{//性别
+				$data['content'] = (int) trim($payload['content']);
+				if (!is_numeric($data['content']) || $data['content'] >= 3){
+					$this->deleteTemp($data['hash']);
+					log_message('no_sex:'.$data['hash'], 4);
+					$data['code'] = 406;
+					$data['msg']  = 'error';
+					return json_encode($data);
+				}
 
-		elseif ( $data['type'] == 'portrait' )
-		{//头像
-			$data['content'] = trim($payload['content']);
-			$selectHash = "SELECT hash FROM $this->wet_users WHERE maxportrait = '$data[hash]' LIMIT 1";
-        	$getRow		= $this->db->query($selectHash)-> getRow();
-			if ($getRow) {
-				$this->deleteTemp($data['hash']);
-				log_message('Repeat_Portrait_Hash:'.$data['hash'], 4);
-				return;
-			} else {
+				$verify = $this->UserModel-> isUser($data['sender']);
+				if ($verify) {
+					$upData = [ 'sex' => $data['content'] ];
+					$this->db->table($this->wet_users)->where('address', $data['sender'])->update($upData);
+				} else {
+					$insertData = [
+						'address' => $data['sender'],
+						'sex'     => $data['content']
+					];
+					$insertTable = $this->wet_users;
+					$this->db->table($insertTable)->insert($insertData);
+				}
+				$active = $bsConfig['sexActive'];
+			}
+
+			elseif ( $data['type'] == 'portrait' )
+			{//头像
+				$data['content'] = trim($payload['content']);
+				$selectHash = "SELECT hash FROM $this->wet_users WHERE maxportrait = '$data[hash]' LIMIT 1";
+				$getRow		= $this->db->query($selectHash)-> getRow();
+				if ($getRow) {
+					$this->deleteTemp($data['hash']);
+					log_message('Repeat_Portrait_Hash:'.$data['hash'], 4);
+					$data['code'] = 406;
+					$data['msg']  = 'error';
+					return json_encode($data);
+				}
+
 				$verify = $this->UserModel-> isUser($data['sender']);
 				if ($verify) {
 					$upData = [
@@ -301,20 +323,23 @@ class HashReadModel extends Model {
 						'maxportrait' => $data['hash']
 					];
 					$insertTable = $this->wet_users;
+					$this->db->table($insertTable)->insert($insertData);
 				}
 				$active = $bsConfig['portraitActive'];
 			}
-		}
 
-		elseif ( $data['type'] == 'drift' )
-		{//漂流瓶
-			$selectHash = "SELECT hash FROM $this->wet_reply WHERE hash = '$data[hash]' LIMIT 1";
-        	$getRow		= $this->db->query($selectHash)-> getRow();
-			if ($getRow) {
-				$this->deleteTemp($data['hash']);
-				log_message('Repeat_Drift_Hash:'.$data['hash'], 4);
-				return;
-			} else {
+			elseif ( $data['type'] == 'drift' )
+			{//漂流瓶
+				$selectHash = "SELECT hash FROM $this->wet_reply WHERE hash = '$data[hash]' LIMIT 1";
+				$getRow		= $this->db->query($selectHash)-> getRow();
+				if ($getRow) {
+					$this->deleteTemp($data['hash']);
+					log_message('Repeat_Drift_Hash:'.$data['hash'], 4);
+					$data['code'] = 406;
+					$data['msg']  = 'error';
+					return json_encode($data);
+				}
+
 				$data['replyType'] = trim($payload['reply_type']);
 				$data['toHash']    = trim($payload['to_hash']);
 				$data['toAddress'] = trim($payload['to_address']);
@@ -332,17 +357,17 @@ class HashReadModel extends Model {
 					'payload' 	   => $data['content']
 				];
 				$insertTable = $this->wet_reply;
+				$this->db->table($insertTable)->insert($insertData);
 				$upSql  = "UPDATE $this->wet_comment SET comment_sum = comment_sum + 1 WHERE hash = '$data[toHash]'";
 				$active = $bsConfig['replyActive'];
+			} else {
+				$this->deleteTemp($data['hash']);
+				log_message("data[type]标签错误".$hash, 4);
+				$data['code'] = 406;
+				$data['msg']  = 'error';
+				return json_encode($data);
 			}
-		} else {
-			$this->deleteTemp($data['hash']);
-			log_message("data[type]标签错误".$hash, 4);
-			return;
-		}
 
-		try{
-			$this->db->table($insertTable)->insert($insertData);
 			//入库行为记录
 			$insetrBehaviorDate = [
 				'address'   => $data['sender'],
@@ -361,6 +386,9 @@ class HashReadModel extends Model {
 		} catch (Exception $err) {
 			$this->deleteTemp($data['hash']);
 			log_message('error:'.$err, 4);
+			$data['code'] = 406;
+			$data['msg']  = 'error';
+			return json_encode($data);
 		}
     }
 

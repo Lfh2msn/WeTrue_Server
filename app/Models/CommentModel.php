@@ -4,7 +4,7 @@ use CodeIgniter\Model;
 use App\Models\BloomModel;
 use App\Models\UserModel;
 use App\Models\ReplyModel;
-use App\Models\PraiseModel;
+use App\Models\ValidModel;
 use App\Models\DisposeModel;
 
 class CommentModel extends Model {
@@ -19,7 +19,7 @@ class CommentModel extends Model {
 		$this->bloom	    = new BloomModel();
 		$this->user	   	    = new UserModel();
 		$this->reply	    = new ReplyModel();
-		$this->praise	    = new PraiseModel();
+		$this->ValidModel	= new ValidModel();
 		$this->DisposeModel	= new DisposeModel();
     }
 
@@ -42,7 +42,7 @@ class CommentModel extends Model {
 			$data['utcTime']	 = (int) $row-> utctime;
 			$data['replyNumber'] = (int) $row-> comment_sum;
 			$data['praise']		 = (int) $row-> praise;
-			$data['isPraise']	 = $opt['userLogin'] ? $this->praise-> isPraise($hash, $opt['userLogin']) : false;
+			$data['isPraise']	 = $opt['userLogin'] ? $this->ValidModel-> isPraise($hash, $opt['userLogin']) : false;
 			$data['users'] = $this->user-> getUser($sender_id);
 			if ( (int)$opt['replyLimit'] ) {
 				$data['commentList'] = [];

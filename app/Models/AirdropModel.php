@@ -33,6 +33,8 @@ class AirdropModel extends ComModel
 			return "Repeat IP OR Off Airdrop";
 		}
 
+		//fastcgi_finish_request(); //冲刷增速
+
 		$url = $bsConfig['backendServiceNode'].'v2/accounts/'.$address;
 		@$GetUrl = file_get_contents($url);
 

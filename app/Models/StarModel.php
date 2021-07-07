@@ -2,6 +2,7 @@
 
 use CodeIgniter\Model;
 use App\Models\DisposeModel;
+use App\Models\ValidModel;
 
 class StarModel extends Model {
 //收藏Model
@@ -13,14 +14,7 @@ class StarModel extends Model {
 		$this->wet_users	= "wet_users";
 		$this->wet_content  = "wet_content";
 		$this->DisposeModel = new DisposeModel();
-	}
-
-    public function isStar($hash, $address)
-	{//获取收藏状态
-		$sql   ="SELECT hash FROM $this->wet_star WHERE hash = '$hash' AND sender_id = '$address' LIMIT 1";
-        $query = $this->db-> query($sql);
-		$row   = $query-> getRow();
-		return $row ? true : false;
+		$this->ValidModel   = new ValidModel();
 	}
 
 	public function star($hash)
@@ -40,7 +34,7 @@ class StarModel extends Model {
 			return json_encode($data);
 		}
 
-		$verify = $this->isStar($hash, $akToken);
+		$verify = $this->ValidModel-> isStar($hash, $akToken);
 		if (!$verify) {
 			$starSql    = "INSERT INTO $this->wet_star(hash, sender_id) VALUES ('$hash', '$akToken')";
 			$upContent  = "UPDATE $this->wet_content SET star_sum = star_sum + 1 WHERE hash = '$hash'";

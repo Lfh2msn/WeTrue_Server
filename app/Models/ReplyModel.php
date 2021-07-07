@@ -14,7 +14,7 @@ class ReplyModel extends Model {
         $this->tablename    = 'wet_reply';
 		$this->bloom	    = new BloomModel();
 		$this->user	   	    = new UserModel();
-		$this->praise	    = new PraiseModel();
+		$this->ValidModel	= new ValidModel();
 		$this->DisposeModel	= new DisposeModel();
     }
 
@@ -53,7 +53,7 @@ class ReplyModel extends Model {
 			$data['receiverName'] = $this->user-> getName($to_address);
 			$data['utcTime']	  = (int) $row-> utctime;
 			$data['praise']		  = (int) $row-> praise;
-			$data['isPraise']	  = $opt['userLogin'] ? $this->praise-> isPraise($hash, $opt['userLogin']) : false;
+			$data['isPraise']	  = $opt['userLogin'] ? $this->ValidModel-> isPraise($hash, $opt['userLogin']) : false;
 			$data['users']		  = $this->user-> getUser($sender_id);
         }
 

@@ -3,6 +3,7 @@
 use CodeIgniter\Model;
 use App\Models\UserModel;
 use App\Models\DisposeModel;
+use App\Models\ValidModel;
 
 class FocusModel extends Model {
 //关注Model
@@ -13,6 +14,7 @@ class FocusModel extends Model {
 		$this->tablename    = "wet_focus";
 		$this->userModel    = new UserModel();
 		$this->DisposeModel = new DisposeModel();
+		$this->ValidModel   = new ValidModel();
 	}
 
 	public function isFocus($focus,$my_id)
@@ -107,7 +109,7 @@ class FocusModel extends Model {
 			return json_encode($data);
 		}
 
-		$verify = $this->isFocus($userAddress, $akToken);
+		$verify = $this->ValidModel-> isFocus($userAddress, $akToken);
 		if (!$verify) {
 			$focusSql = "INSERT INTO $this->tablename(focus, fans) VALUES ('$userAddress', '$akToken')";
 			$e = true;
@@ -121,7 +123,7 @@ class FocusModel extends Model {
 		$focusBehaviorSql = "INSERT INTO wet_behavior(address, thing, toaddress) 
 								VALUES ('$akToken', 'isFocus', '$userAddress')";
 		$this->db->query($focusBehaviorSql);
-		$isFocus = $this->isFocus($userAddress, $akToken);
+		$isFocus = $this->ValidModel-> isFocus($userAddress, $akToken);
 		$data['data']['isFocus'] = $isFocus;
 		$data['msg'] = 'success';
 		return json_encode($data);
@@ -129,7 +131,7 @@ class FocusModel extends Model {
 
 	public function autoFocus($focus ,$fans)
 	{//自动A账户关注B账户
-		$verify = $this->isFocus($focus, $fans);
+		$verify = $this->ValidModel-> isFocus($focus, $fans);
 		if (!$verify) {
 			$focusSql = "INSERT INTO $this->tablename(focus, fans) VALUES ('$focus', '$fans')";
 			$e = true;
