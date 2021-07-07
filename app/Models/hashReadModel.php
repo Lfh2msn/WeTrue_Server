@@ -19,14 +19,14 @@ class HashReadModel extends Model {
 		$this->BloomModel	 = new BloomModel();
 		$this->TopicModel	 = new TopicModel();
 		$this->ValidModel	 = new ValidModel();
-		$this->wet_topic_content = 'wet_topic_content';
-		$this->wet_topic_tag = 'wet_topic_tag';
 		$this->wet_temporary = 'wet_temporary';
 		$this->wet_behavior  = 'wet_behavior';
 		$this->wet_content 	 = 'wet_content';
 		$this->wet_comment   = 'wet_comment';
 		$this->wet_reply	 = 'wet_reply';
 		$this->wet_users	 = 'wet_users';
+		$this->wet_topic_tag = 'wet_topic_tag';
+		$this->wet_topic_content = 'wet_topic_content';
     }
 
 	public function split($hash)
@@ -41,7 +41,7 @@ class HashReadModel extends Model {
 			echo json_encode($data);
 		} else {
 			$data['code'] = 406;
-			$data['msg']  = 'repeat';
+			$data['msg']  = 'error_repeat';
 			log_message('error_repeat_'.$hash, 4);
 			echo json_encode($data);
 		}

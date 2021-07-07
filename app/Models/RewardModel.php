@@ -24,7 +24,7 @@ class RewardModel extends Model {
 						 amount,
 						 sender_id,
 						 block_height
-						FROM $this->wet_reward WHERE to_hash = '$hash'";
+						FROM $this->wet_reward WHERE to_hash = '$hash' LIMIT 50";
         $query = $this->db->query($sql);
 		$data  = $query->getResult();
 		return $data ? $data : [];

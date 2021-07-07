@@ -78,7 +78,7 @@ class BloomModel extends Model {
 
         $txBloom = $this->txBloom($hash);
         if ($txBloom) {
-			$data['msg']  = 'repeat';
+			$data['msg']  = 'error_repeat';
 			return json_encode($data);
         }
 

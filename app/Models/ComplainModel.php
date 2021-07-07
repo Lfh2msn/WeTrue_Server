@@ -63,7 +63,7 @@ class ComplainModel extends Model {
 		$txBloom = $this->BloomModel-> txBloom($hash);
 		if ($txBloom) {
 			$this->deleteComplain($hash);
-			$data['msg'] = 'repeat';
+			$data['msg'] = 'error_repeat';
 			return json_encode($data);
         }
 
