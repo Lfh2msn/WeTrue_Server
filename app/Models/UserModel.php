@@ -32,13 +32,14 @@ class UserModel extends ComModel
 	}
 
     public function getUser($address)
-	{//获取用户头像、昵称、等级
+	{//获取用户昵称、头像、、活跃、等级
 		$sql="SELECT 
 					nickname,
 					sex,
 					uactive,
-					last_active,
-					portrait
+					portrait,
+					reward_sum,
+					last_active
 				FROM $this->tablename WHERE address = '$address' LIMIT 1";
         $query = $this->db->query($sql);
 		$row = $query->getRow();
@@ -48,8 +49,11 @@ class UserModel extends ComModel
 			$data['nickname']   = $nickname ?? "";
 			$data['sex'] 	    = (int)$row->sex;
 			$userActive 	    = (int)$row->uactive;
+			$userReward   		= $row->reward_sum;
             $data['active']     = $userActive;
-			$data['userActive'] = $this->getActiveGrade($userActive);
+			$data['reward'] 	= $userReward;
+			$data['userActive'] = $this->DisposeModel-> activeGrade($userActive);
+			$data['userReward'] = $this->DisposeModel-> rewardGrade($userReward);
 			$portrait 			= $row->portrait;
 			$data['portrait']   = $portrait ? "https://api.wetrue.io/User/portrait/".$address : "https://api.wetrue.io/images/default_head.png";
 			
@@ -72,6 +76,7 @@ class UserModel extends ComModel
 					portrait,
 					portrait_hash,
 					last_active,
+					reward_sum,
 					topic_sum,
 					focus_sum,
 					fans_sum,
@@ -91,13 +96,16 @@ class UserModel extends ComModel
 		}
 		$nickname     = $this->DisposeModel-> delete_xss($row->nickname);
 		$userActive   = (int)$row->uactive;
+		$userReward   = $row->reward_sum;
 		$portrait 	  = $row->portrait;
 		$portraitHash = $row->portrait_hash;
 		$data['userAddress']  = $address;
 		$data['nickname']     = $nickname ?? "";
 		$data['sex'] 	      = (int)$row->sex;
 		$data['active'] 	  = $userActive;
-		$data['userActive']   = $this->getActiveGrade($userActive);
+		$data['reward'] 	  = $userReward;
+		$data['userActive']   = $this->DisposeModel-> activeGrade($userActive);
+		$data['userReward']   = $this->DisposeModel-> rewardGrade($userReward);
 		$data['lastActive']   = ($userActive - $row->last_active) * $bsConfig['airdropWttRatio'];
 		$data['portrait']	  = $portrait ? "https://api.wetrue.io/User/portrait/".$address : "https://api.wetrue.io/images/default_head.png";
 		$data['portraitHash'] = $portraitHash ?? "";
@@ -130,16 +138,6 @@ class UserModel extends ComModel
 		return $data;
 	}
 
-	public function countTopic($address)
-	{//统计用户发帖总数量
-		$countSql = "SELECT count(hash) FROM wet_content WHERE sender_id = '$address'";
-		$query  = $this->db-> query($countSql);
-		$getRow = $query-> getRow();
-		$count  = $getRow->count;
-		$upSql  = "UPDATE $this->tablename SET topic_sum = '$count' WHERE address = '$address'";
-		$this->db->query($upSql);
-	}
-
 	public function getPortraitUrl($address)
 	{//获取用户头像路径
 		$sql      = "SELECT portrait FROM wet_users WHERE address = '$address' LIMIT 1";
@@ -161,7 +159,7 @@ class UserModel extends ComModel
 		if ($row) {
 			$data = $row->portrait ?? "";
         } else {
-			return "error address Portrait";
+			return "error_address_portrait";
 		}
 		return $data;
 	}
@@ -212,39 +210,6 @@ class UserModel extends ComModel
 			(new FocusModel())-> autoFocus($autoFans1 ,$address);
 		}
 	}
-
-	public function getActiveGrade($number)
-	{//等级划分
-		(int)$number;
-        if ( $number >= 50000 ) {
-            $Grade = 9;
-
-        } elseif ( $number >= 20000 ) {
-            $Grade = 8;
-
-        } elseif ( $number >= 10000 ) {
-            $Grade = 7;
-
-        } elseif ( $number >= 5000 ) {
-            $Grade = 6;
-
-        } elseif ( $number >= 2000 ) {
-            $Grade = 5;
-
-        } elseif ( $number >= 500 ) {
-            $Grade = 4;
-
-        } elseif ( $number >= 200 ) {
-            $Grade = 3;
-
-        } elseif ( $number >= 100 ) {
-            $Grade = 2;
-
-        } else {
-            $Grade = 1;
-        }
-		return $Grade;
-    }
 
 	public function isAdmin($address)
 	{//管理员校验

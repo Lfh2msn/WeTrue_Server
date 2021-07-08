@@ -80,8 +80,7 @@ class Submit extends BaseController {
 		$isToHash = $this->DisposeModel-> checkAddress($to_hash);
 
 		if ($isHash && $isToHash) {
-            $data = (new RewardModel())-> reward($hash, $to_hash);
-			echo $data;
+            (new RewardModel())-> reward($hash, $to_hash);
         } else {
 			$data['code'] = 406;
 			$data['msg']  = 'error_hash';

@@ -95,6 +95,52 @@ class DisposeModel extends Model {
         return $json;
     }
 
+    public function activeGrade($number)
+	{//活跃度等级划分
+		(int)$number;
+        if ( $number >= 50000 ) {
+            $Grade = 9;
+        } elseif ( $number >= 20000 ) {
+            $Grade = 8;
+        } elseif ( $number >= 10000 ) {
+            $Grade = 7;
+        } elseif ( $number >= 5000 ) {
+            $Grade = 6;
+        } elseif ( $number >= 2000 ) {
+            $Grade = 5;
+        } elseif ( $number >= 500 ) {
+            $Grade = 4;
+        } elseif ( $number >= 200 ) {
+            $Grade = 3;
+        } elseif ( $number >= 100 ) {
+            $Grade = 2;
+        } else {
+            $Grade = 1;
+        }
+		return $Grade;
+    }
+
+    public function rewardGrade($number)
+	{//打赏金额等级划分
+		(int)$number = ($number / 1e18);
+        if ( $number >= 10000000 ) {
+            $Grade = 6;
+        } elseif ( $number >= 5000000 ) {
+            $Grade = 5;
+        } elseif ( $number >= 100000 ) {
+            $Grade = 4;
+        } elseif ( $number >= 50000 ) {
+            $Grade = 3;
+        } elseif ( $number >= 10000 ) {
+            $Grade = 2;
+        } elseif ( $number >= 1000 ) {
+            $Grade = 1;
+        } else {
+            $Grade = 0;
+        }
+		return $Grade;
+    }
+
 	public function versionCompare($versionA,$versionB)
 	{/*版本号比较
 	*    @param $version1 版本A 如:5.3.2 
