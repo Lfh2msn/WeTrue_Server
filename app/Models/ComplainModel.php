@@ -8,6 +8,7 @@ use App\Models\ContentModel;
 use App\Models\CommentModel;
 use App\Models\ReplyModel;
 use App\Models\BloomModel;
+use App\Models\ValidModel;
 
 class ComplainModel extends Model {
 //投诉Model
@@ -22,17 +23,10 @@ class ComplainModel extends Model {
 		$this->CommentModel  = new CommentModel();
 		$this->ReplyModel 	 = new ReplyModel();
 		$this->BloomModel 	 = new BloomModel();
+		$this->ValidModel 	 = new ValidModel();
 		$this->wet_complain  = 'wet_complain';
 		$this->wet_bloom     = 'wet_bloom';
 		$this->wet_behavior  = 'wet_behavior';
-	}
-
-	public function isComplain($hash)
-	{//投诉hash，存在返回false
-		$sql   = "SELECT hash FROM $this->wet_complain WHERE hash = '$hash' LIMIT 1";
-		$query = $this->db->query($sql);
-        $row   = $query->getRow();
-		return $row ? false : true;
 	}
 
 	public function complainAddress($hash)
@@ -73,15 +67,17 @@ class ComplainModel extends Model {
         	return json_encode($data);
         }
 		
-		$isComplain = $this->isComplain($hash);
+		$isComplain = $this->ValidModel->isComplain($hash);
 		if ($isComplain) {
-			$updateReportSql = "INSERT INTO $this->wet_complain(
-									hash, address, complain_sum
-								) VALUES (
-									'$hash', '$rpSenderId', '1'
-								)";
-        } else {
 			$updateReportSql = "UPDATE $this->wet_complain SET complain_sum = complain_sum + 1 WHERE hash = '$hash'";
+			$this->db-> query($updateReportSql);
+        } else {
+			$insertData = [
+				'hash'         => $hash,
+				'address'      => $rpSenderId,
+				'complain_sum' => 1
+			];
+			$this->db->table($this->wet_complain)->insert($insertData);
 		}
 
 		//入库行为记录
@@ -90,13 +86,9 @@ class ComplainModel extends Model {
 						) VALUES (
 							'$akToken', '$hash', 'Complain', '$rpSenderId'
 						)";
-
-		$this->db-> query($updateReportSql);
 		$this->db->query($behaviorSql);
-
 		$data['msg']  = 'success';
 		return json_encode($data);
-
 	}
 
 	public function limit($page, $size, $opt=[])

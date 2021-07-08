@@ -32,7 +32,7 @@ class HashReadModel extends Model {
 	public function split($hash)
 	{//上链内容入库
 		$tp_type   = "common";
-		$isHashSql = "SELECT tp_hash FROM $this->wet_temp WHERE tp_hash = '$hash' AND tp_type = '$tp_type' LIMIT 1";
+		$isHashSql = "SELECT tp_hash FROM $this->wet_temp WHERE tp_hash = '$hash' LIMIT 1";
 		$query     = $this->db-> query($isHashSql)-> getRow();
 		if (!$query) {  //写入临时缓存
 			$insertTempSql = "INSERT INTO $this->wet_temp(tp_hash, tp_type) VALUES ('$hash', '$tp_type')";
@@ -272,8 +272,8 @@ class HashReadModel extends Model {
 			elseif ( $data['type'] == 'nickname' )
 			{//昵称
 				$data['content'] = trim($payload['content']);
-				$verify = $this->UserModel-> isUser($data['sender']);
-				$isNickname = $this->UserModel-> isNickname($data['content']);
+				$verify     = $this->ValidModel-> isUser($data['sender']);
+				$isNickname = $this->ValidModel-> isNickname($data['content']);
 				if ($isNickname) {
 					$this->deleteTemp($data['hash']);
 					$textFile   = fopen("log/hash_read/".date("Y-m-d").".txt", "a");
@@ -313,7 +313,7 @@ class HashReadModel extends Model {
 					return json_encode($data);
 				}
 
-				$verify = $this->UserModel-> isUser($data['sender']);
+				$verify = $this->ValidModel-> isUser($data['sender']);
 				if ($verify) {
 					$upData = [ 'sex' => $data['content'] ];
 					$this->db->table($this->wet_users)->where('address', $data['sender'])->update($upData);
@@ -344,7 +344,7 @@ class HashReadModel extends Model {
 					return json_encode($data);
 				}
 
-				$verify = $this->UserModel-> isUser($data['sender']);
+				$verify = $this->ValidModel-> isUser($data['sender']);
 				if ($verify) {
 					$upData = [
 								'portrait'    => $data['content'],

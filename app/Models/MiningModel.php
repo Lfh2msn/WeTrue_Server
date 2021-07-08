@@ -3,6 +3,7 @@ namespace App\Models;
 
 use App\Models\ComModel;
 use App\Models\AecliModel;
+use App\Models\ValidModel;
 
 class MiningModel extends ComModel
 {//挖矿Model
@@ -15,75 +16,110 @@ class MiningModel extends ComModel
 		$this->AecliModel   = new AecliModel();
 		$this->UserModel    = new UserModel();
 		$this->DisposeModel = new DisposeModel();
+		$this->ValidModel   = new ValidModel();
     }
-
-	public function isMapAccount($address)
-	{//验证是否开通映射挖矿
-		$sql   = "SELECT is_map FROM $this->wet_users WHERE address = '$address' LIMIT 1";
-        $query = $this->db->query($sql);
-		$row   = $query->getRow();
-		return $row->is_map ? true : false;
-	}
-
-	public function isMapAddress($address)
-	{//验证映射地址是否存在
-		$sql   = "SELECT address FROM $this->wet_mapping WHERE address = '$address' LIMIT 1";
-        $query = $this->db->query($sql);
-		$row   = $query->getRow();
-		return $row ? true : false;
-	}
-
-	public function isMapState($address)
-	{//验证是否已经映射
-		$sql   = "SELECT state FROM $this->wet_mapping WHERE address = '$address' LIMIT 1";
-        $query = $this->db->query($sql);
-		$row   = $query->getRow();
-		return $row->state ? true : false;
-	}
 
 	public function openAccount($hash)
 	{//新开户
+		$tp_type   = "mapping";
+		$isHashSql = "SELECT tp_hash FROM $this->wet_temp WHERE tp_hash = '$hash' AND tp_type = '$tp_type' LIMIT 1";
+		$query     = $this->db-> query($isHashSql)-> getRow();
+		if ($query) {
+			$data['code'] = 406;
+			$data['msg']  = 'error_repeat_temp';
+			echo json_encode($data);
+		} else {  //写入临时缓存
+			$insertTempSql = "INSERT INTO $this->wet_temp(tp_hash, tp_type) VALUES ('$hash', '$tp_type')";
+			$this->db->query($insertTempSql);
+			$data['code'] = 200;
+			$data['msg']  = 'success';
+			echo json_encode($data);
+		}
+
+		$delTempSql = "DELETE FROM $this->wet_temp WHERE tp_time <= now()-interval '3 D' AND tp_type = '$tp_type'";
+		$this->db->query($delTempSql);
+
+		$hashSql = "SELECT tp_hash FROM $this->wet_temp WHERE tp_type = '$tp_type' ORDER BY tp_time DESC";
+		$query  = $this->db-> query($hashSql);
+
+		foreach ($query-> getResult() as $row) {
+			$tp_hash = $row-> tp_hash;
+			$this->decodeMapping($tp_hash);
+		}
+	}
+
+	public function decodeMapping($hash)
+	{//新开户-解码开通
 		$bsConfig  = (new ConfigModel())-> backendConfig();
 		$getUrl	   = 'https://www.aeknow.org/api/contracttx/'.$hash;
 		@$contents = file_get_contents($getUrl);
-		if (empty($contents)) {
-			log_message('读取aeknow_api失败:'.$hash, 4);
-        	return "读取aeknow_api失败 Error";
+		$json 	   = (array) json_decode($contents, true);
+		$sender_id = $json['sender_id'];
+		$cuntnum   = 0;
+		while ( !$sender_id && $cuntnum < 20) {
+			@$contents = file_get_contents($getUrl);
+			$json 	   = (array) json_decode($contents, true);
+			$sender_id = $json['sender_id'];
+			$cuntnum++;
+			sleep(3);
+		}
+
+		if (empty($sender_id)) {
+			$textFile   = fopen("log/mining/".date("Y-m-d").".txt", "a");
+			$appendText = "Type:Mapping--aeknow_api_error--hash：{$hash}\r\n\r\n";
+			fwrite($textFile, $appendText);
+			fclose($textFile);
+			return;
         }
-		$json = (array) json_decode($contents, true);
 
 		$blocksUrl    = $bsConfig['backendServiceNode'].'v2/blocks/top';
 		@$getTop	  = file_get_contents($blocksUrl);
 		$chainJson    = (array) json_decode($getTop, true);
 		$chainHeight  = (int)$chainJson['key_block']['height'];
+		$getTopNum    = 0;
+		while ( !$chainHeight && $getTopNum < 20) {
+			@$getTop	  = file_get_contents($blocksUrl);
+			$chainJson    = (array) json_decode($getTop, true);
+			$chainHeight  = (int)$chainJson['key_block']['height'];
+			$cuntnum++;
+			sleep(3);
+		}
 
-		$sender_id 	  = $json['sender_id'];
+		if (empty($chainHeight)) {
+			$textFile   = fopen("log/mining/".date("Y-m-d").".txt", "a");
+			$appendText = "Type:Mapping--chainHeight_error--hash：{$hash}\r\n\r\n";
+			fwrite($textFile, $appendText);
+			fclose($textFile);
+			return;
+        }
+
 		$recipient_id = $json['recipient_id'];
 		$amount 	  = (int)$json['amount'];
 		$return_type  = $json['return_type'];
 		$block_height = (int)$json['block_height'];
 		$contract_id  = $json['contract_id'];
 		$poorHeight	  = ($chainHeight - $block_height);
+
+		if ($return_type == "revert") {
+			$this->deleteTemp($hash);
+			return;
+		}
+
 		if (
 			$recipient_id == $bsConfig['airdropAddress'] &&
 			$amount		  == $bsConfig['mapAccountAmount'] &&
 			$contract_id  == $bsConfig['WTTContractAddress'] &&
-			$poorHeight   <= 500 &&
+			$poorHeight   <= 480 &&
 			$return_type  == "ok"
 		) {
 			$this->UserModel-> userPut($sender_id);
 			$this->db->table($this->wet_users)->where('address', $sender_id)->update( ['is_map' => 1] );
-			$textFile   = fopen("mining/".date("Y-m-d").".txt", "a");
+			$textFile   = fopen("log/mining/".date("Y-m-d")."-open.txt", "a");
 			$appendText = "{$sender_id}:{$amount}:{$block_height}:{$hash}\r\n";
 			fwrite($textFile, $appendText);
 			fclose($textFile);
-			$data['code'] = 200;
-			$data['msg']  = 'success';
-		} else {
-			$data['code'] = 406;
-			$data['msg']  = 'error_unknown';
+			$this->deleteTemp($hash);
 		}
-		return json_encode($data);
 	}
 
 	public function inMapping($address, $amount)
@@ -97,14 +133,14 @@ class MiningModel extends ComModel
 		}
 
 		$isAddress    = $this->DisposeModel-> checkAddress($address);
-		$isMapAccount = $this-> isMapAccount($address);
+		$isMapAccount = $this->ValidModel-> isMapAccount($address);
 		if (!$isAddress && !$isMapAccount) {
 			$data['code'] = 406;
 			$data['msg']  = 'did_not_open_mapping';
 			return json_encode($data);
 		}
 
-		$isMapping = $this-> isMapState($address);
+		$isMapping = $this->ValidModel-> isMapState($address);
 		if ($isMapping) {
 			$data['code'] = 406;
 			$data['msg']  = 'repeat_mapping';
@@ -130,7 +166,7 @@ class MiningModel extends ComModel
 			$data['msg']  = 'get_block_height_error';
         	return json_encode($data);
         }
-		$isMapAddress = $this-> isMapAddress($address);
+		$isMapAddress = $this->ValidModel-> isMapAddress($address);
 		if ($isMapAddress) {
 			$upDate = [
 				'height_map'   => $blockHeight,
@@ -191,7 +227,7 @@ class MiningModel extends ComModel
 			$this->db->table($this->wet_mapping)->where('address', $address)->update($upData);
 			$data['data']['earning'] = $checEarning;
 			$data['msg'] = 'success';
-			$textFile   = fopen("mining/earning.txt", "a");
+			$textFile   = fopen("log/mining/earning.txt", "a");
 			$textTime   = date("Y-m-d h:i:s");
 			$appendText = "账户:{$address}\r\n领取:{$checEarning}\r\n时间:{$blockHeight}--{$textTime}\r\n\r\n";
 			fwrite($textFile, $appendText);
@@ -229,7 +265,7 @@ class MiningModel extends ComModel
 			$this->db->table($this->wet_mapping)->where('address', $address)->update($upData);
 			$data['data']['earning'] = $checEarning;
 			$data['msg']  = 'success';
-			$textFile   = fopen("mining/earning.txt", "a");
+			$textFile   = fopen("log/mining/earning.txt", "a");
 			$textTime   = date("Y-m-d h:i:s");
 			$appendText = "账户:{$address}\r\n领取:{$checEarning}\r\n时间:{$blockHeight}--{$textTime}\r\n\r\n";
 			fwrite($textFile, $appendText);
@@ -241,7 +277,7 @@ class MiningModel extends ComModel
 
 	public function checkMapping($address)
 	{//映射信息查询
-		$isMapState = $this-> isMapState($address);
+		$isMapState = $this->ValidModel-> isMapState($address);
 		if (!$isMapState) {
 			$data['state'] = $isMapState;
 			return $data;
@@ -281,7 +317,7 @@ class MiningModel extends ComModel
 			$chainBalance = $accountsJson['balance'];  //链上金额
 			$mapAmount 	  = $row->amount;  //映射金额
 			if($chainBalance && $chainBalance < $mapAmount) {  //对比[映射]及[链上]金额
-				$textFile   = fopen("mining/black-house.txt", "a");
+				$textFile   = fopen("log/mining/black-house.txt", "a");
 				$textTime   = date("Y-m-d h:i:s");
 				$appendText = "账户:{$address}\r\n链上:{$chainBalance}\r\n映射:{$mapAmount}\r\n时间:{$blockHeight}--{$textTime}\r\n\r\n";
 				fwrite($textFile, $appendText);
@@ -303,7 +339,7 @@ class MiningModel extends ComModel
 			$pastHeight = (int)($blockHeight - $heightCheckOld);
 			$aettos    	= ($mapAmount / 1e18);
 			$earningOld = $row->earning ?? 0;
-			$earningNew	= ( $earningOld + ($pastHeight * $aettos * 14e12) );
+			$earningNew	= ( $earningOld + ($pastHeight * $aettos * 3e12) );
 
 			$upData = [
 				'height_check' => $blockHeight,
@@ -314,6 +350,12 @@ class MiningModel extends ComModel
 			$row   = $query->getRow();
         }
 		return $row;
+	}
+
+	public function deleteTemp($hash)
+	{//删除临时缓存
+		$delete = "DELETE FROM $this->wet_temp WHERE tp_hash = '$hash'";
+		$this->db->query($delete);
 	}
 
 }

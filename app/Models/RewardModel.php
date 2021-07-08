@@ -109,8 +109,7 @@ class RewardModel extends Model {
 		$contract_id  = $json['contract_id'];
 
 		if ($return_type == "revert") {
-			$delete = "DELETE FROM wet_temp WHERE tp_hash = '$hash'";
-			$this->db->query($delete);
+			$this->deleteTemp($hash);
 			return;
 		}
 
@@ -136,6 +135,7 @@ class RewardModel extends Model {
 			$upUserSql = "UPDATE $this->wet_users SET reward_sum = (reward_sum + $amount) WHERE address = '$sender_id'";
 			$this->db-> query($upContSql);
 			$this->db-> query($upUserSql);
+			$this->deleteTemp($hash);
 		} else {
 			$textFile   = fopen("log/reward/".date("Y-m-d").".txt", "a");
 			$appendText = "error--hash：{$hash}\r\nto_hash：{$to_hash}\r\n\r\n";
@@ -143,6 +143,12 @@ class RewardModel extends Model {
 			fclose($textFile);
 			return;
 		}
+	}
+
+	public function deleteTemp($hash)
+	{//删除临时缓存
+		$delete = "DELETE FROM $this->wet_temp WHERE tp_hash = '$hash'";
+		$this->db->query($delete);
 	}
 }
 

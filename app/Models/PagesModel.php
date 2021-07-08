@@ -43,12 +43,12 @@ class PagesModel extends Model {
 		{//主贴列表
 			$this->tablename = "wet_content";
 			$countSql		 = "SELECT count(hash) FROM $this->tablename";
-			/*$limitSql		 = "SELECT hash FROM $this->tablename 
-									ORDER BY utctime DESC LIMIT $size OFFSET ".($page-1) * $size;*/
 			$limitSql		 = "SELECT hash FROM $this->tablename 
+									ORDER BY utctime DESC LIMIT $size OFFSET ".($page-1) * $size;
+			/*$limitSql		 = "SELECT hash FROM $this->tablename 
 									ORDER BY (
 										(praise + star_sum) * 300000 + read_sum * 10 + utctime
-									) DESC LIMIT $size OFFSET ".($page-1) * $size;
+									) DESC LIMIT $size OFFSET ".($page-1) * $size;*/
 			$opt['select']	 = "content";
 
 			$upReadSql = "UPDATE $this->tablename 

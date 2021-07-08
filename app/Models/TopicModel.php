@@ -116,8 +116,10 @@ class TopicModel extends ComModel
 		]
 	*/
 		$keywords = $this->isTopic($topic['content']);
+		$keywords = array_unique($keywords);
+		$keywords = array_values($keywords);
 		if ($keywords) {
-			$count = count($keywords) <= 5 ? count($keywords) : 5;
+			$count = count($keywords) <= 10 ? count($keywords) : 10;
 			for($i=0; $i<$count; $i++) {
 				$selectTag = "SELECT uid FROM $this->wet_topic_tag WHERE keywords ilike '%$keywords[$i]%' LIMIT 1";
 				$getTagRow = $this->db->query($selectTag)-> getRow();

@@ -1,6 +1,8 @@
 <?php
 namespace App\Controllers;
 
+use App\Models\ValidModel;
+
 class User extends BaseController {
 
 	public function info()
@@ -93,7 +95,7 @@ class User extends BaseController {
 	{//获取昵称是否存在
 		$nickname = $this->request->getPost('nickname');
 		$data['code'] = 200;
-		$data['isNickname'] = $this->UserModel-> isNickname($nickname);
+		$data['isNickname'] = (new ValidModel())-> isNickname($nickname);
 		$data['msg']  = 'success';
 		echo json_encode($data);
 	}

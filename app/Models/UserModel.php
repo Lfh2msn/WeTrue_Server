@@ -15,22 +15,6 @@ class UserModel extends ComModel
 		$this->DisposeModel	= new DisposeModel();
     }
 
-	public function isUser($address)
-	{//验证用户ID是否存在
-		$sql   = "SELECT address FROM $this->tablename WHERE address = '$address' LIMIT 1";
-        $query = $this->db->query($sql);
-		$row   = $query->getRow();
-		return $row ? true : false;
-	}
-
-	public function isNickname($nickname)
-	{//查询昵称是否存在
-		$sql   = "SELECT nickname FROM $this->tablename WHERE nickname ilike '$nickname' LIMIT 1";
-		$query = $this->db->query($sql);
-		$row   = $query->getRow();
-		return $row ? true : false;
-	}
-
     public function getUser($address)
 	{//获取用户昵称、头像、、活跃、等级
 		$sql="SELECT 
