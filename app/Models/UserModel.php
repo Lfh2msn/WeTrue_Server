@@ -4,15 +4,17 @@ namespace App\Models;
 use App\Models\ComModel;
 use App\Models\AirdropModel;
 use App\Models\FocusModel;
+use App\Models\ValidModel;
 
 class UserModel extends ComModel
 {//用户Model
 
 	public function __construct(){
         parent::__construct();
-        $this->tablename    = 'wet_users';
 		$this->ConfigModel  = new ConfigModel();
 		$this->DisposeModel	= new DisposeModel();
+		$this->ValidModel	= new ValidModel();
+		$this->tablename    = 'wet_users';
     }
 
     public function getUser($address)
@@ -100,9 +102,9 @@ class UserModel extends ComModel
 		$data['is_map']  	  = $row->is_map ? true : false;
 		if ($opt['type'] == 'login')
 		{
-			$isAdmin = $this->isAdmin($address);
+			$isAdmin = $this->ValidModel-> isAdmin($address);
 			if ($isAdmin) {
-				$data['isAdmin']  = true;
+				$data['isAdmin']  = $isAdmin;
 			}
 		}
 		return $data;
@@ -192,20 +194,6 @@ class UserModel extends ComModel
 			$autoFans1 = 'ak_2kxt6D65giv4yNt4oa44SjW4jEXfoHMviPFvAreSEXvz25Q3QQ';
 			//$autoFans2 = 'ak_AiYsw9sJVdfBCXbAAys4LiMDnXBd1BTTSi13fzpryQcXjSpsS';
 			(new FocusModel())-> autoFocus($autoFans1 ,$address);
-		}
-	}
-
-	public function isAdmin($address)
-	{//管理员校验
-		$bsConfig = $this->ConfigModel-> backendConfig();
-		$admin_1  = $bsConfig['adminUser_1'];
-		$admin_2  = $bsConfig['adminUser_2'];
-		$admin_3  = $bsConfig['adminUser_3'];
-
-		if($address === $admin_1 || $address === $admin_2 || $address === $admin_3) {
-			return true;
-		} else {
-			return false;
 		}
 	}
 

@@ -14,13 +14,13 @@ class CommentModel extends Model {
 	{
         //parent::__construct();
 		$this->db 			= \Config\Database::connect('default');
-        $this->wet_comment  = 'wet_comment';
-		$this->wet_reply    = 'wet_reply';
 		$this->bloom	    = new BloomModel();
 		$this->user	   	    = new UserModel();
 		$this->reply	    = new ReplyModel();
 		$this->ValidModel	= new ValidModel();
 		$this->DisposeModel	= new DisposeModel();
+		$this->wet_comment  = 'wet_comment';
+		$this->wet_reply    = 'wet_reply';
     }
 
 	public function txComment($hash, $opt=[])

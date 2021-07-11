@@ -449,7 +449,7 @@ class HashReadModel extends Model {
 	public function getMicroBlockTime($microBlock)
 	{//微块时间
         $bsConfig = $this->ConfigModel-> backendConfig();
-        $url	  = $bsConfig['backendServiceNode'].'v2/micro-blocks/hash/'.$microBlock.'/header';
+        $url	  = $bsConfig['backendServiceNode'].'v3/micro-blocks/hash/'.$microBlock.'/header';
         @$get	  = file_get_contents($url);
 		$num = 0;
 		while ( !$get && $num < 20 ) {
@@ -478,7 +478,7 @@ class HashReadModel extends Model {
 	public function getTxDetails($hash)
 	{//获取tx 详情
 		$bsConfig  = $this->ConfigModel-> backendConfig();
-		$url 	   = $bsConfig['backendServiceNode'].'v2/transactions/'.$hash;
+		$url 	   = $bsConfig['backendServiceNode'].'v3/transactions/'.$hash;
 		@$get	   = file_get_contents($url);
 		$json	   = (array) json_decode($get, true);
 		$blockHash = substr($json['block_hash'], 0, 3);

@@ -3,7 +3,6 @@
 use CodeIgniter\Model;
 use App\Models\DisposeModel;
 use App\Models\HashReadModel;
-use App\Models\UserModel;
 use App\Models\ContentModel;
 use App\Models\CommentModel;
 use App\Models\ReplyModel;
@@ -18,7 +17,6 @@ class ComplainModel extends Model {
 		$this->db = \Config\Database::connect('default');
 		$this->DisposeModel  = new DisposeModel();
 		$this->HashReadModel = new HashReadModel();
-		$this->UserModel	 = new UserModel();
 		$this->ContentModel  = new ContentModel();
 		$this->CommentModel  = new CommentModel();
 		$this->ReplyModel 	 = new ReplyModel();
@@ -101,7 +99,7 @@ class ComplainModel extends Model {
 		$size = max(1, (int)$size);
 		$akToken   = $_SERVER['HTTP_AK_TOKEN'];
 		$isAkToken = $this->DisposeModel-> checkAddress($akToken);
-		$isAdmin   = $this->UserModel-> isAdmin($akToken);
+		$isAdmin   = $this->ValidModel-> isAdmin($akToken);
 		$data['code'] = 200;
 		$data['data']['data'] = [];
 		if (!$isAkToken || !$isAdmin) {

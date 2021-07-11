@@ -11,18 +11,10 @@ class FocusModel extends Model {
 	public function __construct(){
 		//parent::__construct();
 		$this->db = \Config\Database::connect('default');
-		$this->tablename    = "wet_focus";
-		$this->userModel    = new UserModel();
+		$this->UserModel    = new UserModel();
 		$this->DisposeModel = new DisposeModel();
 		$this->ValidModel   = new ValidModel();
-	}
-
-	public function isFocus($focus,$my_id)
-	{//获取关注状态
-		$sql   = "SELECT focus, fans FROM $this->tablename WHERE fans = '$my_id' AND focus = '$focus' LIMIT 1";
-        $query = $this->db->query($sql);
-		$row   = $query->getRow();
-		return $row ? true : false;
+		$this->tablename    = "wet_focus";
 	}
 
     public function limit($page, $size, $opt=[])
@@ -76,7 +68,7 @@ class FocusModel extends Model {
 		$query = $this-> db-> query($limitSql);
 		foreach ($query-> getResult() as $row) {
 			$userAddress  = $row -> contrary;
-			$userInfo[]	  = $this->userModel-> userAllInfo($userAddress, $opt);
+			$userInfo[]	  = $this->UserModel-> userAllInfo($userAddress, $opt);
 			$data['data']['data'] = $userInfo;
 		}
 		$data['msg'] = 'success';
@@ -118,7 +110,7 @@ class FocusModel extends Model {
 			$e = false;
 		}
 		$this->db-> query($focusSql);
-		$this->userModel-> userFocus($userAddress, $akToken, $e);
+		$this->UserModel-> userFocus($userAddress, $akToken, $e);
 		//入库行为记录
 		$focusBehaviorSql = "INSERT INTO wet_behavior(address, thing, toaddress) 
 								VALUES ('$akToken', 'isFocus', '$userAddress')";
@@ -139,7 +131,7 @@ class FocusModel extends Model {
 			die("isFocus Error");
 		}
 		$this->db-> query($focusSql);
-		$this->userModel-> userFocus($focus, $fans, $e);
+		$this->UserModel-> userFocus($focus, $fans, $e);
 		//入库行为记录
 		$focusBehaviorSql = "INSERT INTO wet_behavior(address, thing, toaddress) 
 								VALUES ('$fans', 'autoFocus', '$focus')";

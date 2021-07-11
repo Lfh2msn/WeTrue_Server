@@ -10,11 +10,11 @@ class StarModel extends Model {
 	public function __construct(){
 		//parent::__construct();
 		$this->db = \Config\Database::connect('default');
+		$this->DisposeModel = new DisposeModel();
+		$this->ValidModel   = new ValidModel();
 		$this->wet_star     = "wet_star";
 		$this->wet_users	= "wet_users";
 		$this->wet_content  = "wet_content";
-		$this->DisposeModel = new DisposeModel();
-		$this->ValidModel   = new ValidModel();
 	}
 
 	public function star($hash)

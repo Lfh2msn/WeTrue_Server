@@ -1,9 +1,9 @@
 <?php namespace App\Models;
 
 use CodeIgniter\Model;
-use App\Models\BloomModel;
-use App\Models\PraiseModel;
+use App\Models\ValidModel;
 use App\Models\DisposeModel;
+
 
 class ReplyModel extends Model {
 //回复Model
@@ -11,16 +11,15 @@ class ReplyModel extends Model {
 	public function __construct(){
         //parent::__construct();
 		$this->db = \Config\Database::connect('default');
-        $this->tablename    = 'wet_reply';
-		$this->bloom	    = new BloomModel();
-		$this->user	   	    = new UserModel();
+		$this->UserModel	= new UserModel();
 		$this->ValidModel	= new ValidModel();
 		$this->DisposeModel	= new DisposeModel();
+		$this->tablename    = 'wet_reply';
     }
 
 	public function txReply($hash, $opt=[])
 	{//获取回复内容
-		if ( (int) $opt['substr'] ) {
+		if ((int)$opt['substr']) {
 			$payload = "substring(payload for '$opt[substr]') as payload";
 		} else {
 			$payload = "payload";
@@ -39,8 +38,7 @@ class ReplyModel extends Model {
 
         $query = $this->db->query($sql);
 		$row   = $query-> getRow();
-        if ($row)
-		{
+        if ($row) {
 			$sender_id			  = $row-> sender_id;
 			$to_address			  = $row-> to_address;
 			$data['hash']		  = $hash;
@@ -50,11 +48,11 @@ class ReplyModel extends Model {
 			$data['payload']	  = $this->DisposeModel-> delete_xss($row-> payload);
 			$data['senderId']	  = $sender_id;
 			$data['toAddress']    = $to_address;
-			$data['receiverName'] = $this->user-> getName($to_address);
+			$data['receiverName'] = $this->UserModel-> getName($to_address);
 			$data['utcTime']	  = (int) $row-> utctime;
 			$data['praise']		  = (int) $row-> praise;
 			$data['isPraise']	  = $opt['userLogin'] ? $this->ValidModel-> isPraise($hash, $opt['userLogin']) : false;
-			$data['users']		  = $this->user-> getUser($sender_id);
+			$data['users']		  = $this->UserModel-> getUser($sender_id);
         }
 
     return $data;

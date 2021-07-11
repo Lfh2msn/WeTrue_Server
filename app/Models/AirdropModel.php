@@ -3,6 +3,7 @@ namespace App\Models;
 
 use App\Models\ComModel;
 use App\Models\AecliModel;
+use App\Models\ValidModel;
 
 class AirdropModel extends ComModel
 {//空投Model
@@ -10,18 +11,18 @@ class AirdropModel extends ComModel
 	public function __construct()
 	{
 		parent::__construct();
-		$this->tablename  = 'wet_bloom';
-		$this->wet_users  = 'wet_users';
 		$this->session    = \Config\Services::session();
-		$this->UserModel  = new UserModel();
 		$this->AecliModel = new AecliModel();
+		$this->ValidModel = new ValidModel();
+		$this->wet_bloom  = 'wet_bloom';
+		$this->wet_users  = 'wet_users';
     }
 
 	public function airdropAE($address)
 	{//新用户空投AE
 		$bsConfig  = (new ConfigModel())-> backendConfig();
 		$isAirdrop = $bsConfig['airdropAE'];
-		$amount = $bsConfig['airdropAeAmount'];
+		$amount    = $bsConfig['airdropAeAmount'];
 		$NewUser   = $this->session-> get('NewUser');
 		$getIP	   = (new DisposeModel())-> getRealIP();
 		$ipBloom   = (new BloomModel())-> ipBloom($getIP);
@@ -33,9 +34,7 @@ class AirdropModel extends ComModel
 			return "Repeat IP OR Off Airdrop";
 		}
 
-		//fastcgi_finish_request(); //冲刷增速
-
-		$url = $bsConfig['backendServiceNode'].'v2/accounts/'.$address;
+		$url = $bsConfig['backendServiceNode'].'v3/accounts/'.$address;
 		@$GetUrl = file_get_contents($url);
 
 		if (!$GetUrl) {
@@ -60,10 +59,10 @@ class AirdropModel extends ComModel
 			$code    = $dejson['code'];*/
 			
 			$hash = $this->AecliModel-> spendAE($address, $amount);
-			$code = $this->DisposeModel-> checkAddress($hash) ? 200 : 406;
+			$code = (new DisposeModel())-> checkAddress($hash) ? 200 : 406;
 			if ($code == 200) {
 				$this->session ->set("NewUser","Repeat");
-				$inSql = "INSERT INTO $this->tablename(bf_ip, bf_reason) VALUES ('$getIP','airdropAE')";
+				$inSql = "INSERT INTO $this->wet_bloom(bf_ip, bf_reason) VALUES ('$getIP','airdropAE')";
 				$this->db->query($inSql);
 			}
 		}
@@ -73,7 +72,7 @@ class AirdropModel extends ComModel
 	{//空投WTT写入txt
 		$akToken   = $_SERVER['HTTP_AK_TOKEN'];
 		$isAkToken = (new DisposeModel())-> checkAddress($akToken);
-		$isAdmin   = $this->UserModel-> isAdmin($akToken);
+		$isAdmin   = $this->ValidModel-> isAdmin($akToken);
 		$data['code'] = 200;
 		if (!$isAkToken || !$isAdmin) {
 			$data['code'] = 401;

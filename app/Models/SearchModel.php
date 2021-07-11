@@ -12,8 +12,8 @@ class SearchModel extends Model {
 	public function __construct(){
 		//parent::__construct();
 		$this->db = \Config\Database::connect('default');
-		$this->bloom   		= new BloomModel();
-		$this->wet_content 	= new ContentModel();
+		$this->BloomModel   = new BloomModel();
+		$this->ContentModel = new ContentModel();
 		$this->DisposeModel = new DisposeModel();
 		$this->UserModel	= new UserModel();
 	}
@@ -64,17 +64,17 @@ class SearchModel extends Model {
 			$hash  	 = $row -> hash;
 			$address = $row -> address;
 			if ($hash) {
-				$txBloom = $this->bloom-> txBloom($hash);
+				$txBloom = $this->BloomModel-> txBloom($hash);
 			}
 
 			if ($address) {
-				$idBloom = $this->bloom-> addressBloom($address);
+				$idBloom = $this->BloomModel-> addressBloom($address);
 			}
 
 			if($txBloom || !$idBloom)
 			{
 				if($opt['type']  == 'topic') {
-					$detaila[] = $this->wet_content-> txContent($hash, $opt);
+					$detaila[] = $this->ContentModel-> txContent($hash, $opt);
 				}
 
 				if($opt['type']  == 'user') {

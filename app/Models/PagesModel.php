@@ -11,13 +11,15 @@ use App\Models\DisposeModel;
 class PagesModel extends Model {
 //分页列表模型
 
+	public $tablename;
+
 	public function __construct(){
         //parent::__construct();
 		$this->db = \Config\Database::connect('default');
-		$this->bloom   		= new BloomModel();
-		$this->content 		= new ContentModel();
-		$this->comment 		= new CommentModel();
-		$this->reply 		= new ReplyModel();
+		$this->BloomModel   = new BloomModel();
+		$this->ContentModel = new ContentModel();
+		$this->CommentModel = new CommentModel();
+		$this->ReplyModel 	= new ReplyModel();
 		$this->ConfigModel 	= new ConfigModel();
 		$this->DisposeModel = new DisposeModel();
     }
@@ -62,9 +64,7 @@ class PagesModel extends Model {
 			$this->tablename = "wet_comment";
 			$countSql		 = "SELECT count(to_hash) FROM $this->tablename WHERE to_hash = '$opt[hash]'";
 			$limitSql		 = "SELECT hash FROM $this->tablename WHERE to_hash = '$opt[hash]' 
-									ORDER BY (
-										(praise + comment_sum) * 300000 + utctime
-									) DESC LIMIT $size OFFSET ".($page-1) * $size;
+									ORDER BY utctime DESC LIMIT $size OFFSET ".($page-1) * $size;
 			$opt['select']	 = "comment";
 		}
 
@@ -124,9 +124,7 @@ class PagesModel extends Model {
 			$this->tablename = "wet_content";
 			$countSql		 = "SELECT count(sender_id) FROM $this->tablename WHERE sender_id = '$opt[publicKey]'";
 			$limitSql		 = "SELECT hash FROM $this->tablename WHERE sender_id = '$opt[publicKey]' 
-									ORDER BY (
-										(praise + star_sum) * 300000 + read_sum * 10 + utctime
-									) DESC LIMIT $size OFFSET ".($page-1) * $size;
+									ORDER BY utctime DESC LIMIT $size OFFSET ".($page-1) * $size;
 			$opt['select']	 = "content";
 		}
 
@@ -141,9 +139,8 @@ class PagesModel extends Model {
 							INNER JOIN wet_focus 
 							ON wet_content.sender_id = wet_focus.focus 
 							AND wet_focus.fans = '$akToken' 
-							ORDER BY (
-								(wet_content.praise + wet_content.star_sum) * 300000 + wet_content.read_sum * 10 + wet_content.utctime
-							) DESC LIMIT $size OFFSET ".($page-1) * $size;
+							ORDER BY wet_content.utctime DESC 
+							LIMIT $size OFFSET ".($page-1) * $size;
 			$opt['select'] = "content";
 		}
 
@@ -179,11 +176,11 @@ class PagesModel extends Model {
 
 		if($opt['select'] == 'content') {
 			$opt['rewardList'] = true;
-			$Content = $this->content-> txContent($hash, $opt);
+			$Content = $this->ContentModel-> txContent($hash, $opt);
 		}
 
 		if($opt['select'] == 'comment') {
-			$Content = $this->comment-> txComment($hash, $opt);
+			$Content = $this->CommentModel-> txComment($hash, $opt);
 		}
 
 		if($Content) {
@@ -205,18 +202,18 @@ class PagesModel extends Model {
 		$getResult = $query-> getResult();
 		foreach ($getResult as $row) {
 			$hash  = $row -> hash;
-			$txBloom = $this->bloom-> txBloom($hash);
+			$txBloom = $this->BloomModel-> txBloom($hash);
 			if (!$txBloom) {
 				if ($opt['select']  == 'content') {
-					$detaila[] = $this->content-> txContent($hash, $opt);
+					$detaila[] = $this->ContentModel-> txContent($hash, $opt);
 				}
 
 				if ($opt['select']  == 'comment') {
-					$detaila[] = $this->comment-> txComment($hash, $opt);
+					$detaila[] = $this->CommentModel-> txComment($hash, $opt);
 				}
 
 				if ($opt['select'] == 'reply') {
-					$detaila[] = $this->reply-> txReply($hash, $opt);
+					$detaila[] = $this->ReplyModel-> txReply($hash, $opt);
 				}
 			}
 			$data['data']['data'] = $detaila;

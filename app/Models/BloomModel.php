@@ -7,6 +7,7 @@ use App\Models\ConfigModel;
 use App\Models\ContentModel;
 use App\Models\CommentModel;
 use App\Models\ReplyModel;
+use App\Models\ValidModel;
 
 class BloomModel extends Model {
 //过滤Model
@@ -18,6 +19,7 @@ class BloomModel extends Model {
 		$this->DisposeModel  = new DisposeModel();
 		$this->UserModel	 = new UserModel();
         $this->ConfigModel	 = new ConfigModel();
+		$this->ValidModel	 = new ValidModel();
 		$this->wet_bloom     = 'wet_bloom';
 		$this->wet_complain  = 'wet_complain';
         $this->wet_content   = 'wet_content';
@@ -61,7 +63,7 @@ class BloomModel extends Model {
     {//过滤TX入库bloom
         $akToken   = $_SERVER['HTTP_AK_TOKEN'];
 		$isAkToken = $this->DisposeModel-> checkAddress($akToken);
-		$isAdmin   = $this->UserModel-> isAdmin($akToken);
+		$isAdmin   = $this->ValidModel-> isAdmin($akToken);
 		$data['code'] = 200;
 		if (!$isAkToken || !$isAdmin) {
 			$data['code'] = 401;
@@ -107,7 +109,7 @@ class BloomModel extends Model {
     {//撤销过滤
         $akToken   = $_SERVER['HTTP_AK_TOKEN'];
 		$isAkToken = $this->DisposeModel-> checkAddress($akToken);
-		$isAdmin   = $this->UserModel-> isAdmin($akToken);
+		$isAdmin   = $this->ValidModel-> isAdmin($akToken);
 		$data['code'] = 200;
 		if (!$isAkToken || !$isAdmin) {
 			$data['code'] = 401;
@@ -128,7 +130,7 @@ class BloomModel extends Model {
 		$size = max(1, (int)$size);
 		$akToken   = $_SERVER['HTTP_AK_TOKEN'];
 		$isAkToken = $this->DisposeModel-> checkAddress($akToken);
-		$isAdmin   = $this->UserModel-> isAdmin($akToken);
+		$isAdmin   = $this->ValidModel-> isAdmin($akToken);
 		$data['code'] = 200;
 		$data['data']['data'] = [];
 		if ( !$isAkToken || !$isAdmin ) {

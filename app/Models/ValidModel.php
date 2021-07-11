@@ -1,12 +1,14 @@
 <?php namespace App\Models;
 
 use CodeIgniter\Model;
+use App\Models\ConfigModel;
 
 class ValidModel extends Model {
 //验证Model
 
 	public function __construct(){
 		$this->db = \Config\Database::connect('default');
+		$this->ConfigModel  = new ConfigModel();
     }
 
 	public function isContentHash($hash)
@@ -57,6 +59,19 @@ class ValidModel extends Model {
 		return $row ? true : false;
 	}
 
+	public function isAdmin($address)
+	{//管理员校验
+		$bsConfig = $this->ConfigModel-> backendConfig();
+		$admin_1  = $bsConfig['adminUser_1'];
+		$admin_2  = $bsConfig['adminUser_2'];
+		$admin_3  = $bsConfig['adminUser_3'];
+		if($address === $admin_1 || $address === $admin_2 || $address === $admin_3) {
+			return true;
+		} else {
+			return false;
+		}
+	}
+
 	public function isRewardHash($hash)
 	{//打赏Hash是否存在
 		$sql   = "SELECT hash FROM wet_reward WHERE hash = '$hash' LIMIT 1";
@@ -89,6 +104,14 @@ class ValidModel extends Model {
 		return $row ? true : false;
 	}
 
+	public function isSubmitOpenState($address)
+	{//映射挖矿开通地址是否提交
+		$sql   = "SELECT tp_sender_id FROM wet_temp WHERE tp_sender_id = '$address' AND tp_type = 'mapping' LIMIT 1";
+        $query = $this->db->query($sql);
+		$row   = $query->getRow();
+		return $row ? true : false;
+	}
+
 	public function isMapAccount($address)
 	{//映射挖矿是否开通
 		$sql   = "SELECT is_map FROM wet_users WHERE address = '$address' LIMIT 1";
@@ -106,7 +129,7 @@ class ValidModel extends Model {
 	}
 
 	public function isMapState($address)
-	{//验证是否已经映射
+	{//映射挖矿状态是否存在
 		$sql   = "SELECT state FROM wet_mapping WHERE address = '$address' LIMIT 1";
         $query = $this->db->query($sql);
 		$row   = $query->getRow();

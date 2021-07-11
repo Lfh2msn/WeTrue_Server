@@ -7,14 +7,16 @@ use App\Models\RewardModel;
 class ContentModel extends ComModel
 {//主贴Model
 
+	private $tablename;
+
 	public function __construct()
 	{
         parent::__construct();
-        $this->tablename 	= 'wet_content';
 		$this->DisposeModel	= new DisposeModel();
 		$this->ValidModel   = new ValidModel();
 		$this->UserModel	= new UserModel();
 		$this->RewardModel	= new RewardModel();
+		$this->tablename 	= 'wet_content';
     }
 
 	public function txContent($hash, $opt=[])
@@ -74,8 +76,7 @@ class ContentModel extends ComModel
 			}
 			
         }
-
-    return $data;
+    	return $data;
     }
 
 }

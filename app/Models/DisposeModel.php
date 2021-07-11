@@ -209,6 +209,7 @@ class DisposeModel extends Model {
         $string = strip_tags($string);
         $string = htmlspecialchars($string, ENT_QUOTES);
         $string = str_replace("\n\n\n","\n",$string);
+        $string = str_replace("\n \n","\n",$string);
         $string = str_replace("\n\n\n","\n",$string);
         $string = str_replace("\n","<br>",$string);
         return $string;

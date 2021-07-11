@@ -16,7 +16,7 @@ class ComModel extends Model
     public function __construct()
     {
         parent::__construct();
-        $this->db      = \Config\Database::connect('default');
+        $this->db = \Config\Database::connect('default');
         //$this->request = \Config\Services::request();
         //$this->session = \Config\Services::session();
     }

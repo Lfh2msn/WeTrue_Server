@@ -10,7 +10,7 @@ class DriftModel extends Model {
 	public function __construct(){
         //parent::__construct();
 		$this->db = \Config\Database::connect('default');
-		$this->bloom		   = new BloomModel();
+		$this->BloomModel	   = new BloomModel();
 		$this->DisposeModel	   = new DisposeModel();
 		$this->wet_drift_topic = "wet_drift_topic";
 		$this->wet_drift_reply = "wet_drift_reply";
@@ -23,7 +23,7 @@ class DriftModel extends Model {
 		$size = max(1, (int)$size);
 
 		$data['code'] = 200;
-		$akToken = $_SERVER['HTTP_AK_TOKEN'];
+		$akToken   = $_SERVER['HTTP_AK_TOKEN'];
 		$isAkToken = $this->DisposeModel-> checkAddress($akToken);
 		if (!$isAkToken) {
 			$data['code'] = 401;
@@ -46,8 +46,8 @@ class DriftModel extends Model {
 		$query = $this->db-> query($limitSql);
 		$data['data']['data'] = [];
 		foreach ($query-> getResult() as $row){
-			$hash  = $row -> hash;
-			$txBloom = $this->bloom-> txBloom($hash);
+			$hash    = $row -> hash;
+			$txBloom = $this->BloomModel-> txBloom($hash);
 			if (!$txBloom) {
 				if ($opt['select']  == 'content') {
 					$detaila[] = $this->content-> txContent($hash, $opt);
