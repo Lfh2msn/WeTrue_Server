@@ -44,16 +44,15 @@ class RewardModel extends Model {
 	public function reward($hash, $to_hash)
 	{//打赏
 		$isRewardHash = $this->ValidModel-> isRewardHash($hash);
-		if ( $isRewardHash ) {
+		if ($isRewardHash) {
 			$data['code'] = 406;
 			$data['msg']  = 'error_repeat';
 			return json_encode($data);
 		}
 
 		$tp_type   = "reward";
-		$isHashSql = "SELECT tp_hash FROM $this->wet_temp WHERE tp_hash = '$hash' AND tp_type = '$tp_type' LIMIT 1";
-		$query     = $this->db-> query($isHashSql)-> getRow();
-		if ($query) {
+		$isTempHash = $this->ValidModel-> isTempHash($hash);
+		if ($isTempHash) {
 			$data['code'] = 406;
 			$data['msg']  = 'error_repeat_temp';
 			echo json_encode($data);
@@ -68,10 +67,10 @@ class RewardModel extends Model {
 		$delTempSql = "DELETE FROM $this->wet_temp WHERE tp_time <= now()-interval '3 D' AND tp_type = '$tp_type'";
 		$this->db->query($delTempSql);
 
-		$hashSql = "SELECT tp_hash, tp_to_hash FROM $this->wet_temp WHERE tp_type = '$tp_type' ORDER BY tp_time DESC";
-		$query  = $this->db-> query($hashSql);
-
-		foreach ($query-> getResult() as $row) {
+		$hashSql = "SELECT tp_hash, tp_to_hash FROM $this->wet_temp WHERE tp_type = '$tp_type'";
+		$query   = $this->db-> query($hashSql);
+		$getRes  = $query-> getResult();
+		foreach ($getRes as $row) {
 			$tp_hash   = $row-> tp_hash;
 			$tp_toHash = $row-> tp_to_hash;
 			$this->decodeReward($tp_hash, $tp_toHash);
@@ -80,6 +79,9 @@ class RewardModel extends Model {
 
 	public function decodeReward($hash, $to_hash)
 	{//打赏数据处理
+		$isRewardHash = $this->ValidModel-> isRewardHash($hash);
+		if ($isRewardHash) return;
+
 		$bsConfig  = $this->ConfigModel-> backendConfig();
 		$getUrl	   = 'https://www.aeknow.org/api/contracttx/'.$hash;
 		@$contents = file_get_contents($getUrl);

@@ -98,22 +98,27 @@ class PagesModel extends Model {
 			$factorStar		 = $bsConfig['factorStar'];
 			$factorRead		 = $bsConfig['factorRead'];
 			$factorTime	 	 = $bsConfig['factorTime'];
+			$factorReward	 = $bsConfig['factorReward'];
 			$nowTime		 = time() * 1000;
 			$cycleTime 	 	 = $nowTime - (86400000 * $hotRecDay);  //当前时间 - 86400000毫秒 * 天 //1614950034235 1621087508000
 			$countSql		 = "SELECT count(hash) FROM $this->tablename WHERE utctime >= $cycleTime";
 			$limitSql		 = "SELECT hash FROM $this->tablename WHERE utctime >= $cycleTime  
 									ORDER BY (
 												(
+												(
 													  (praise * $factorPraise)
 													+ (
 														(SELECT count(distinct wet_comment.sender_id) 
 															FROM wet_comment, wet_content 
-															WHERE wet_comment.utctime >= wet_content.utctime AND wet_comment.to_hash = wet_content.hash
+															WHERE wet_comment.utctime >= wet_content.utctime 
+															AND wet_comment.to_hash = wet_content.hash
 														) * $factorComment)
 													+ (star_sum * $factorStar)
 													+ (read_sum * $factorRead)
 													+ (comment_sum * $factorComment)
 												) * 300000 
+													+ (wet_content.reward_sum / $factorReward)
+												)
 													- ( ( ($nowTime - utctime) / 86400000 ) * $factorTime)
 											) DESC LIMIT $size OFFSET ".($page-1) * $size;
 			$opt['select']	 = "content";

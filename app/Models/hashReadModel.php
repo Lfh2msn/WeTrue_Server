@@ -32,9 +32,8 @@ class HashReadModel extends Model {
 	public function split($hash)
 	{//上链内容入库
 		$tp_type   = "common";
-		$isHashSql = "SELECT tp_hash FROM $this->wet_temp WHERE tp_hash = '$hash' LIMIT 1";
-		$query     = $this->db-> query($isHashSql)-> getRow();
-		if (!$query) {  //写入临时缓存
+		$isTempHash = $this->ValidModel-> isTempHash($hash);
+		if (!$isTempHash) {  //写入临时缓存
 			$insertTempSql = "INSERT INTO $this->wet_temp(tp_hash, tp_type) VALUES ('$hash', '$tp_type')";
 			$this->db->query($insertTempSql);
 			$data['code'] = 200;
@@ -52,9 +51,10 @@ class HashReadModel extends Model {
 		$delTempSql = "DELETE FROM $this->wet_temp WHERE tp_time <= now()-interval '1 D' AND tp_type = '$tp_type'";
 		$this->db->query($delTempSql);
 
-		$hashSql = "SELECT tp_hash FROM $this->wet_temp WHERE tp_type = '$tp_type' ORDER BY tp_time DESC";
-		$query  = $this->db-> query($hashSql);
-		foreach ($query-> getResult() as $row) {
+		$tpSql   = "SELECT tp_hash FROM $this->wet_temp WHERE tp_type = '$tp_type' ORDER BY tp_time DESC";
+		$tpquery = $this->db-> query($tpSql);
+		$result  = $tpquery-> getResult();
+		foreach ($result as $row) {
 			$tp_hash  = $row-> tp_hash;
 			$json 	  = $this->getTxDetails($tp_hash);
 			$bloomAddress = $this->BloomModel ->addressBloom( $json['tx']['sender_id'] );
@@ -204,7 +204,7 @@ class HashReadModel extends Model {
 
 			elseif ( $data['type'] == 'comment' )
 			{//评论
-				$isContentHash = $this->ValidModel-> isCommentHash($data['hash']);
+				$isCommentHash = $this->ValidModel-> isCommentHash($data['hash']);
 				if ($isCommentHash) {
 					$this->deleteTemp($data['hash']);
 					$textFile   = fopen("log/hash_read/".date("Y-m-d").".txt", "a");

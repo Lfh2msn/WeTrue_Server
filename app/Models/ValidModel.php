@@ -80,6 +80,14 @@ class ValidModel extends Model {
 		return $row ? true : false;
 	}
 
+	public function isTempHash($hash)
+	{//临时Hash是否存在
+		$sql   = "SELECT tp_hash FROM wet_temp WHERE tp_hash = '$hash' LIMIT 1";
+        $query = $this->db->query($sql);
+		$row   = $query->getRow();
+		return $row ? true : false;
+	}
+
 	public function isStar($hash, $address)
 	{//收藏是否存在
 		$sql   ="SELECT hash FROM wet_star WHERE hash = '$hash' AND sender_id = '$address' LIMIT 1";

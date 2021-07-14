@@ -37,8 +37,8 @@ class UserModel extends ComModel
 			$userActive 	    = (int)$row->uactive;
 			$userReward   		= $row->reward_sum;
             $data['active']     = $userActive;
-			$data['reward'] 	= $userReward;
 			$data['userActive'] = $this->DisposeModel-> activeGrade($userActive);
+			$data['reward'] 	= $userReward;
 			$data['userReward'] = $this->DisposeModel-> rewardGrade($userReward);
 			$portrait 			= $row->portrait;
 			$data['portrait']   = $portrait ? "https://api.wetrue.io/User/portrait/".$address : "https://api.wetrue.io/images/default_head.png";
