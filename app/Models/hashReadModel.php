@@ -51,7 +51,7 @@ class HashReadModel extends Model {
 		$delTempSql = "DELETE FROM $this->wet_temp WHERE tp_time <= now()-interval '1 D' AND tp_type = '$tp_type'";
 		$this->db->query($delTempSql);
 
-		$tpSql   = "SELECT tp_hash FROM $this->wet_temp WHERE tp_type = '$tp_type' ORDER BY tp_time DESC";
+		$tpSql   = "SELECT tp_hash FROM $this->wet_temp WHERE tp_type = '$tp_type' ORDER BY tp_time DESC LIMIT 30";
 		$tpquery = $this->db-> query($tpSql);
 		$result  = $tpquery-> getResult();
 		foreach ($result as $row) {
@@ -146,9 +146,10 @@ class HashReadModel extends Model {
 		if ($data['type'] == 'reply')    $userAmount = $ftConfig['replyAmount'];
 		if ($data['type'] == 'nickname') $userAmount = $ftConfig['nicknameAmount'];
 		if ($data['type'] == 'portrait') $userAmount = $ftConfig['portraitAmount'];
+		if ($data['type'] == 'sex')      $userAmount = $ftConfig['sexAmount'];
 
 		if ($data['amount'] < $userAmount) {
-			$this->deleteTemp($data['hash']);
+			$this->deleteTemp($hash);
 			$textFile   = fopen("log/hash_read/".date("Y-m-d").".txt", "a");
 			$appendText = "费用异常:{$data['hash']}\r\n";
 			fwrite($textFile, $appendText);
@@ -163,7 +164,7 @@ class HashReadModel extends Model {
 			{//主贴
 				$isContentHash = $this->ValidModel-> isContentHash($data['hash']);
 				if ($isContentHash) {
-					$this->deleteTemp($data['hash']);
+					$this->deleteTemp($hash);
 					$textFile   = fopen("log/hash_read/".date("Y-m-d").".txt", "a");
 					$appendText = "重复主贴Hash:{$data['hash']}\r\n";
 					fwrite($textFile, $appendText);
@@ -185,9 +186,9 @@ class HashReadModel extends Model {
 								'img_tx' 	   => $data['imgList'],
 								'source' 	   => $data['source']
 							];
-				$insertTable = $this->wet_content;
-				$this->db->table($insertTable)->insert($insertData);
+				$this->db->table($this->wet_content)->insert($insertData);
 				$upSql       = "UPDATE $this->wet_users SET topic_sum = topic_sum + 1 WHERE address = '$data[sender]'";
+				$this->db->query($upSql);
 				$active      = $bsConfig['topicActive'];
 
 				$isTopic = $this->TopicModel-> isTopic($data['content']);
@@ -206,7 +207,7 @@ class HashReadModel extends Model {
 			{//评论
 				$isCommentHash = $this->ValidModel-> isCommentHash($data['hash']);
 				if ($isCommentHash) {
-					$this->deleteTemp($data['hash']);
+					$this->deleteTemp($hash);
 					$textFile   = fopen("log/hash_read/".date("Y-m-d").".txt", "a");
 					$appendText = "重复评论hash:{$data['hash']}\r\n";
 					fwrite($textFile, $appendText);
@@ -227,9 +228,9 @@ class HashReadModel extends Model {
 					'type' 		   => $data['type'],
 					'payload' 	   => $data['content']
 				];
-				$insertTable = $this->wet_comment;
-				$this->db->table($insertTable)->insert($insertData);
+				$this->db->table($this->wet_comment)->insert($insertData);
 				$upSql  	 = "UPDATE $this->wet_content SET comment_sum = comment_sum + 1 WHERE hash = '$data[toHash]'";
+				$this->db->query($upSql);
 				$active 	 = $bsConfig['commentActive'];
 			}
 
@@ -237,7 +238,7 @@ class HashReadModel extends Model {
 			{//回复
 				$isReplyHash = $this->ValidModel-> isReplyHash($data['hash']);
 				if ($isReplyHash) {
-					$this->deleteTemp($data['hash']);
+					$this->deleteTemp($hash);
 					$textFile   = fopen("log/hash_read/".date("Y-m-d").".txt", "a");
 					$appendText = "重复回复hash:{$data['hash']}\r\n";
 					fwrite($textFile, $appendText);
@@ -263,9 +264,9 @@ class HashReadModel extends Model {
 					'amount'	   => $data['amount'],
 					'payload' 	   => $data['content']
 				];
-				$insertTable = $this->wet_reply;
-				$this->db->table($insertTable)->insert($insertData);
+				$this->db->table($this->wet_reply)->insert($insertData);
 				$upSql  	 = "UPDATE $this->wet_comment SET comment_sum = comment_sum + 1 WHERE hash = '$data[toHash]'";
+				$this->db->query($upSql);
 				$active 	 = $bsConfig['replyActive'];
 			}
 
@@ -275,7 +276,7 @@ class HashReadModel extends Model {
 				$verify     = $this->ValidModel-> isUser($data['sender']);
 				$isNickname = $this->ValidModel-> isNickname($data['content']);
 				if ($isNickname) {
-					$this->deleteTemp($data['hash']);
+					$this->deleteTemp($hash);
 					$textFile   = fopen("log/hash_read/".date("Y-m-d").".txt", "a");
 					$appendText = "重复昵称hash:{$data['hash']}\r\n";
 					fwrite($textFile, $appendText);
@@ -293,38 +294,29 @@ class HashReadModel extends Model {
 						'address'  => $data['sender'],
 						'nickname' => $data['content']
 					];
-					$insertTable = $this->wet_users;
-					$this->db->table($insertTable)->insert($insertData);
+					$this->db->table($this->wet_users)->insert($insertData);
 				}
 				$active = $bsConfig['nicknameActive'];
 			}
 
 			elseif ( $data['type'] == 'sex' )
 			{//性别
-				$data['content'] = (int) trim($payload['content']);
+				$data['content'] = (int)trim($payload['content']);
 				if (!is_numeric($data['content']) || $data['content'] >= 3){
-					$this->deleteTemp($data['hash']);
 					$textFile   = fopen("log/hash_read/".date("Y-m-d").".txt", "a");
-					$appendText = "性别hash_no_sex:{$data['hash']}\r\n";
+					$appendText = "性别hash_err_sex:{$data['hash']}\r\n";
 					fwrite($textFile, $appendText);
 					fclose($textFile);
+					$this->deleteTemp($hash);
 					$data['code'] = 406;
 					$data['msg']  = 'error';
 					return json_encode($data);
 				}
 
 				$verify = $this->ValidModel-> isUser($data['sender']);
-				if ($verify) {
-					$upData = [ 'sex' => $data['content'] ];
-					$this->db->table($this->wet_users)->where('address', $data['sender'])->update($upData);
-				} else {
-					$insertData = [
-						'address' => $data['sender'],
-						'sex'     => $data['content']
-					];
-					$insertTable = $this->wet_users;
-					$this->db->table($insertTable)->insert($insertData);
-				}
+				if (!$verify) $this->UserModel-> userPut($data['sender']);
+				$upData = [ 'sex' => $data['content'] ];
+				$this->db->table($this->wet_users)->where('address', $data['sender'])->update($upData);
 				$active = $bsConfig['sexActive'];
 			}
 
@@ -334,7 +326,7 @@ class HashReadModel extends Model {
 				$selectHash = "SELECT hash FROM $this->wet_users WHERE maxportrait = '$data[hash]' LIMIT 1";
 				$getRow		= $this->db->query($selectHash)-> getRow();
 				if ($getRow) {
-					$this->deleteTemp($data['hash']);
+					$this->deleteTemp($hash);
 					$textFile   = fopen("log/hash_read/".date("Y-m-d").".txt", "a");
 					$appendText = "重复头像hash:{$data['hash']}\r\n";
 					fwrite($textFile, $appendText);
@@ -357,8 +349,7 @@ class HashReadModel extends Model {
 						'portrait'    => $data['content'],
 						'maxportrait' => $data['hash']
 					];
-					$insertTable = $this->wet_users;
-					$this->db->table($insertTable)->insert($insertData);
+					$this->db->table($this->wet_users)->insert($insertData);
 				}
 				$active = $bsConfig['portraitActive'];
 			}
@@ -368,7 +359,7 @@ class HashReadModel extends Model {
 				$selectHash = "SELECT hash FROM $this->wet_reply WHERE hash = '$data[hash]' LIMIT 1";
 				$getRow		= $this->db->query($selectHash)-> getRow();
 				if ($getRow) {
-					$this->deleteTemp($data['hash']);
+					$this->deleteTemp($hash);
 					log_message('Repeat_Drift_Hash:'.$data['hash'], 4);
 					$data['code'] = 406;
 					$data['msg']  = 'error';
@@ -391,12 +382,12 @@ class HashReadModel extends Model {
 					'amount'	   => $data['amount'],
 					'payload' 	   => $data['content']
 				];
-				$insertTable = $this->wet_reply;
-				$this->db->table($insertTable)->insert($insertData);
+				$this->db->table($this->wet_reply)->insert($insertData);
 				$upSql  = "UPDATE $this->wet_comment SET comment_sum = comment_sum + 1 WHERE hash = '$data[toHash]'";
+				$this->db->query($upSql);
 				$active = $bsConfig['replyActive'];
 			} else {
-				$this->deleteTemp($data['hash']);
+				$this->deleteTemp($hash);
 				$textFile   = fopen("log/hash_read/".date("Y-m-d").".txt", "a");
 				$appendText = "data[type]标签错误:{$hash}\r\n";
 				fwrite($textFile, $appendText);
@@ -415,14 +406,13 @@ class HashReadModel extends Model {
 				'toaddress' => $data['receipt']
 			];
 			$this->db->table($this->wet_behavior)->insert($insetrBehaviorDate);
-			$this->UserModel-> userActive($data['sender'], $active, $e = TRUE);
-			$this->db->query($upSql);
-			$this->deleteTemp($data['hash']);
+			$this->UserModel-> userActive($data['sender'], $active, $e = true);
+			$this->deleteTemp($hash);
 			$data['code'] = 200;
 			$data['msg']  = 'success';
 			return json_encode($data);
 		} catch (Exception $err) {
-			$this->deleteTemp($data['hash']);
+			$this->deleteTemp($hash);
 			$textFile   = fopen("log/hash_read/".date("Y-m-d").".txt", "a");
 			$appendText = "未知错误:{$err}\r\n";
 			fwrite($textFile, $appendText);
@@ -503,9 +493,9 @@ class HashReadModel extends Model {
 		return $json;
 	}
 
-	public function deleteTemp($hash)
+	private function deleteTemp($hash)
 	{//删除临时缓存
-		$delete = "DELETE FROM wet_temp WHERE tp_hash = '$hash'";
+		$delete = "DELETE FROM $this->wet_temp WHERE tp_hash = '$hash'";
 		$this->db->query($delete);
 	}
 

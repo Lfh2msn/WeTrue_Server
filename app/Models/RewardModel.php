@@ -67,7 +67,7 @@ class RewardModel extends Model {
 		$delTempSql = "DELETE FROM $this->wet_temp WHERE tp_time <= now()-interval '3 D' AND tp_type = '$tp_type'";
 		$this->db->query($delTempSql);
 
-		$hashSql = "SELECT tp_hash, tp_to_hash FROM $this->wet_temp WHERE tp_type = '$tp_type'";
+		$hashSql = "SELECT tp_hash, tp_to_hash FROM $this->wet_temp WHERE tp_type = '$tp_type' ORDER BY tp_time DESC LIMIT 30";
 		$query   = $this->db-> query($hashSql);
 		$getRes  = $query-> getResult();
 		foreach ($getRes as $row) {
@@ -147,7 +147,7 @@ class RewardModel extends Model {
 		}
 	}
 
-	public function deleteTemp($hash)
+	private function deleteTemp($hash)
 	{//删除临时缓存
 		$delete = "DELETE FROM $this->wet_temp WHERE tp_hash = '$hash'";
 		$this->db->query($delete);

@@ -14,7 +14,7 @@ class AecliModel extends ComModel
 	{	
 		$bsConfig = (new ConfigModel())-> backendConfig();
 		$nodeUrl  = $bsConfig['backendServiceNode'];
-		$wallet   = $bsConfig['walletPath'];
+		$wallet   = $bsConfig['walletPath_1'];
 		$password = $bsConfig['walletPassword'];
 		$payload  = $bsConfig['airdropPayload'];
 		$aecli    = "tolink/aecli account spend -u {$nodeUrl} {$wallet} --password {$password} {$address} {$amount} --payload '{$payload}' --json";
@@ -59,7 +59,7 @@ class AecliModel extends ComModel
 		$bsConfig		 = (new ConfigModel())-> backendConfig();
 		$nodeUrl		 = $bsConfig['backendServiceNode'];
 		$compilerUrl	 = $bsConfig['backendCompilerUrl'];
-		$wallet		     = $bsConfig['walletPath'];
+		$wallet		     = $bsConfig['walletPath_2'];
 		$password		 = $bsConfig['walletPassword'];
 		$aex9Source		 = $bsConfig['aex9Source'];
 		$contractAddress = $bsConfig['WTTContractAddress'];

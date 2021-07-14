@@ -24,9 +24,8 @@ class MiningModel extends ComModel
 	public function openAccount($address, $hash)
 	{//新开户
 		$tp_type   = "mapping";
-		$isHashSql = "SELECT tp_hash FROM $this->wet_temp WHERE tp_hash = '$hash' AND tp_type = '$tp_type' LIMIT 1";
-		$getRow    = $this->db-> query($isHashSql)-> getRow();
-		if ($getRow) {
+		$isTempHash = $this->ValidModel-> isTempHash($hash);
+		if ($isTempHash) {
 			$data['code'] = 406;
 			$data['msg']  = 'error_repeat_temp';
 			echo json_encode($data);
@@ -41,9 +40,10 @@ class MiningModel extends ComModel
 		$delTempSql = "DELETE FROM $this->wet_temp WHERE tp_time <= now()-interval '1 D' AND tp_type = '$tp_type'";
 		$this->db->query($delTempSql);
 
-		$hashSql = "SELECT tp_hash FROM $this->wet_temp WHERE tp_type = '$tp_type' ORDER BY tp_time DESC";
-		$query   = $this->db-> query($hashSql);
-		foreach ($query->getResult() as $row) {
+		$tempSql = "SELECT tp_hash FROM $this->wet_temp WHERE tp_type = '$tp_type' ORDER BY tp_time DESC LIMIT 30";
+		$tempQy  = $this->db-> query($tempSql);
+		$tempRes = $tempQy->getResult();
+		foreach ($tempRes as $row) {
 			$tp_hash = $row->tp_hash;
 			$this->decodeMapping($tp_hash);
 		}
@@ -76,7 +76,7 @@ class MiningModel extends ComModel
 		$blocksUrl    = $bsConfig['backendServiceNode'].'v3/key-blocks/current/height';
 		@$getTop	  = file_get_contents($blocksUrl);
 		$chainJson    = (array) json_decode($getTop, true);
-		$cuntnum    = 0;
+		$cuntnum      = 0;
 		while ( !$chainJson && $cuntnum < 20) {
 			@$getTop   = file_get_contents($blocksUrl);
 			$chainJson = (array) json_decode($getTop, true);
@@ -94,7 +94,7 @@ class MiningModel extends ComModel
 
 		$chainHeight  = (int)$chainJson['height'];
 		$recipient_id = $json['recipient_id'];
-		$amount 	  = (int)$json['amount'];
+		$amount 	  = $json['amount'];
 		$return_type  = $json['return_type'];
 		$block_height = (int)$json['block_height'];
 		$contract_id  = $json['contract_id'];
@@ -113,7 +113,7 @@ class MiningModel extends ComModel
 			$return_type  == "ok"
 		) {
 			$this->UserModel-> userPut($sender_id);
-			$this->db->table($this->wet_users)->where('address', $sender_id)->update( ['is_map' => 1] );
+			$this->db->table($this->wet_users)->where('address', $sender_id)->update( ['is_map' => '1'] );
 			$textFile   = fopen("log/mining/".date("Y-m-d")."-open.txt", "a");
 			$appendText = "{$sender_id}:{$amount}:{$block_height}:{$hash}\r\n";
 			fwrite($textFile, $appendText);
@@ -226,18 +226,17 @@ class MiningModel extends ComModel
 				'state' 	   => 0,
 				'amount'       => 0,
 				'earning'      => 0,
-				'utctime'      => (int)(time() * 1000)
+				'utctime'      => (time() * 1000)
 			];
 			$this->db->table($this->wet_mapping)->where('address', $address)->update($upData);
 			$data['data']['earning'] = $checEarning;
 			$data['msg'] = 'success';
-			$textFile   = fopen("log/mining/earning.txt", "a");
+			$textFile   = fopen("log/mining/unmapping-".date("Y-m-d").".txt", "a");
 			$textTime   = date("Y-m-d h:i:s");
 			$appendText = "账户:{$address}\r\n领取:{$checEarning}\r\n时间:{$blockHeight}--{$textTime}\r\n\r\n";
 			fwrite($textFile, $appendText);
 			fclose($textFile);
 		}
-		
 		return json_encode($data);
 	}
 
@@ -274,7 +273,7 @@ class MiningModel extends ComModel
 			$this->db->table($this->wet_mapping)->where('address', $address)->update($upData);
 			$data['data']['earning'] = $checEarning;
 			$data['msg']  = 'success';
-			$textFile   = fopen("log/mining/earning.txt", "a");
+			$textFile   = fopen("log/mining/earning-".date("Y-m-d").".txt", "a");
 			$textTime   = date("Y-m-d h:i:s");
 			$appendText = "账户:{$address}\r\n领取:{$checEarning}\r\n时间:{$blockHeight}--{$textTime}\r\n\r\n";
 			fwrite($textFile, $appendText);
@@ -318,7 +317,7 @@ class MiningModel extends ComModel
 			$chainBalance = $accountsJson['balance'];  //链上金额
 			$mapAmount 	  = $mapInfo['amount'];  //映射金额
 			if($chainBalance && $chainBalance < $mapAmount) {  //对比[映射]及[链上]金额
-				$textFile   = fopen("log/mining/black-house.txt", "a");
+				$textFile   = fopen("log/mining/black-house-".date("Y-m-d").".txt", "a");
 				$textTime   = date("Y-m-d h:i:s");
 				$appendText = "账户:{$address}\r\n链上:{$chainBalance}\r\n映射:{$mapAmount}\r\n时间:{$blockHeight}--{$textTime}\r\n\r\n";
 				fwrite($textFile, $appendText);
@@ -355,12 +354,6 @@ class MiningModel extends ComModel
 		return $mapInfo;
 	}
 
-	private function deleteTemp($hash)
-	{//删除临时缓存
-		$delete = "DELETE FROM $this->wet_temp WHERE tp_hash = '$hash'";
-		$this->db->query($delete);
-	}
-
 	private function getUserMapInfo($address)
 	{//获取用户映射信息
 		$totalAmount = "SELECT SUM(amount) AS total_ae FROM $this->wet_mapping WHERE state = '1'";
@@ -385,6 +378,12 @@ class MiningModel extends ComModel
 			'total_ae' => $totalAE->total_ae
 		];
 		return $data;
+	}
+
+	private function deleteTemp($hash)
+	{//删除临时缓存
+		$delete = "DELETE FROM $this->wet_temp WHERE tp_hash = '$hash'";
+		$this->db->query($delete);
 	}
 
 }

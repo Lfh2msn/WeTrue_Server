@@ -82,7 +82,7 @@ class ValidModel extends Model {
 
 	public function isTempHash($hash)
 	{//临时Hash是否存在
-		$sql   = "SELECT tp_hash FROM wet_temp WHERE tp_hash = '$hash' LIMIT 1";
+		$sql   = "SELECT tp_hash FROM wet_temp WHERE tp_hash = '$hash' ORDER BY tp_time DESC LIMIT 1";
         $query = $this->db->query($sql);
 		$row   = $query->getRow();
 		return $row ? true : false;
