@@ -257,28 +257,29 @@ class MiningModel extends ComModel
 		}
 
 		$checEarning = $checkRow['earning'];
-		if ($checEarning > 0) {
+		
+		if ($checEarning >= 1e16) {
 			$hash = $this->AecliModel-> spendWTT($address, $checEarning);
 			$code = $this->DisposeModel-> checkAddress($hash) ? 200 : 406;
+			if ($code == 200) {
+				$upData = [
+					'earning' => 0
+				];
+				$this->db->table($this->wet_mapping)->where('address', $address)->update($upData);
+				$data['data']['earning'] = $checEarning;
+				$data['msg']  = 'success';
+				$textFile   = fopen("log/mining/earning-".date("Y-m-d").".txt", "a");
+				$textTime   = date("Y-m-d h:i:s");
+				$appendText = "账户:{$address}\r\n领取:{$checEarning}\r\n时间:{$blockHeight}--{$textTime}\r\n\r\n";
+				fwrite($textFile, $appendText);
+				fclose($textFile);
+			}
 		} else {
 			$code = 200;
+			$data['msg']  = 'error_earning_low';
 		}
 		
 		$data['code'] = $code;
-		$data['msg']  = 'error_unknown2';
-		if ($code == 200) {
-			$upData = [
-				'earning' => 0
-			];
-			$this->db->table($this->wet_mapping)->where('address', $address)->update($upData);
-			$data['data']['earning'] = $checEarning;
-			$data['msg']  = 'success';
-			$textFile   = fopen("log/mining/earning-".date("Y-m-d").".txt", "a");
-			$textTime   = date("Y-m-d h:i:s");
-			$appendText = "账户:{$address}\r\n领取:{$checEarning}\r\n时间:{$blockHeight}--{$textTime}\r\n\r\n";
-			fwrite($textFile, $appendText);
-			fclose($textFile);
-		}
 		return json_encode($data);
 	}
 
