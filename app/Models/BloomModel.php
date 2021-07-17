@@ -20,12 +20,12 @@ class BloomModel extends Model {
 		$this->UserModel	 = new UserModel();
         $this->ConfigModel	 = new ConfigModel();
 		$this->ValidModel	 = new ValidModel();
-		$this->wet_bloom     = 'wet_bloom';
-		$this->wet_complain  = 'wet_complain';
-        $this->wet_content   = 'wet_content';
-        $this->wet_comment   = 'wet_comment';
-        $this->wet_reply     = 'wet_reply';
-        $this->wet_behavior  = 'wet_behavior';
+		$this->wet_bloom     = "wet_bloom";
+		$this->wet_complain  = "wet_complain";
+        $this->wet_content   = "wet_content";
+        $this->wet_comment   = "wet_comment";
+        $this->wet_reply     = "wet_reply";
+        $this->wet_behavior  = "wet_behavior";
         
 	}
     
@@ -94,12 +94,14 @@ class BloomModel extends Model {
 
         (new ComplainModel())-> deleteComplain($hash);
 
-		$insetrBehaviorSql = "INSERT INTO $this->wet_behavior(
-                                    address, hash, thing, influence, toaddress
-                                ) VALUES (
-                                    '$akToken', '$hash', 'admin_bf', '-$active', '$senderID'
-                                )";
-        $this->db->query($insetrBehaviorSql);
+		$insetrBehaviorDate = [
+			'address'   => $akToken,
+			'hash'      => $hash,
+			'thing'     => 'admin_bf',
+			'influence' => '-'.$active,
+			'toaddress' => $senderID
+		];
+		$this->db->table($this->wet_behavior)->insert($insetrBehaviorDate);
 
         $data['msg']  = 'success';
         return json_encode($data);

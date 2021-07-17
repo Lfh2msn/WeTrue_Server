@@ -15,6 +15,7 @@ class StarModel extends Model {
 		$this->wet_star     = "wet_star";
 		$this->wet_users	= "wet_users";
 		$this->wet_content  = "wet_content";
+		$this->wet_behavior = "wet_behavior";
 	}
 
 	public function star($hash)
@@ -50,9 +51,12 @@ class StarModel extends Model {
 		$this->db-> query($upContent);
 		$this->db-> query($upUsers);
 		//入库行为记录
-		$starBehaviorSql = "INSERT INTO wet_behavior(address, thing, hash) 
-								VALUES ('$akToken', 'isStar', '$hash')";
-		$this->db->query($starBehaviorSql);
+		$insetrBehaviorDate = [
+			'address' => $akToken,
+			'hash'    => $hash,
+			'thing'   => 'isStar'
+		];
+		$this->db->table($this->wet_behavior)->insert($insetrBehaviorDate);
 		$getStarSql = "SELECT star_sum FROM $this->wet_content WHERE hash = '$hash' LIMIT 1";
 		$query 		= $this->db-> query($getStarSql);
 		$row		= $query-> getRow();

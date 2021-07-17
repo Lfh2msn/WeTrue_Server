@@ -14,8 +14,8 @@ class AirdropModel extends ComModel
 		$this->session    = \Config\Services::session();
 		$this->AecliModel = new AecliModel();
 		$this->ValidModel = new ValidModel();
-		$this->wet_bloom  = 'wet_bloom';
-		$this->wet_users  = 'wet_users';
+		$this->wet_bloom  = "wet_bloom";
+		$this->wet_users  = "wet_users";
     }
 
 	public function airdropAE($address)
@@ -88,37 +88,34 @@ class AirdropModel extends ComModel
 			fclose($File);
 		}
 
-		$selSql    = "SELECT address, uactive, last_active FROM $this->wet_users";
-        $query     = $this->db-> query($selSql);
-		$bsConfig  = (new ConfigModel())-> backendConfig();
-
-		foreach ($query->getResult() as $row) {
+		$bsConfig = (new ConfigModel())-> backendConfig();
+		$selSql   = "SELECT address, uactive, last_active FROM $this->wet_users";
+        $query    = $this->db-> query($selSql);
+		$getRes	  = $query->getResult();
+		foreach ($getRes as $row) {
 			if($row->uactive != $row->last_active) {
 				$uactive    = $row->uactive;
 				$lastActive = $row->last_active;
 				$address    = $row->address;
 				$userBloom  = (new BloomModel())-> addressBloom($address);
 				$uaValue	= $uactive - $lastActive;
-				if( $address != "" || !$userBloom || $uactive >= $lastActive) {
+				if( $address != "" && !$userBloom && $uactive >= $lastActive) {
 					$textFile   = fopen("airdrop/WTT/".date("Y-m-d").".txt","a");
 					$appendText = $address.":".($uaValue * $bsConfig['airdropWTTRatio'])."\r\n";
 					fwrite($textFile, $appendText);
 					fclose($textFile);
 				}
 
-				if($uactive >= $lastActive || !$userBloom) {
+				if($uactive >= $lastActive && !$userBloom) {
 					$upSql = "UPDATE $this->wet_users SET last_active = uactive WHERE address = '$address'";
 					$this->db->query($upSql);
 				}
 			}
 		}
 
-		$readFile = file("airdrop/WTT/".date("Y-m-d").".txt"); //返回数组的内容
-		$list = [];
-		foreach ($readFile as $v) {
-			array_push($list, $v);
-		}
-		return json_encode($list);
+		$data['code'] = 200;
+		$data['msg']  = 'success';
+		return json_encode($data);
 	}
 
 }

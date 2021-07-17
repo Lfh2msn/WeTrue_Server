@@ -43,6 +43,7 @@ class RewardModel extends Model {
 	
 	public function reward($hash, $to_hash)
 	{//打赏
+		$tp_type   = "reward";
 		$isRewardHash = $this->ValidModel-> isRewardHash($hash);
 		if ($isRewardHash) {
 			$data['code'] = 406;
@@ -50,7 +51,6 @@ class RewardModel extends Model {
 			return json_encode($data);
 		}
 
-		$tp_type   = "reward";
 		$isTempHash = $this->ValidModel-> isTempHash($hash);
 		if ($isTempHash) {
 			$data['code'] = 406;
@@ -67,9 +67,9 @@ class RewardModel extends Model {
 		$delTempSql = "DELETE FROM $this->wet_temp WHERE tp_time <= now()-interval '3 D' AND tp_type = '$tp_type'";
 		$this->db->query($delTempSql);
 
-		$hashSql = "SELECT tp_hash, tp_to_hash FROM $this->wet_temp WHERE tp_type = '$tp_type' ORDER BY tp_time DESC LIMIT 30";
-		$query   = $this->db-> query($hashSql);
-		$getRes  = $query-> getResult();
+		$hashSql = "SELECT tp_hash, tp_to_hash FROM $this->wet_temp WHERE tp_type = '$tp_type' ORDER BY tp_time DESC";
+		$hashqy  = $this->db-> query($hashSql);
+		$getRes  = $hashqy-> getResult();
 		foreach ($getRes as $row) {
 			$tp_hash   = $row-> tp_hash;
 			$tp_toHash = $row-> tp_to_hash;
@@ -80,7 +80,10 @@ class RewardModel extends Model {
 	public function decodeReward($hash, $to_hash)
 	{//打赏数据处理
 		$isRewardHash = $this->ValidModel-> isRewardHash($hash);
-		if ($isRewardHash) return;
+		if ($isRewardHash) {
+			$this->deleteTemp($hash);
+			return;
+		}
 
 		$bsConfig  = $this->ConfigModel-> backendConfig();
 		$getUrl	   = 'https://www.aeknow.org/api/contracttx/'.$hash;
@@ -138,16 +141,10 @@ class RewardModel extends Model {
 			$this->db-> query($upContSql);
 			$this->db-> query($upUserSql);
 			$this->deleteTemp($hash);
-		} else {
-			$textFile   = fopen("log/reward/".date("Y-m-d").".txt", "a");
-			$appendText = "error--hash：{$hash}\r\nto_hash：{$to_hash}\r\n\r\n";
-			fwrite($textFile, $appendText);
-			fclose($textFile);
-			return;
 		}
 	}
 
-	private function deleteTemp($hash)
+	public function deleteTemp($hash)
 	{//删除临时缓存
 		$delete = "DELETE FROM $this->wet_temp WHERE tp_hash = '$hash'";
 		$this->db->query($delete);

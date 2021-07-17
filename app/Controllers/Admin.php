@@ -4,6 +4,7 @@ namespace App\Controllers;
 use App\Models\ComplainModel;
 use App\Models\BloomModel;
 use App\Models\AirdropModel;
+use App\Models\MiningModel;
 
 class Admin extends BaseController
 {//管理
@@ -59,5 +60,19 @@ class Admin extends BaseController
 		}
 		$data = (new AirdropModel())-> airdropWTT($opt);
 		echo $data;
+	}
+
+	public function openMapping()
+	{//管理员开启映射挖矿
+		$userAddress   = $this->request->getPost('userAddress');
+        $isUserAddress = $this->DisposeModel-> checkAddress($userAddress);
+		if ($isUserAddress) {
+            $data = (new MiningModel())-> adminOpenMapping($userAddress);
+			echo $data;
+        } else {
+			$data['code'] = 406;
+			$data['msg']  = 'error';
+            echo json_encode($data);
+		}
 	}
 }

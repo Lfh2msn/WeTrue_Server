@@ -16,7 +16,7 @@ class ContentModel extends ComModel
 		$this->ValidModel   = new ValidModel();
 		$this->UserModel	= new UserModel();
 		$this->RewardModel	= new RewardModel();
-		$this->tablename 	= 'wet_content';
+		$this->tablename 	= "wet_content";
     }
 
 	public function txContent($hash, $opt=[])

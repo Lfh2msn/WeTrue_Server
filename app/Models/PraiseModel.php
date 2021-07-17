@@ -16,6 +16,7 @@ class PraiseModel extends Model {
 		$this->ConfigModel  = new ConfigModel();
 		$this->DisposeModel = new DisposeModel();
 		$this->ValidModel   = new ValidModel();
+		$this->wet_behavior = "wet_behavior";
     }
 	
 	public function praise($hash, $type)
@@ -65,14 +66,27 @@ class PraiseModel extends Model {
 			//用户活跃入库
 			$backendConfig = $this->ConfigModel-> backendConfig();
 			$praiseActive  = $backendConfig['praiseActive'];
-			$this->UserModel-> userActive($akToken, $praiseActive, $e);
+			$countSql  = "SELECT count(hash) AS count_pick FROM wet_praise WHERE sender_id = '$akToken' AND praise_time >= now()-interval '1 D'";
+			$countqy   = $this->db-> query($countSql);
+			$countPick = $countqy-> getRow()-> count_pick;
+			if ($countPick <= 20) { //24小时内小于20赞
+				$this->UserModel-> userActive($akToken, $praiseActive, $e);
+			}
 			//入库行为记录
-			$praiseBehaviorSql = "INSERT INTO wet_behavior(address, thing, influence, toaddress) 
-									VALUES ('$akToken', 'isPraise', '$praiseActive', '$hash')";
-			$this->db-> query($praiseBehaviorSql);
-			$query = $this->db-> query($isHashSql);
-			$row = $query-> getRow();
-			$data['data']['praise']  = (int)$row->praise;
+			$insetrBehaviorDate = [
+				'address'   => $akToken,
+				'thing'     => 'isPraise',
+				'influence' => $praiseActive,
+				'toaddress' => $hash
+			];
+			$this->db->table($this->wet_behavior)->insert($insetrBehaviorDate);
+			$praise = (int)$row->praise;
+			if ($e) {
+				$praiseSum = $praise + 1;
+			} else {
+				$praiseSum = $praise - 1;
+			}
+			$data['data']['praise'] = $praiseSum;
 			$isPraise = $this->ValidModel-> isPraise($hash, $akToken);
 			$data['data']['isPraise'] = $isPraise;
 			$data['msg'] = 'success';

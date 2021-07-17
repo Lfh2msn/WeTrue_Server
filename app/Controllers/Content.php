@@ -55,9 +55,20 @@ class Content extends BaseController
     {//收藏列表
         $page = $this->request->getPost('page');
         $size = $this->request->getPost('size');
-        $type = 'userStarContentList';
-		$opt  =	['type' => $type];
-		$data = $this->PagesModel-> limit($page, $size, $opt);
-		echo $data;
+        $userAddress   = $this->request->getPost('userAddress');
+        $isUserAddress = $this->DisposeModel-> checkAddress($userAddress);
+        if ($isUserAddress) {
+            $type = 'userStarContentList';
+            $opt  =	[
+                    'type' => $type,
+                    'address' => $userAddress
+                    ];
+            $data = $this->PagesModel-> limit($page, $size, $opt);
+            echo $data;
+        } else {
+			$data['code'] = 406;
+			$data['msg']  = 'error';
+            echo json_encode($data);
+		}
     }
 }

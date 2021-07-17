@@ -16,9 +16,9 @@ class MiningModel extends ComModel
 		$this->UserModel    = new UserModel();
 		$this->DisposeModel = new DisposeModel();
 		$this->ValidModel   = new ValidModel();
-		$this->wet_users    = 'wet_users';
-		$this->wet_mapping  = 'wet_mapping';
-		$this->wet_temp     = 'wet_temp';
+		$this->wet_users    = "wet_users";
+		$this->wet_mapping  = "wet_mapping";
+		$this->wet_temp     = "wet_temp";
     }
 
 	public function openAccount($address, $hash)
@@ -210,7 +210,7 @@ class MiningModel extends ComModel
 		}
 
 		$checEarning = $checkRow['earning'];
-		if ($checEarning > 0) {
+		if ($checEarning >= 1e17) {
 			$hash = $this->AecliModel-> spendWTT($address, $checEarning);
 			$code = $this->DisposeModel-> checkAddress($hash) ? 200 : 406;
 		} else {
@@ -258,7 +258,7 @@ class MiningModel extends ComModel
 
 		$checEarning = $checkRow['earning'];
 		
-		if ($checEarning >= 1e16) {
+		if ($checEarning >= 1e17) {
 			$hash = $this->AecliModel-> spendWTT($address, $checEarning);
 			$code = $this->DisposeModel-> checkAddress($hash) ? 200 : 406;
 			if ($code == 200) {
@@ -287,7 +287,9 @@ class MiningModel extends ComModel
 	{//映射信息查询
 		$isMapState = $this->ValidModel-> isMapState($address);
 		if (!$isMapState) {
-			$data['state'] = $isMapState;
+			$totalAE = $this->getTotalAE();
+			$data['state'] 	  = $isMapState;
+			$data['total_ae'] = $totalAE;
 			return $data;
 		}
 
@@ -357,9 +359,6 @@ class MiningModel extends ComModel
 
 	private function getUserMapInfo($address)
 	{//获取用户映射信息
-		$totalAmount = "SELECT SUM(amount) AS total_ae FROM $this->wet_mapping WHERE state = '1'";
-		$queryAE = $this->db->query($totalAmount);
-		$totalAE = $queryAE->getRow();
 		$mapSql  = "SELECT address,
 						height_map,
 						height_check,
@@ -369,6 +368,7 @@ class MiningModel extends ComModel
 					FROM $this->wet_mapping WHERE address = '$address' AND state = 1 LIMIT 1";
         $query  = $this->db->query($mapSql);
 		$rowMap = $query->getRow();
+		$totalAE = $this->getTotalAE();
 		$data = [
 			'address' => $rowMap->address,
 			'height_map' => $rowMap->height_map,
@@ -376,9 +376,17 @@ class MiningModel extends ComModel
 			'state' => $rowMap->state,
 			'amount' => $rowMap->amount,
 			'earning' => $rowMap->earning,
-			'total_ae' => $totalAE->total_ae
+			'total_ae' => $totalAE
 		];
 		return $data;
+	}
+
+	private function getTotalAE()
+	{//统计映射AE总量
+		$total = "SELECT SUM(amount) AS total_ae FROM $this->wet_mapping WHERE state = '1'";
+		$query = $this->db->query($total);
+		$total = $query->getRow();
+		return $total->total_ae;
 	}
 
 	private function deleteTemp($hash)
@@ -386,5 +394,29 @@ class MiningModel extends ComModel
 		$delete = "DELETE FROM $this->wet_temp WHERE tp_hash = '$hash'";
 		$this->db->query($delete);
 	}
+
+	public function adminOpenMapping($address)
+	{//管理员直开
+		$akToken   = $_SERVER['HTTP_AK_TOKEN'];
+		$isAdmin   = $this->ValidModel-> isAdmin($akToken);
+		if($isAdmin && $address) {
+			$this->UserModel-> userPut($address);
+			$this->db->table($this->wet_users)->where('address', $address)->update( ['is_map' => '1'] );
+			$textFile   = fopen("log/mining/".date("Y-m-d")."-open.txt", "a");
+			$appendText = "{$akToken}--Admin\r\n";
+			fwrite($textFile, $appendText);
+			fclose($textFile);
+			$data['code'] = 200;
+			$data['data'] = 'open';
+			$data['msg']  = 'success';
+		} else {
+			$data['code'] = 401;
+			$data['data'] = 'open_error';
+			$data['msg']  = 'error';
+		}
+		return json_encode($data);
+	}
+
+		
 
 }

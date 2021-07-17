@@ -19,8 +19,8 @@ class CommentModel extends Model {
 		$this->reply	    = new ReplyModel();
 		$this->ValidModel	= new ValidModel();
 		$this->DisposeModel	= new DisposeModel();
-		$this->wet_comment  = 'wet_comment';
-		$this->wet_reply    = 'wet_reply';
+		$this->wet_comment  = "wet_comment";
+		$this->wet_reply    = "wet_reply";
     }
 
 	public function txComment($hash, $opt=[])

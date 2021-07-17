@@ -14,7 +14,8 @@ class UserModel extends ComModel
 		$this->ConfigModel  = new ConfigModel();
 		$this->DisposeModel	= new DisposeModel();
 		$this->ValidModel	= new ValidModel();
-		$this->tablename    = 'wet_users';
+		$this->tablename    = "wet_users";
+		$this->wet_behavior = "wet_behavior";
     }
 
     public function getUser($address)
@@ -74,8 +75,11 @@ class UserModel extends ComModel
 		$bsConfig = $this->ConfigModel-> backendConfig();
 		if (!$row && $opt['type'] == 'login') {
 			$this-> userPut($address);
-			$insBehSql = "INSERT INTO wet_behavior(address, thing) VALUES ('$address', 'newUserLogin')";
-            $this->db->query($insBehSql);
+			$insetrBehaviorDate = [
+				'address' => $address,
+				'thing'   => 'newUserLogin'
+			];
+			$this->db->table($this->wet_behavior)->insert($insetrBehaviorDate);
 			if ($bsConfig['airdropAE']) {
 				(new AirdropModel())-> airdropAE($address);
 			}

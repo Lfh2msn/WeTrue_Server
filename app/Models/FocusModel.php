@@ -15,32 +15,21 @@ class FocusModel extends Model {
 		$this->DisposeModel = new DisposeModel();
 		$this->ValidModel   = new ValidModel();
 		$this->tablename    = "wet_focus";
+		$this->wet_behavior = "wet_behavior";
 	}
 
     public function limit($page, $size, $opt=[])
 	{/*分页
-		opt可选参数
-			[
-				substr	  => (int)截取字节
-				type	  => 列表标签类型
-				publicKey => 钱包地址
-				hash	  => hash
-				userLogin => 登录用户钱包地址
-				focus	  => 关注类型[myFocus\focusMy]
-			];*/
+	opt可选参数
+		[type	 => 列表标签类型
+		 focus	 => 关注类型[myFocus\focusMy]
+		 address => 地址
+		];
+	*/
 		$page = max(1, (int)$page);
 		$size = max(1, (int)$size);
-		$akToken   = $_SERVER['HTTP_AK_TOKEN'];
-		$isAkToken = $this->DisposeModel-> checkAddress($akToken);
-		if (!$isAkToken) {
-			$data['code'] = 401;
-			$data['msg']  = 'error_login';
-			return json_encode($data);
-		}
-		$opt['userLogin'] = $akToken;
-
+		$address = $opt['address'];
 		if ($opt['type'] == 'userFocusUserList') {
-			$akToken    = $opt['userLogin'];
 			if($opt['focus'] == "myFocus") {  //关注列表
 				$field	  = "fans";
 				$contrary = "focus";
@@ -50,17 +39,17 @@ class FocusModel extends Model {
 				$field	  = "focus";
 				$contrary = "fans";
 			}
-			$countSql = "SELECT count($field) FROM $this->tablename WHERE $field = '$akToken'";
+			$countSql = "SELECT count($field) FROM $this->tablename WHERE $field = '$address'";
 			$limitSql = "SELECT $contrary AS contrary FROM $this->tablename 
-								WHERE $field='$akToken' 
+								WHERE $field='$address' 
 								ORDER BY focus_time DESC LIMIT $size OFFSET ".($page-1) * $size;
 		}
 		
-		$data = $this->cycle($page, $size, $countSql, $limitSql, $opt);
+		$data = $this->cycle($page, $size, $countSql, $limitSql);
 		return json_encode($data);
     }
 
-	private function cycle($page, $size, $countSql, $limitSql, $opt)
+	private function cycle($page, $size, $countSql, $limitSql)
 	{  //用户列表循环
 		$data['code'] = 200;
 		$data['data'] = $this->pages($page, $size, $countSql);
@@ -68,7 +57,7 @@ class FocusModel extends Model {
 		$query = $this-> db-> query($limitSql);
 		foreach ($query-> getResult() as $row) {
 			$userAddress  = $row -> contrary;
-			$userInfo[]	  = $this->UserModel-> userAllInfo($userAddress, $opt);
+			$userInfo[]	  = $this->UserModel-> userAllInfo($userAddress);
 			$data['data']['data'] = $userInfo;
 		}
 		$data['msg'] = 'success';
@@ -112,9 +101,12 @@ class FocusModel extends Model {
 		$this->db-> query($focusSql);
 		$this->UserModel-> userFocus($userAddress, $akToken, $e);
 		//入库行为记录
-		$focusBehaviorSql = "INSERT INTO wet_behavior(address, thing, toaddress) 
-								VALUES ('$akToken', 'isFocus', '$userAddress')";
-		$this->db->query($focusBehaviorSql);
+		$insetrBehaviorDate = [
+			'address'   => $akToken,
+			'thing'     => 'isFocus',
+			'toaddress' => $userAddress
+		];
+		$this->db->table($this->wet_behavior)->insert($insetrBehaviorDate);
 		$isFocus = $this->ValidModel-> isFocus($userAddress, $akToken);
 		$data['data']['isFocus'] = $isFocus;
 		$data['msg'] = 'success';
@@ -133,9 +125,12 @@ class FocusModel extends Model {
 		$this->db-> query($focusSql);
 		$this->UserModel-> userFocus($focus, $fans, $e);
 		//入库行为记录
-		$focusBehaviorSql = "INSERT INTO wet_behavior(address, thing, toaddress) 
-								VALUES ('$fans', 'autoFocus', '$focus')";
-		$this->db->query($focusBehaviorSql);
+		$insetrBehaviorDate = [
+			'address'   => $akToken,
+			'thing'     => 'autoFocus',
+			'toaddress' => $userAddress
+		];
+		$this->db->table($this->wet_behavior)->insert($insetrBehaviorDate);
 	}
 
 }

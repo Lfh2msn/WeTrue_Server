@@ -32,10 +32,12 @@ class Mining extends BaseController {
 		if ($isAddress) {
 			$data['code'] = 200;
 			$submitState  = (new ValidModel())-> isSubmitOpenState($userAddress);
-			$data['data'] = $submitState;
-			if ($submitState) {
+			$isMapAccount = (new ValidModel())-> isMapAccount($userAddress);
+			if ($submitState || $isMapAccount) {
+				$data['data'] = true;
 				$data['msg']  = 'error_repeat';
 			} else {
+				$data['data'] = false;
 				$data['msg']  = 'success';
 			}
 		} else {

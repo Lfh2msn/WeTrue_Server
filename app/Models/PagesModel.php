@@ -47,17 +47,20 @@ class PagesModel extends Model {
 			$countSql		 = "SELECT count(hash) FROM $this->tablename";
 			$limitSql		 = "SELECT hash FROM $this->tablename 
 									ORDER BY utctime DESC LIMIT $size OFFSET ".($page-1) * $size;
-			/*$limitSql		 = "SELECT hash FROM $this->tablename 
+			/*
+			$limitSql		 = "SELECT hash FROM $this->tablename 
 									ORDER BY (
-										(praise + star_sum) * 300000 + read_sum * 10 + utctime
-									) DESC LIMIT $size OFFSET ".($page-1) * $size;*/
+										( (praise + star_sum) * 300000)
+										+ (reward_sum / 3e16) 
+										+ utctime
+									) DESC LIMIT $size OFFSET ".($page-1) * $size;
+			*/
 			$opt['select']	 = "content";
-
 			$upReadSql = "UPDATE $this->tablename 
 							SET read_sum = CASE hash WHEN hash THEN read_sum + 1 
 											END WHERE hash IN ($limitSql)";
 			$this->db-> query($upReadSql);
-		}
+	}
 
 		if ( $opt['type'] == 'commentList' )
 		{//评论列表
@@ -82,9 +85,7 @@ class PagesModel extends Model {
 			$this->tablename = "wet_content";
 			$countSql		 = "SELECT count(hash) FROM $this->tablename WHERE img_tx <> ''";
 			$limitSql		 = "SELECT hash FROM $this->tablename WHERE img_tx <> '' 
-									ORDER BY (
-										(praise + star_sum) * 300000 + read_sum * 10 + utctime
-									) DESC LIMIT $size OFFSET ".($page-1) * $size;
+									ORDER BY utctime DESC LIMIT $size OFFSET ".($page-1) * $size;
 			$opt['select']	 = "content";
 		}
 
@@ -151,15 +152,9 @@ class PagesModel extends Model {
 
 		if ( $opt['type'] == 'userStarContentList' )
 		{//收藏的帖子
-			if (!$isAkToken) {
-				$data['code'] = 401;
-				$data['msg']  = 'error_login';
-				return json_encode($data);
-			}
-			
 			$this->tablename = "wet_star";
-			$countSql		 = "SELECT count(hash) FROM $this->tablename WHERE sender_id = '$opt[userLogin]'";
-			$limitSql		 = "SELECT hash FROM $this->tablename WHERE sender_id = '$opt[userLogin]' 
+			$countSql		 = "SELECT count(hash) FROM $this->tablename WHERE sender_id = '$opt[address]'";
+			$limitSql		 = "SELECT hash FROM $this->tablename WHERE sender_id = '$opt[address]' 
 									ORDER BY star_time DESC LIMIT $size OFFSET ".($page-1) * $size;
 			$opt['select']	 = "content";
 		}
@@ -205,24 +200,39 @@ class PagesModel extends Model {
 		$query = $this->db-> query($limitSql);
 		$data['data']['data'] = [];
 		$getResult = $query-> getResult();
-		foreach ($getResult as $row) {
-			$hash  = $row -> hash;
-			$txBloom = $this->BloomModel-> txBloom($hash);
-			if (!$txBloom) {
-				if ($opt['select']  == 'content') {
-					$detaila[] = $this->ContentModel-> txContent($hash, $opt);
-				}
 
-				if ($opt['select']  == 'comment') {
-					$detaila[] = $this->CommentModel-> txComment($hash, $opt);
-				}
+		if($getResult){
+			foreach ($getResult as $row) {
+				$arrList[] = $row->hash;
+			}
 
-				if ($opt['select'] == 'reply') {
-					$detaila[] = $this->ReplyModel-> txReply($hash, $opt);
+			if($opt['type'] == 'contentList' && $page <= 1){
+				$addList = [];
+				foreach ($addList as $key) {
+					array_unshift($arrList, $key);
 				}
 			}
-			$data['data']['data'] = $detaila;
+
+			foreach ($arrList as $hash) {
+				//$hash = $row;
+				$txBloom = $this->BloomModel-> txBloom($hash);
+				if (!$txBloom) {
+					if ($opt['select']  == 'content') {
+						$detaila[] = $this->ContentModel-> txContent($hash, $opt);
+					}
+	
+					if ($opt['select']  == 'comment') {
+						$detaila[] = $this->CommentModel-> txComment($hash, $opt);
+					}
+	
+					if ($opt['select'] == 'reply') {
+						$detaila[] = $this->ReplyModel-> txReply($hash, $opt);
+					}
+				}
+				$data['data']['data'] = $detaila;
+			}
 		}
+		
 		$data['msg'] = 'success';
 		return $data;
 	}

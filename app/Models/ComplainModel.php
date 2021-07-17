@@ -22,9 +22,9 @@ class ComplainModel extends Model {
 		$this->ReplyModel 	 = new ReplyModel();
 		$this->BloomModel 	 = new BloomModel();
 		$this->ValidModel 	 = new ValidModel();
-		$this->wet_complain  = 'wet_complain';
-		$this->wet_bloom     = 'wet_bloom';
-		$this->wet_behavior  = 'wet_behavior';
+		$this->wet_complain  = "wet_complain";
+		$this->wet_bloom     = "wet_bloom";
+		$this->wet_behavior  = "wet_behavior";
 	}
 
 	public function complainAddress($hash)
@@ -79,12 +79,13 @@ class ComplainModel extends Model {
 		}
 
 		//入库行为记录
-		$behaviorSql = "INSERT INTO $this->wet_behavior(
-							address, hash, thing, toaddress
-						) VALUES (
-							'$akToken', '$hash', 'Complain', '$rpSenderId'
-						)";
-		$this->db->query($behaviorSql);
+		$insetrBehaviorDate = [
+			'address'   => $akToken,
+			'hash'      => $hash,
+			'thing'     => 'Complain',
+			'toaddress' => $rpSenderId
+		];
+		$this->db->table($this->wet_behavior)->insert($insetrBehaviorDate);
 		$data['msg']  = 'success';
 		return json_encode($data);
 	}

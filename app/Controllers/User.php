@@ -56,11 +56,14 @@ class User extends BaseController {
 		$page  = $this->request->getPost('page');
 		$size  = $this->request->getPost('size');
 		$focus = $this->request->getPost('focus');
+		$userAddress   = $this->request->getPost('userAddress');
+		$isUserAddress = $this->DisposeModel-> checkAddress($userAddress);
 		$type  = 'userFocusUserList';
-		if($focus == 'myFocus' || $focus == 'focusMy'){
+		if($isUserAddress && ($focus == 'myFocus' || $focus == 'focusMy')){
 			$opt = [
-				'type'  => $type,
-				'focus' => $focus  //focus => 可选类型 myFocus\focusMy
+				'type'    => $type,
+				'focus'   => $focus, //focus => 可选类型 myFocus\focusMy
+				'address' => $userAddress
 			];
 			$data  = $this->FocusModel-> limit($page, $size, $opt);
 			echo $data;

@@ -14,7 +14,7 @@ class ReplyModel extends Model {
 		$this->UserModel	= new UserModel();
 		$this->ValidModel	= new ValidModel();
 		$this->DisposeModel	= new DisposeModel();
-		$this->tablename    = 'wet_reply';
+		$this->tablename    = "wet_reply";
     }
 
 	public function txReply($hash, $opt=[])

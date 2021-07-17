@@ -13,8 +13,8 @@ class TopicModel extends ComModel
 		$this->BloomModel 		 = new BloomModel();
 		$this->DisposeModel 	 = new DisposeModel();
 		$this->UserModel 	 	 = new UserModel();
-        $this->wet_topic_tag     = 'wet_topic_tag';
-		$this->wet_topic_content = 'wet_topic_content';
+        $this->wet_topic_tag     = "wet_topic_tag";
+		$this->wet_topic_content = "wet_topic_content";
     }
 
 	public function isTopic($content)
