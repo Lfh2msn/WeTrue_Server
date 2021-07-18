@@ -51,4 +51,12 @@ class Config extends BaseController {
 		echo json_encode($data);
     }
 
+	public function version()
+	{//APP版本号检测
+		$appVer = $this->request->getPost('version');
+		$data   = (new ConfigModel())-> appVersionConfig($appVer);
+		echo json_encode($data);
+    }
+	
+
 }
