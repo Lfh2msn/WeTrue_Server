@@ -7,6 +7,7 @@ use App\Models\UserModel;
 use App\Models\BloomModel;
 use App\Models\TopicModel;
 use App\Models\ValidModel;
+use App\Models\MsgModel;
 
 class HashReadModel extends Model {
 //链上hash入库Model
@@ -19,6 +20,7 @@ class HashReadModel extends Model {
 		$this->BloomModel	 = new BloomModel();
 		$this->TopicModel	 = new TopicModel();
 		$this->ValidModel	 = new ValidModel();
+		$this->MsgModel	 	 = new MsgModel();
 		$this->wet_temp 	 = "wet_temp";
 		$this->wet_behavior  = "wet_behavior";
 		$this->wet_content 	 = "wet_content";
@@ -36,14 +38,10 @@ class HashReadModel extends Model {
 		if (!$isTempHash) {  //写入临时缓存
 			$insertTempSql = "INSERT INTO $this->wet_temp(tp_hash, tp_type) VALUES ('$hash', '$tp_type')";
 			$this->db->query($insertTempSql);
-			$data['code'] = 200;
-			$data['msg']  = 'success';
-			echo json_encode($data);
+			echo $this->DisposeModel-> wetJsonRt(200);
 		} else {
-			$data['code'] = 406;
-			$data['msg']  = 'error_repeat';
 			log_message('error_repeat_'.$hash, 4);
-			echo json_encode($data);
+			echo $this->DisposeModel-> wetJsonRt(406,'error_repeat');
 		}
 
 		//fastcgi_finish_request(); //冲刷增速
@@ -93,9 +91,7 @@ class HashReadModel extends Model {
 			$appendText = "error_block_hash:$microBlock\r\n";
 			fwrite($textFile, $appendText);
 			fclose($textFile);
-			$data['code'] = 406;
-			$data['msg']  = 'error_block_hash';
-			return json_encode($data);
+			return $this->DisposeModel-> wetJsonRt(406,'error_block_hash');
 		}
 		$utcTime = $this->getMicroBlockTime($microBlock);
 		$json['mb_time'] = $utcTime;
@@ -112,18 +108,14 @@ class HashReadModel extends Model {
 				$appendText = "非WeTrue格式:{$hash},版本号：{$WeTrue}\r\n";
 				fwrite($textFile, $appendText);
 				fclose($textFile);
-				$data['code'] = 406;
-				$data['msg']  = 'error_WeTrue';
-				return json_encode($data);
+				return $this->DisposeModel-> wetJsonRt(406,'error_WeTrue');
 			}
 
 			$textFile   = fopen("log/hash_read/".date("Y-m-d").".txt", "a");
 			$appendText = "版本号异常:{$hash},版本号：{$WeTrue}\r\n";
 			fwrite($textFile, $appendText);
 			fclose($textFile);
-			$data['code'] = 406;
-			$data['msg']  = 'error_version';
-			return json_encode($data);
+			return $this->DisposeModel-> wetJsonRt(406,'error_version');
 		}
 
 		$data['WeTrue']  = $WeTrue;
@@ -154,9 +146,7 @@ class HashReadModel extends Model {
 			$appendText = "费用异常:{$data['hash']}\r\n";
 			fwrite($textFile, $appendText);
 			fclose($textFile);
-			$data['code'] = 406;
-			$data['msg']  = 'error_amount';
-			return json_encode($data);
+			return $this->DisposeModel-> wetJsonRt(406,'error_amount');
 		}
 		try{
 			//内容分配
@@ -169,9 +159,7 @@ class HashReadModel extends Model {
 					$appendText = "重复主贴Hash:{$data['hash']}\r\n";
 					fwrite($textFile, $appendText);
 					fclose($textFile);
-					$data['code'] = 406;
-					$data['msg']  = 'error';
-					return json_encode($data);
+					return $this->DisposeModel-> wetJsonRt(406,'error');
 				}
 
 				$data['imgList'] = trim($payload['img_list']);
@@ -212,9 +200,7 @@ class HashReadModel extends Model {
 					$appendText = "重复评论hash:{$data['hash']}\r\n";
 					fwrite($textFile, $appendText);
 					fclose($textFile);
-					$data['code'] = 406;
-					$data['msg']  = 'error';
-					return json_encode($data);
+					return $this->DisposeModel-> wetJsonRt(406,'error');
 				}
 
 				$data['toHash'] = trim($payload['toHash']);
@@ -232,6 +218,21 @@ class HashReadModel extends Model {
 				$upSql  	 = "UPDATE $this->wet_content SET comment_sum = comment_sum + 1 WHERE hash = '$data[toHash]'";
 				$this->db->query($upSql);
 				$active 	 = $bsConfig['commentActive'];
+
+				//写入消息
+				$msgOpt = [ 'type'=>$data['type'] ];
+				$toHashID = $this->MsgModel-> toHashSendID($data['toHash'], $msgOpt);  //获取被评论ID
+				if($toHashID) {
+					$msgData = [
+						'hash' 		   => $data['hash'],
+						'to_hash' 	   => $data['toHash'],
+						'type'	   	   => $data['type'],
+						'sender_id'	   => $data['sender'],
+						'recipient_id' => $toHashID,
+						'utctime' 	   => $data['mbTime']
+					];
+					$this->MsgModel-> addMsg($msgData);
+				}
 			}
 
 			elseif ( $data['type'] == 'reply' )
@@ -243,9 +244,7 @@ class HashReadModel extends Model {
 					$appendText = "重复回复hash:{$data['hash']}\r\n";
 					fwrite($textFile, $appendText);
 					fclose($textFile);
-					$data['code'] = 406;
-					$data['msg']  = 'error';
-					return json_encode($data);
+					return $this->DisposeModel-> wetJsonRt(406,'error');
 				}
 
 				$data['replyType'] = trim($payload['reply_type']);
@@ -265,14 +264,30 @@ class HashReadModel extends Model {
 					'payload' 	   => $data['content']
 				];
 				$this->db->table($this->wet_reply)->insert($insertData);
-				$upSql  	 = "UPDATE $this->wet_comment SET comment_sum = comment_sum + 1 WHERE hash = '$data[toHash]'";
+				$upSql = "UPDATE $this->wet_comment SET comment_sum = comment_sum + 1 WHERE hash = '$data[toHash]'";
 				$this->db->query($upSql);
-				$active 	 = $bsConfig['replyActive'];
+				$active = $bsConfig['replyActive'];
+
+				//写入消息
+				$msgOpt = [ 'type'=>$data['type'] ];
+				$toHashID = $this->MsgModel-> toHashSendID($data['toHash'], $msgOpt);  //获取被评论ID
+				if($toHashID) {
+					$msgData = [
+						'hash' 		   => $data['hash'],
+						'to_hash' 	   => $data['toHash'],
+						'type'	   	   => $data['type'],
+						'sender_id'	   => $data['sender'],
+						'recipient_id' => $toHashID,
+						'utctime' 	   => $data['mbTime']
+					];
+					$this->MsgModel-> addMsg($msgData);
+				}
 			}
 
 			elseif ( $data['type'] == 'nickname' )
 			{//昵称
 				$data['content'] = trim($payload['content']);
+				$data['content'] = mb_substr($data['content'], 0, 15);
 				$verify     = $this->ValidModel-> isUser($data['sender']);
 				$isNickname = $this->ValidModel-> isNickname($data['content']);
 				if ($isNickname) {
@@ -281,9 +296,7 @@ class HashReadModel extends Model {
 					$appendText = "重复昵称hash:{$data['hash']}\r\n";
 					fwrite($textFile, $appendText);
 					fclose($textFile);
-					$data['code'] = 406;
-					$data['msg']  = 'error';
-					return json_encode($data);
+					return $this->DisposeModel-> wetJsonRt(406,'error');
 				}
 
 				if($verify){  //用户是否存在
@@ -308,9 +321,7 @@ class HashReadModel extends Model {
 					fwrite($textFile, $appendText);
 					fclose($textFile);
 					$this->deleteTemp($hash);
-					$data['code'] = 406;
-					$data['msg']  = 'error';
-					return json_encode($data);
+					return $this->DisposeModel-> wetJsonRt(406,'error');
 				}
 
 				$verify = $this->ValidModel-> isUser($data['sender']);
@@ -331,9 +342,7 @@ class HashReadModel extends Model {
 					$appendText = "重复头像hash:{$data['hash']}\r\n";
 					fwrite($textFile, $appendText);
 					fclose($textFile);
-					$data['code'] = 406;
-					$data['msg']  = 'error';
-					return json_encode($data);
+					return $this->DisposeModel-> wetJsonRt(406,'error');
 				}
 
 				$verify = $this->ValidModel-> isUser($data['sender']);
@@ -361,9 +370,7 @@ class HashReadModel extends Model {
 				if ($getRow) {
 					$this->deleteTemp($hash);
 					log_message('Repeat_Drift_Hash:'.$data['hash'], 4);
-					$data['code'] = 406;
-					$data['msg']  = 'error';
-					return json_encode($data);
+					return $this->DisposeModel-> wetJsonRt(406,'error');
 				}
 
 				$data['replyType'] = trim($payload['reply_type']);
@@ -392,9 +399,7 @@ class HashReadModel extends Model {
 				$appendText = "data[type]标签错误:{$hash}\r\n";
 				fwrite($textFile, $appendText);
 				fclose($textFile);
-				$data['code'] = 406;
-				$data['msg']  = 'error';
-				return json_encode($data);
+				return $this->DisposeModel-> wetJsonRt(406,'error');
 			}
 
 			//入库行为记录
@@ -408,18 +413,14 @@ class HashReadModel extends Model {
 			$this->db->table($this->wet_behavior)->insert($insetrBehaviorDate);
 			$this->UserModel-> userActive($data['sender'], $active, $e = true);
 			$this->deleteTemp($hash);
-			$data['code'] = 200;
-			$data['msg']  = 'success';
-			return json_encode($data);
+			return json_encode($this->DisposeModel-> wetRt(200,'success'));
 		} catch (Exception $err) {
 			$this->deleteTemp($hash);
 			$textFile   = fopen("log/hash_read/".date("Y-m-d").".txt", "a");
 			$appendText = "未知错误:{$err}\r\n";
 			fwrite($textFile, $appendText);
 			fclose($textFile);
-			$data['code'] = 406;
-			$data['msg']  = 'error';
-			return json_encode($data);
+			return $this->DisposeModel-> wetJsonRt(406,'error');
 		}
     }
 

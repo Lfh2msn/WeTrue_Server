@@ -17,9 +17,7 @@ class Mining extends BaseController {
 		if ($isHash && $isUserAddress) {
 			(new MiningModel())-> openAccount($userAddress, $hash);
 		} else {
-			$data['code'] = 406;
-			$data['msg']  = 'error_hash_OR_error_address';
-			echo json_encode($data);
+			echo $this->DisposeModel-> wetJsonRt(406,'error_hash_OR_error_address');
 		}
     }
 	
@@ -30,21 +28,17 @@ class Mining extends BaseController {
 		$userAddress = $aktAddress ?? $reqAddress;
 		$isAddress   = $this->DisposeModel-> checkAddress($userAddress);
 		if ($isAddress) {
-			$data['code'] = 200;
 			$submitState  = (new ValidModel())-> isSubmitOpenState($userAddress);
 			$isMapAccount = (new ValidModel())-> isMapAccount($userAddress);
 			if ($submitState || $isMapAccount) {
-				$data['data'] = true;
-				$data['msg']  = 'error_repeat';
+				$data = $this->DisposeModel-> wetJsonRt(200,'error_repeat',true);
 			} else {
-				$data['data'] = false;
-				$data['msg']  = 'success';
+				$data = $this->DisposeModel-> wetJsonRt(200,'success',false);
 			}
 		} else {
-			$data['code'] = 406;
-			$data['msg']  = 'error_address';
+			$data = $this->DisposeModel-> wetJsonRt(406,'error_address');
 		}
-		echo json_encode($data);
+		echo $data;
     }
 
 	public function mapping()
@@ -57,12 +51,10 @@ class Mining extends BaseController {
 		$isMapAccount  = (new ValidModel())-> isMapAccount($userAddress);
 		if ($isMapAccount && is_numeric($amount) && $isUserAddress) {
 			$data = (new MiningModel())-> inMapping($userAddress, $amount);
-			echo $data;
 		} else {
-			$data['code'] = 406;
-			$data['msg']  = 'error_amount';
-			echo json_encode($data);
+			$data = $this->DisposeModel-> wetJsonRt(406,'error_amount');
 		}
+		echo $data;
     }
 
 	public function earning()
@@ -74,12 +66,10 @@ class Mining extends BaseController {
 		$isMapAccount  = (new ValidModel())-> isMapAccount($userAddress);
 		if ($isUserAddress && $isMapAccount) {
 			$data = (new MiningModel())-> getEarning($userAddress);
-			echo $data;
 		} else {
-			$data['code'] = 406;
-			$data['msg']  = 'error_address';
-			echo json_encode($data);
+			$data = $this->DisposeModel-> wetJsonRt(406,'error_address');
 		}
+		echo $data;
     }
 
 	public function unMapping()
@@ -91,12 +81,10 @@ class Mining extends BaseController {
 		$isMapAccount  = (new ValidModel())-> isMapAccount($userAddress);
 		if ($isMapAccount && $isUserAddress) {
 			$data = (new MiningModel())-> unMapping($userAddress);
-			echo $data;
 		} else {
-			$data['code'] = 406;
-			$data['msg']  = 'error_amount';
-			echo json_encode($data);
+			$data = $this->DisposeModel-> wetJsonRt(406,'error_amount');
 		}
+		echo $data;
     }
 
 	public function mapInfo()
@@ -107,20 +95,16 @@ class Mining extends BaseController {
 		$isUserAddress = $this->DisposeModel-> checkAddress($userAddress);
 		$isMapAccount  = (new ValidModel())-> isMapAccount($userAddress);
 		if ($isUserAddress && $isMapAccount) {
-			$data['code']   = 200;
 			$userMiningInfo = (new MiningModel())-> checkMapping($userAddress);
-			$data['data']   = '';
 			if ($userMiningInfo) {
-				$data['data'] = $userMiningInfo;
-				$data['msg']  = 'success';
+				$data = $this->DisposeModel-> wetJsonRt(200, 'success', $userMiningInfo);
 			} else {
-				$data['msg']  = 'error_address';
+				$data = $this->DisposeModel-> wetJsonRt(406, 'error_address');
 			}
 		} else {
-			$data['code'] = 406;
-			$data['msg']  = 'error_address';
+			$data = $this->DisposeModel-> wetJsonRt(406, 'error_address');
 		}
-		echo json_encode($data);
+		echo $data;
     }
 
 }

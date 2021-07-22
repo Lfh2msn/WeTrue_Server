@@ -78,8 +78,10 @@ class User extends BaseController {
 	{//获取头像地址
 		$isAddress = $this->DisposeModel-> checkAddress($address);
 		if ($isAddress) {
-			$data = $this->UserModel-> getPortraitUrl($address);
-			echo $data;
+			$data['data']['url'] = $this->UserModel-> getPortraitUrl($address);
+			$data['code'] = 200;
+			$data['msg']  = 'success';
+			return json_encode($data);
 		}
 	}
 

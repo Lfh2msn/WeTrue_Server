@@ -20,21 +20,18 @@ class StarModel extends Model {
 
 	public function star($hash)
 	{//收藏
-		$data['code'] = 200;
 		$akToken   = $_SERVER['HTTP_AK_TOKEN'];
 		$isAkToken = $this->DisposeModel-> checkAddress($akToken);
 		if (!$isAkToken) {
-			$data['code'] = 401;
-			$data['msg']  = 'error_login';
-			return json_encode($data);
+			return $this->DisposeModel-> wetJsonRt(401,'error_login',[]);
 		}
 
-		$data['data'] = [];
+		
 		if (!$hash) {
-			$data['msg'] = 'error_hash';
-			return json_encode($data);
+			return $this->DisposeModel-> wetJsonRt(200,'error_hash',[]);
 		}
 
+		$data = [];
 		$verify = $this->ValidModel-> isStar($hash, $akToken);
 		if (!$verify) {
 			$starSql    = "INSERT INTO $this->wet_star(hash, sender_id) VALUES ('$hash', '$akToken')";
@@ -60,11 +57,11 @@ class StarModel extends Model {
 		$getStarSql = "SELECT star_sum FROM $this->wet_content WHERE hash = '$hash' LIMIT 1";
 		$query 		= $this->db-> query($getStarSql);
 		$row		= $query-> getRow();
-		$data['data']['star']   = (int)$row->star_sum;
-		$data['data']['isStar'] = $isStar;
-		$data['msg'] = 'success';
+		$data['star']   = (int)$row->star_sum;
+		$data['isStar'] = $isStar;
 
-		return json_encode($data);
+		$data = $this->DisposeModel-> wetJsonRt(200,'success',$data);
+		return $data;
 	}
 
 }

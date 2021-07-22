@@ -19,20 +19,22 @@ class UserModel extends ComModel
     }
 
     public function getUser($address)
-	{//获取用户昵称、头像、、活跃、等级
+	{//获取用户昵称、头像、活跃、等级
 		$sql="SELECT 
 					nickname,
 					sex,
 					uactive,
 					portrait,
 					reward_sum,
-					last_active
+					last_active,
+					is_auth
 				FROM $this->tablename WHERE address = '$address' LIMIT 1";
         $query = $this->db->query($sql);
 		$row = $query->getRow();
 		if ($row) {
 			$data['userAddress'] = $address;
 			$nickname = $this->DisposeModel-> delete_xss($row->nickname);
+			$nickname = mb_substr($nickname, 0, 15);
 			$data['nickname']   = $nickname ?? "";
 			$data['sex'] 	    = (int)$row->sex;
 			$userActive 	    = (int)$row->uactive;
@@ -43,7 +45,7 @@ class UserModel extends ComModel
 			$data['userReward'] = $this->DisposeModel-> rewardGrade($userReward);
 			$portrait 			= $row->portrait;
 			$data['portrait']   = $portrait ? "https://api.wetrue.io/User/portrait/".$address : "https://api.wetrue.io/images/default_head.png";
-			
+			$data['isAuth']  	= $row->is_auth ? true : false;
         } else {
 			die("error getUser");
 		}
@@ -68,7 +70,8 @@ class UserModel extends ComModel
 					focus_sum,
 					fans_sum,
 					star_sum,
-					is_map
+					is_map,
+					is_auth
 				FROM $this->tablename WHERE address = '$address' LIMIT 1";
         $query = $this->db->query($sql);
 		$row = $query->getRow();
@@ -84,11 +87,12 @@ class UserModel extends ComModel
 				(new AirdropModel())-> airdropAE($address);
 			}
 		}
-		$nickname     = $this->DisposeModel-> delete_xss($row->nickname);
 		$userActive   = (int)$row->uactive;
 		$userReward   = $row->reward_sum;
 		$portrait 	  = $row->portrait;
 		$portraitHash = $row->portrait_hash;
+		$nickname     = $this->DisposeModel-> delete_xss($row->nickname);
+		$nickname 	  = mb_substr($nickname, 0, 15);
 		$data['userAddress']  = $address;
 		$data['nickname']     = $nickname ?? "";
 		$data['sex'] 	      = (int)$row->sex;
@@ -104,6 +108,7 @@ class UserModel extends ComModel
 		$data['focus'] 		  = (int)$row->focus_sum;
 		$data['fans']  		  = (int)$row->fans_sum;
 		$data['is_map']  	  = $row->is_map ? true : false;
+		$data['isAuth']  	  = $row->is_auth ? true : false;
 		if ($opt['type'] == 'login')
 		{
 			$isAdmin = $this->ValidModel-> isAdmin($address);
@@ -121,9 +126,10 @@ class UserModel extends ComModel
 		$row   = $query->getRow();
 		if ($row) {
 			$nickname = $this->DisposeModel-> delete_xss($row->nickname);
+			$nickname = mb_substr($nickname, 0, 15);
 			$data = $nickname ?? "";
         } else {
-			return;
+			$data = "error_address";
 		}
 		return $data;
 	}
@@ -134,11 +140,8 @@ class UserModel extends ComModel
         $query    = $this->db->query($sql);
 		$row      = $query->getRow();
 		$portrait = $row->portrait;
-		$portrait = $portrait ? "https://api.wetrue.io/User/portrait/".$address : "https://api.wetrue.io/images/default_head.png";
-		$data['code'] = 200;
-		$data['data']['url'] = $portrait;
-		$data['msg']  = 'success';
-		return json_encode($data);
+		$data = $portrait ? "https://api.wetrue.io/User/portrait/".$address : "https://api.wetrue.io/images/default_head.png";
+		return $data;
 	}
 
 	public function getPortrait($address)
@@ -149,7 +152,7 @@ class UserModel extends ComModel
 		if ($row) {
 			$data = $row->portrait ?? "";
         } else {
-			return "error_address_portrait";
+			$data = "error_address";
 		}
 		return $data;
 	}

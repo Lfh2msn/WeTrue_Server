@@ -57,8 +57,10 @@ class PagesModel extends Model {
 			*/
 			$opt['select']	 = "content";
 			$upReadSql = "UPDATE $this->tablename 
-							SET read_sum = CASE hash WHEN hash THEN read_sum + 1 
-											END WHERE hash IN ($limitSql)";
+							SET read_sum = CASE hash 
+								WHEN hash THEN read_sum + 1 
+							END 
+							WHERE hash IN ($limitSql)";
 			$this->db-> query($upReadSql);
 	}
 
@@ -195,10 +197,9 @@ class PagesModel extends Model {
 
 	private function cycle($page, $size, $countSql, $limitSql, $opt)
 	{//列表循环
-		$data['code'] = 200;
-		$data['data'] = $this->pages($page, $size, $countSql);
+		$data = $this->pages($page, $size, $countSql);
 		$query = $this->db-> query($limitSql);
-		$data['data']['data'] = [];
+		$data['data'] = [];
 		$getResult = $query-> getResult();
 
 		if($getResult){
@@ -208,17 +209,17 @@ class PagesModel extends Model {
 
 			if($opt['type'] == 'contentList' && $page <= 1){
 				$addList = [];
-				foreach ($addList as $key) {
-					array_unshift($arrList, $key);
-				}
+				$arrList = $this->DisposeModel-> arrayToArray($addList, $arrList);
 			}
 
 			foreach ($arrList as $hash) {
-				//$hash = $row;
 				$txBloom = $this->BloomModel-> txBloom($hash);
 				if (!$txBloom) {
 					if ($opt['select']  == 'content') {
-						$detaila[] = $this->ContentModel-> txContent($hash, $opt);
+						$isData = $this->ContentModel-> txContent($hash, $opt);
+						if(isset($isData)) {
+							$detaila[] = $isData;
+						}
 					}
 	
 					if ($opt['select']  == 'comment') {
@@ -229,11 +230,11 @@ class PagesModel extends Model {
 						$detaila[] = $this->ReplyModel-> txReply($hash, $opt);
 					}
 				}
-				$data['data']['data'] = $detaila;
+				$data['data'] = $detaila;
 			}
 		}
 		
-		$data['msg'] = 'success';
+		$data = $this->DisposeModel-> wetRt(200,'success',$data);
 		return $data;
 	}
 

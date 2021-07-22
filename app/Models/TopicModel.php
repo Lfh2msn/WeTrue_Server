@@ -18,7 +18,7 @@ class TopicModel extends ComModel
     }
 
 	public function isTopic($content)
-	{//验证话题,存在返回结果
+	{//内容搜索话题
 		$topicTag  = preg_match_all("/#[x80-xff\u4e00-\u9fa5\w ,，.。!！-]{1,25}#/u", $content, $keywords);
 		return $topicTag ? $keywords[0] : false;
 	}
@@ -50,7 +50,7 @@ class TopicModel extends ComModel
 	}
 
 	public function getTopicList($page, $size, $keyword)
-	{//获取话题列表
+	{//获取话题主贴列表
 		$page = max(1, (int)$page);
 		$size = max(1, (int)$size);
 		$akToken   = $_SERVER['HTTP_AK_TOKEN'];
@@ -65,8 +65,7 @@ class TopicModel extends ComModel
 							WHERE keywords ilike '%$keyword%' 
 							AND state = '1' LIMIT 1";
 			$getTagRow = $this->db->query($selectTag)-> getRow();
-			$data['code'] = 200;
-			$data['data']  = [
+			$data  = [
 								'page'		=> $page,  //当前页
 								'size'		=> $size,  //每页数量
 								'totalPage'	=> (int)ceil($getTagRow-> topic_sum/$size),  //总页数
@@ -90,17 +89,15 @@ class TopicModel extends ComModel
 					if (!$txBloom) {
 						$detaila[] = $this->content-> txContent($hash, $opt);
 					}
-					$data['data']['data'] = $detaila;
+					$data['data'] = $detaila;
 				}
-				$data['msg'] = 'success';
+				$data = $this->DisposeModel-> wetRt(200,'success',$data);
 			} else {
-				$data['data'] = [];
-				$data['msg'] = 'success';
+				$data = $this->DisposeModel-> wetRt(200,'no_data',[]);
 			}
 
 		} else {
-			$data['code'] = 406;
-			$data['msg']  = 'error';
+			$data = $this->DisposeModel-> wetRt(406,'error');
 		}
 		return $data;
 	}

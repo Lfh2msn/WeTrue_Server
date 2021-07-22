@@ -19,7 +19,7 @@ class ContentModel extends ComModel
 		$this->tablename 	= "wet_content";
     }
 
-	public function txContent($hash, $opt=[])
+	public function txContent($hash, $opt = [])
 	{//获取主贴内容
 		if ( (int) $opt['substr'] ) {
 			$payload  = "substring(payload for '$opt[substr]') as payload";
@@ -29,16 +29,17 @@ class ContentModel extends ComModel
 		}
 
 		$sql = "SELECT sender_id,
-							$payload,
-							img_tx,
-							utctime,
-							comment_sum,
-							praise,
-							star_sum,
-							read_sum,
-							reward_sum,
-							source
-				FROM $this->tablename WHERE hash='$hash' LIMIT 1";
+						$payload,
+						img_tx,
+						utctime,
+						comment_sum,
+						praise,
+						star_sum,
+						read_sum,
+						reward_sum,
+						source
+				FROM $this->tablename 
+				WHERE hash = '$hash' LIMIT 1";
 
         $query = $this-> db-> query($sql);
 		$row   = $query-> getRow();
@@ -75,6 +76,38 @@ class ContentModel extends ComModel
 				$this->db-> query($upReadSql);
 			}
 			
+        }
+    	return $data;
+    }
+
+	public function simpleContent($hash, $opt=[])
+	{//获取简单主贴内容
+		if ( (int) $opt['substr'] ) {
+			$payload  = "substring(payload for '$opt[substr]') as payload";
+			$strCount = true;
+		} else {
+			$payload  = "payload";
+		}
+
+		$sql = "SELECT sender_id,
+						$payload,
+						img_tx
+				FROM $this->tablename 
+				WHERE hash='$hash' LIMIT 1";
+
+        $query = $this-> db-> query($sql);
+		$row   = $query-> getRow();
+        if ($row) {
+			$data['hash'] 	 = $hash;
+			$sender_id	  	 = $row-> sender_id;
+			$operation		 = mb_strlen($row->payload,'UTF8') >= $opt['substr'] ? $row->payload.'...' : $row->payload;
+			$isStrCount		 = $strCount ? $operation : $row->payload;
+			$deleteXss		 = $this->DisposeModel-> delete_xss($isStrCount);
+			$data['payload'] = $this->DisposeModel-> sensitive($deleteXss);
+			$data['imgTx']   = $row->img_tx ? "https://api.wetrue.io/Image/toimg/".$hash : $this->UserModel-> getPortraitUrl($sender_id);
+			$data['users']['nickname'] = $this->UserModel-> getName($sender_id);
+			//$upReadSql = "UPDATE $this->tablename SET read_sum = read_sum + 1 WHERE hash = '$hash'";
+			//$this->db-> query($upReadSql);			
         }
     	return $data;
     }

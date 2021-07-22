@@ -48,7 +48,7 @@ class ReplyModel extends Model {
 			$data['payload']	  = $this->DisposeModel-> delete_xss($row-> payload);
 			$data['senderId']	  = $sender_id;
 			$data['toAddress']    = $to_address;
-			$data['receiverName'] = $this->UserModel-> getName($to_address);
+			$data['receiverName'] = $to_address ? $this->UserModel-> getName($to_address) : '';
 			$data['utcTime']	  = (int) $row-> utctime;
 			$data['praise']		  = (int) $row-> praise;
 			$data['isPraise']	  = $opt['userLogin'] ? $this->ValidModel-> isPraise($hash, $opt['userLogin']) : false;

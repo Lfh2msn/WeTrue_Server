@@ -95,24 +95,58 @@ class DisposeModel extends Model {
         return $json;
     }
 
+    public function arrayToArray($a1, $a2)
+	{//组装数组
+		$a = [];
+		$a = $a1 ? $a1 : $a;
+		if ($a2) {
+			foreach ($a2 as $t) {
+				$a[] = $t;
+			}
+		}
+		return $a;
+	}
+
+    public function wetRt($code = 0, $msg = 'success', $data = null)
+    {//组装code及数据
+        $rt = [
+            'code' => $code,
+            'msg'  => $msg ? esc($msg) : '',
+            'data' => $data,
+        ];
+        return $rt;
+    }
+
+    public function wetJsonRt($code = 0, $msg = 'success', $data = null)
+    {//组装code及数据,返回json
+        $rt = [
+            'code' => $code,
+            'msg'  => $msg ? esc($msg) : '',
+            'data' => $data,
+        ];
+        return json_encode($rt);
+    }
+
+    
+
     public function activeGrade($number)
 	{//活跃度等级划分
 		(int)$number;
-        if ( $number >= 50000 ) {
+        if ($number >= 50000) {
             $Grade = 9;
-        } elseif ( $number >= 20000 ) {
+        } elseif ($number >= 20000) {
             $Grade = 8;
-        } elseif ( $number >= 10000 ) {
+        } elseif ($number >= 10000) {
             $Grade = 7;
-        } elseif ( $number >= 5000 ) {
+        } elseif ($number >= 5000) {
             $Grade = 6;
-        } elseif ( $number >= 2000 ) {
+        } elseif ($number >= 2000) {
             $Grade = 5;
-        } elseif ( $number >= 500 ) {
+        } elseif ($number >= 1000) {
             $Grade = 4;
-        } elseif ( $number >= 200 ) {
+        } elseif ($number >= 300) {
             $Grade = 3;
-        } elseif ( $number >= 100 ) {
+        } elseif ($number >= 100) {
             $Grade = 2;
         } else {
             $Grade = 1;
@@ -123,17 +157,17 @@ class DisposeModel extends Model {
     public function rewardGrade($number)
 	{//打赏金额等级划分
 		(int)$number = ($number / 1e18);
-        if ( $number >= 10000000 ) {
+        if ($number >= 10000000) {
             $Grade = 6;
-        } elseif ( $number >= 5000000 ) {
+        } elseif ($number >= 5000000) {
             $Grade = 5;
-        } elseif ( $number >= 100000 ) {
+        } elseif ($number >= 100000) {
             $Grade = 4;
-        } elseif ( $number >= 50000 ) {
+        } elseif ($number >= 50000) {
             $Grade = 3;
-        } elseif ( $number >= 10000 ) {
+        } elseif ($number >= 10000) {
             $Grade = 2;
-        } elseif ( $number >= 1000 ) {
+        } elseif ($number >= 1000) {
             $Grade = 1;
         } else {
             $Grade = 0;

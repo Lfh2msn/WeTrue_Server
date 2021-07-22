@@ -244,16 +244,12 @@ class MiningModel extends ComModel
 	{//用户领取收益
 		$checkRow = $this-> checkMapping($address);
 		if (!$checkRow) {
-			$data['code'] = 406;
-			$data['msg']  = 'error_unknown1';
-			return json_encode($data);
+			return $this->DisposeModel-> wetJsonRt(406,'error_unknown1',[]);
 		}
 
 		if ($checkRow['state'] == 0) {
-			$data['code'] = 406;
-			$data['data']['state'] = false;
-			$data['msg']  = 'no_mapping';
-			return json_encode($data);
+			$data['state'] = false;
+			return $this->DisposeModel-> wetJsonRt(406,'no_mapping',$data);
 		}
 
 		$checEarning = $checkRow['earning'];
@@ -266,8 +262,7 @@ class MiningModel extends ComModel
 					'earning' => 0
 				];
 				$this->db->table($this->wet_mapping)->where('address', $address)->update($upData);
-				$data['data']['earning'] = $checEarning;
-				$data['msg']  = 'success';
+				$data['earning'] = $checEarning;
 				$textFile   = fopen("log/mining/earning-".date("Y-m-d").".txt", "a");
 				$textTime   = date("Y-m-d h:i:s");
 				$appendText = "账户:{$address}\r\n领取:{$checEarning}\r\n时间:{$blockHeight}--{$textTime}\r\n\r\n";
@@ -275,12 +270,9 @@ class MiningModel extends ComModel
 				fclose($textFile);
 			}
 		} else {
-			$code = 200;
-			$data['msg']  = 'error_earning_low';
+			return $this->DisposeModel-> wetJsonRt(200, 'error_earning_low');
 		}
-		
-		$data['code'] = $code;
-		return json_encode($data);
+		return $this->DisposeModel-> wetJsonRt($code, 'success', $data);
 	}
 
 	public function checkMapping($address)
@@ -319,7 +311,8 @@ class MiningModel extends ComModel
 			$accountsJson = (array) json_decode($getBalance, true);
 			$chainBalance = $accountsJson['balance'];  //链上金额
 			$mapAmount 	  = $mapInfo['amount'];  //映射金额
-			if($chainBalance && $chainBalance < $mapAmount) {  //对比[映射]及[链上]金额
+			if ($chainBalance && $chainBalance < $mapAmount) {  //对比[映射]及[链上]金额
+			//小黑屋判断
 				$textFile   = fopen("log/mining/black-house-".date("Y-m-d").".txt", "a");
 				$textTime   = date("Y-m-d h:i:s");
 				$appendText = "账户:{$address}\r\n链上:{$chainBalance}\r\n映射:{$mapAmount}\r\n时间:{$blockHeight}--{$textTime}\r\n\r\n";
@@ -334,7 +327,8 @@ class MiningModel extends ComModel
 				];
 				$this->db->table($this->wet_mapping)->where('address', $address)->update($upMapData);
 				$this->db->table($this->wet_users)->where('address', $address)->update( ['is_map' => 0] );
-				$mapInfo = $this->getUserMapInfo($address);
+				$blackHouse = true;
+				$mapInfo    = $this->getUserMapInfo($address, $blackHouse);
 				return $mapInfo;
 			}
 
@@ -342,11 +336,10 @@ class MiningModel extends ComModel
 			$aettos    	= ($mapAmount / 1e18);
 			$earningOld = $mapInfo['earning'] ?? 0;
 			if ($pastHeight <= 961) {
-				$blockEarning = ($pastHeight * $aettos * 3e12);
+				$earningNew = ( $earningOld + ($pastHeight * $aettos * 3e12) );
 			} else {
-				$blockEarning = 0;
+				$earningNew = $earningOld;
 			}
-			$earningNew	= ( $earningOld + $blockEarning );
 			$upData = [
 				'height_check' => $blockHeight,
 				'earning' 	   => $earningNew
@@ -357,7 +350,7 @@ class MiningModel extends ComModel
 		return $mapInfo;
 	}
 
-	private function getUserMapInfo($address)
+	private function getUserMapInfo($address, $blackHouse = false)
 	{//获取用户映射信息
 		$mapSql  = "SELECT address,
 						height_map,
@@ -370,13 +363,14 @@ class MiningModel extends ComModel
 		$rowMap = $query->getRow();
 		$totalAE = $this->getTotalAE();
 		$data = [
-			'address' => $rowMap->address,
-			'height_map' => $rowMap->height_map,
+			'address' 	   => $rowMap->address,
+			'height_map'   => $rowMap->height_map,
 			'height_check' => $rowMap->height_check,
-			'state' => $rowMap->state,
-			'amount' => $rowMap->amount,
-			'earning' => $rowMap->earning,
-			'total_ae' => $totalAE
+			'black_house'  => $blackHouse,
+			'state' 	   => $rowMap->state,
+			'amount' 	   => $rowMap->amount,
+			'earning' 	   => $rowMap->earning,
+			'total_ae' 	   => $totalAE
 		];
 		return $data;
 	}
@@ -406,15 +400,11 @@ class MiningModel extends ComModel
 			$appendText = "{$akToken}--Admin\r\n";
 			fwrite($textFile, $appendText);
 			fclose($textFile);
-			$data['code'] = 200;
-			$data['data'] = 'open';
-			$data['msg']  = 'success';
+			$data = $this->DisposeModel-> wetJsonRt(200, 'success', 'open');
 		} else {
-			$data['code'] = 401;
-			$data['data'] = 'open_error';
-			$data['msg']  = 'error';
+			$data = $this->DisposeModel-> wetJsonRt(401, 'error', 'open_error');
 		}
-		return json_encode($data);
+		return $data;
 	}
 
 		

@@ -104,6 +104,14 @@ class ValidModel extends Model {
 		return $row ? true : false;
 	}
 
+	public function isTopicState($keywords)
+	{//话题状态是否正常
+		$sql   = "SELECT state FROM wet_topic_tag WHERE keywords = '$keywords' LIMIT 1";
+        $query = $this->db->query($sql);
+		$row   = $query->getRow();
+		return $row ? true : false;
+	}
+
 	public function isComplain($hash)
 	{//投诉hash是否存在
 		$sql   = "SELECT hash FROM wet_complain WHERE hash = '$hash' LIMIT 1";

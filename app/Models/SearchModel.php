@@ -5,6 +5,7 @@ use App\Models\BloomModel;
 use App\Models\ContentModel;
 use App\Models\DisposeModel;
 use App\Models\UserModel;
+use App\Models\ValidModel;
 
 class SearchModel extends Model {
 //搜索Model
@@ -16,6 +17,7 @@ class SearchModel extends Model {
 		$this->ContentModel = new ContentModel();
 		$this->DisposeModel = new DisposeModel();
 		$this->UserModel	= new UserModel();
+		$this->ValidModel	= new ValidModel();
 	}
 
 	public function search($page, $size, $opt)
@@ -36,16 +38,22 @@ class SearchModel extends Model {
 								WHERE payload ilike '%$opt[key]%' ORDER BY utctime DESC LIMIT $size OFFSET ".($page-1) * $size;
 		} 
 		
-		else if ( $opt['type'] == 'user' ) 
+		elseif ( $opt['type'] == 'user' ) 
 		{//搜索用户
 			$this->tablename = "wet_users";
 			$countSql = "SELECT count(address) FROM $this->tablename WHERE nickname ilike '%$opt[key]%'";
 			$limitSql = "SELECT address FROM $this->tablename 
 								WHERE nickname ilike '%$opt[key]%' ORDER BY uid DESC LIMIT $size OFFSET ".($page-1) * $size;
+		}
+		
+		elseif ( $opt['type'] == 'tag' ) 
+		{//搜索话题
+			$this->tablename = "wet_topic_tag";
+			$countSql = "SELECT count(keywords) FROM $this->tablename WHERE keywords ilike '%$opt[key]%'";
+			$limitSql = "SELECT keywords FROM $this->tablename 
+								WHERE keywords ilike '%$opt[key]%' ORDER BY uid DESC LIMIT $size OFFSET ".($page-1) * $size;
 		} else {
-			$data['code'] = 406;
-			$data['msg']  = 'error_type';
-			return json_encode($data);
+			return $this->DisposeModel-> wetJsonRt(406,'error_type');
 		}
 
 		$data = $this->cycle($page, $size, $countSql, $limitSql, $opt);
@@ -55,14 +63,15 @@ class SearchModel extends Model {
 
 	private function cycle($page, $size, $countSql, $limitSql, $opt)
 	{//列表循环
-		$data['code'] = 200;
-		$data['data'] = $this->pages($page, $size, $countSql);
-		$query = $this->db-> query($limitSql);
-		$data['data']['data'] = [];
-		foreach ($query-> getResult() as $row)
+		$data = $this->pages($page, $size, $countSql);
+		$query  = $this->db-> query($limitSql);
+		$getRes = $query-> getResult();
+		$data['data'] = [];
+		foreach ($getRes as $row)
 		{
-			$hash  	 = $row -> hash;
-			$address = $row -> address;
+			$hash  	  = $row->hash;
+			$address  = $row->address;
+			$keywords = $row->keywords;
 			if ($hash) {
 				$txBloom = $this->BloomModel-> txBloom($hash);
 			}
@@ -71,7 +80,11 @@ class SearchModel extends Model {
 				$idBloom = $this->BloomModel-> addressBloom($address);
 			}
 
-			if($txBloom || !$idBloom)
+			if ($keywords){
+				$isTopicState = $this->ValidModel-> isTopicState($keywords);
+			}
+
+			if($txBloom || !$idBloom || $isTopicState)
 			{
 				if($opt['type']  == 'topic') {
 					$detaila[] = $this->ContentModel-> txContent($hash, $opt);
@@ -80,10 +93,14 @@ class SearchModel extends Model {
 				if($opt['type']  == 'user') {
 					$detaila[] = $this->UserModel-> userAllInfo($address);
 				}
+
+				if($opt['type']  == 'tag') {
+					$detaila[] = $keywords;
+				}
 			}
-			$data['data']['data'] = $detaila;
+			$data['data'] = $detaila;
 		}
-		$data['msg'] = 'success';
+		$data = $this->DisposeModel-> wetRt(200,'success',$data);
 		return $data;
 	}
 
