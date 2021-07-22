@@ -217,17 +217,17 @@ class PagesModel extends Model {
 				if (!$txBloom) {
 					if ($opt['select']  == 'content') {
 						$isData = $this->ContentModel-> txContent($hash, $opt);
-						if(isset($isData)) {
-							$detaila[] = $isData;
-						}
+						if(isset($isData)) $detaila[] = $isData;
 					}
 	
 					if ($opt['select']  == 'comment') {
-						$detaila[] = $this->CommentModel-> txComment($hash, $opt);
+						$isData = $this->CommentModel-> txComment($hash, $opt);
+						if(isset($isData)) $detaila[] = $isData;
 					}
 	
 					if ($opt['select'] == 'reply') {
-						$detaila[] = $this->ReplyModel-> txReply($hash, $opt);
+						$isData = $this->ReplyModel-> txReply($hash, $opt);
+						if(isset($isData)) $detaila[] = $isData;
 					}
 				}
 				$data['data'] = $detaila;

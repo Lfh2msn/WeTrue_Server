@@ -334,11 +334,11 @@ class MiningModel extends ComModel
 
 			$pastHeight = (int)($blockHeight - $heightCheckOld);
 			$aettos    	= ($mapAmount / 1e18);
-			$earningOld = $mapInfo['earning'] ?? 0;
-			if ($pastHeight <= 961) {
+			$earningOld = $mapInfo['earning'];
+			if ($pastHeight <= 960) {
 				$earningNew = ( $earningOld + ($pastHeight * $aettos * 3e12) );
 			} else {
-				$earningNew = $earningOld;
+				$earningNew = ( $earningOld + (960 * $aettos * 3e12) );
 			}
 			$upData = [
 				'height_check' => $blockHeight,

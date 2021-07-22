@@ -23,30 +23,42 @@ class TopicModel extends ComModel
 		return $topicTag ? $keywords[0] : false;
 	}
 
-	public function getTopicInfo($keyword)
+	public function getTopicInfo($keyword, $opt=[])
 	{//获取话题信息
 		$isTopic = $this->isTopic($keyword);
 		if ($isTopic) {
-			$selectTag = "SELECT keywords, img_icon, describe, sender_id, state, utctime, topic_sum 
-							FROM $this->wet_topic_tag WHERE keywords ilike '%$keyword%' AND state = '1' LIMIT 1";
+			$selectTag = "SELECT keywords,
+								 img_icon, 
+								 describe, 
+								 sender_id, 
+								 state, 
+								 utctime, 
+								 topic_sum, 
+								 read_sum
+							FROM $this->wet_topic_tag 
+							WHERE keywords ilike '%$keyword%' AND state = '1' 
+							LIMIT 1";
 			$getTagRow = $this->db->query($selectTag)-> getRow();
-			$data['code'] = 200;
-			$data['data']  = [
-								'total'	=> (int)$getTagRow-> topic_sum,  //总话题量
-								'keyword'	=> $getTagRow-> keywords,  //话题关键词
-								'imgIcon'	=> $getTagRow-> img_icon,  //话题图标
-								'describe'	=> $getTagRow-> describe,  //简介
-								'sender_id'	=> $getTagRow-> sender_id,  //创建人
-								'nickname'	=> $this->UserModel-> getName($getTagRow->sender_id),  //创建昵称
-								'state'		=> (int)$getTagRow-> state,  //状态
-								'utctime'	=> (int)$getTagRow-> utctime,  //时间
-							];
-			$data['msg']  = 'success';
-		} else {
-			$data['code'] = 406;
-			$data['msg']  = 'error';
+			$data = [
+					'total'		=> (int)$getTagRow-> topic_sum,  //总话题量
+					'read_sum'	=> (int)$getTagRow-> read_sum,  //阅读量
+					'keyword'	=> $getTagRow-> keywords,  //话题关键词
+					'imgIcon'	=> $getTagRow-> img_icon,  //话题图标
+					'describe'	=> $getTagRow-> describe,  //简介
+					'sender_id'	=> $getTagRow-> sender_id,  //创建人
+					'nickname'	=> $this->UserModel-> getName($getTagRow->sender_id),  //创建昵称
+					'state'		=> (int)$getTagRow-> state,  //状态
+					'utctime'	=> (int)$getTagRow-> utctime,  //时间
+					];
+			if($opt['read']) {
+				$updateSql = "UPDATE $this->wet_topic_tag 
+							SET read_sum = read_sum + 1
+							WHERE keywords = '$getTagRow->keywords'";
+				$this->db->query($updateSql);
+			}
+			return $data;
 		}
-		return $data;
+		
 	}
 
 	public function getTopicList($page, $size, $keyword)
@@ -138,7 +150,11 @@ class TopicModel extends ComModel
 									'utctime'   => $topic['utctime']
 								];
 				$this->db->table($this->wet_topic_content)->insert($inTopicContent);
-				$updateSql = "UPDATE $this->wet_topic_tag SET topic_sum = topic_sum + 1 WHERE keywords ilike '%$keywords[$i]%'";
+				$updateSql = "UPDATE $this->wet_topic_tag 
+								SET 
+									topic_sum = topic_sum + 1, 
+									read_sum  = read_sum + 1
+								WHERE keywords ilike '%$keywords[$i]%'";
 				$this->db->query($updateSql);
 			}
 		}

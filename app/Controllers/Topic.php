@@ -8,9 +8,14 @@ class Topic extends BaseController {
 	public function info()
 	{//话题信息
 		$keyword = $this->request->getPost('keyword');
-		$data	 = (new TopicModel())-> getTopicInfo($keyword);
-		echo json_encode($data);
-
+		$opt = ['read' => true];
+		$data	 = (new TopicModel())-> getTopicInfo($keyword, $opt);
+		if ($data) {
+			$data = $this->DisposeModel-> wetJsonRt(200, 'success', $data);
+		} else {
+			$data = $this->DisposeModel-> wetJsonRt(406,'error');
+		}
+		echo $data;
 	}
 
 	public function contentList()

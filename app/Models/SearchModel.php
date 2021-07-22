@@ -6,6 +6,7 @@ use App\Models\ContentModel;
 use App\Models\DisposeModel;
 use App\Models\UserModel;
 use App\Models\ValidModel;
+use App\Models\TopicModel;
 
 class SearchModel extends Model {
 //搜索Model
@@ -18,6 +19,7 @@ class SearchModel extends Model {
 		$this->DisposeModel = new DisposeModel();
 		$this->UserModel	= new UserModel();
 		$this->ValidModel	= new ValidModel();
+		$this->TopicModel	= new TopicModel();
 	}
 
 	public function search($page, $size, $opt)
@@ -43,15 +45,25 @@ class SearchModel extends Model {
 			$this->tablename = "wet_users";
 			$countSql = "SELECT count(address) FROM $this->tablename WHERE nickname ilike '%$opt[key]%'";
 			$limitSql = "SELECT address FROM $this->tablename 
-								WHERE nickname ilike '%$opt[key]%' ORDER BY uid DESC LIMIT $size OFFSET ".($page-1) * $size;
+								WHERE nickname ilike '%$opt[key]%' 
+								ORDER BY uid DESC 
+								LIMIT $size OFFSET ".($page-1) * $size;
 		}
 		
-		elseif ( $opt['type'] == 'tag' ) 
+		elseif ( $opt['type'] == 'topicTag' ) 
 		{//搜索话题
 			$this->tablename = "wet_topic_tag";
 			$countSql = "SELECT count(keywords) FROM $this->tablename WHERE keywords ilike '%$opt[key]%'";
 			$limitSql = "SELECT keywords FROM $this->tablename 
-								WHERE keywords ilike '%$opt[key]%' ORDER BY uid DESC LIMIT $size OFFSET ".($page-1) * $size;
+								WHERE keywords ilike '%$opt[key]%' 
+								ORDER BY read_sum DESC, utctime DESC 
+								LIMIT $size OFFSET ".($page-1) * $size;
+			$upReadSql = "UPDATE $this->tablename 
+							SET read_sum = CASE keywords 
+								WHEN keywords THEN read_sum + 1
+							END 
+							WHERE keywords IN ($limitSql)";
+			$this->db-> query($upReadSql);
 		} else {
 			return $this->DisposeModel-> wetJsonRt(406,'error_type');
 		}
@@ -87,15 +99,18 @@ class SearchModel extends Model {
 			if($txBloom || !$idBloom || $isTopicState)
 			{
 				if($opt['type']  == 'topic') {
-					$detaila[] = $this->ContentModel-> txContent($hash, $opt);
+					$isData = $this->ContentModel-> txContent($hash, $opt);
+					if(isset($isData)) $detaila[] = $isData;
 				}
 
 				if($opt['type']  == 'user') {
-					$detaila[] = $this->UserModel-> userAllInfo($address);
+					$isData = $this->UserModel-> userAllInfo($address);
+					if(isset($isData)) $detaila[] = $isData;
 				}
 
-				if($opt['type']  == 'tag') {
-					$detaila[] = $keywords;
+				if($opt['type']  == 'topicTag') {
+					$isData = $this->TopicModel-> getTopicInfo($keywords);
+					if(isset($isData)) $detaila[] = $isData;
 				}
 			}
 			$data['data'] = $detaila;
