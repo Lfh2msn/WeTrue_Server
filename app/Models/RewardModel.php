@@ -84,7 +84,6 @@ class RewardModel extends Model {
 			$this->deleteTemp($hash);
 			return;
 		}
-
 		$bsConfig  = $this->ConfigModel-> backendConfig();
 		$getUrl	   = 'https://www.aeknow.org/api/contracttx/'.$hash;
 		@$contents = file_get_contents($getUrl);
@@ -114,6 +113,12 @@ class RewardModel extends Model {
 		$contract_id  = $json['contract_id'];
 
 		if ($return_type == "revert") {
+			$this->deleteTemp($hash);
+			return;
+		}
+
+		$isRewardHash = $this->ValidModel-> isRewardHash($hash);
+		if ($isRewardHash) {
 			$this->deleteTemp($hash);
 			return;
 		}
