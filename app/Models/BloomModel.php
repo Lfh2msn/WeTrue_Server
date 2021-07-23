@@ -126,10 +126,11 @@ class BloomModel extends Model {
         return json_encode($data);
     }
 
-    public function limit($page, $size, $opt=[])
+    public function limit($page, $size, $offset, $opt=[])
 	{//屏蔽列表分页
-		$page = max(1, (int)$page);
-		$size = max(1, (int)$size);
+		$page   = max(1, (int)$page);
+		$size   = max(1, (int)$size);
+		$offset = max(0, (int)$offset);
 		$akToken   = $_SERVER['HTTP_AK_TOKEN'];
 		$isAkToken = $this->DisposeModel-> checkAddress($akToken);
 		$isAdmin   = $this->ValidModel-> isAdmin($akToken);
@@ -143,7 +144,7 @@ class BloomModel extends Model {
 		$opt['userLogin'] = $akToken;
 
 		$countSql = "SELECT count(bf_hash) FROM $this->wet_bloom";
-		$limitSql = "SELECT bf_hash AS hash FROM $this->wet_bloom LIMIT $size OFFSET ".($page-1) * $size;
+		$limitSql = "SELECT bf_hash AS hash FROM $this->wet_bloom LIMIT $size OFFSET ".(($page-1) * $size + $offset);
 
 		$data = $this->cycle($page, $size, $countSql, $limitSql, $opt);
 		return json_encode($data);

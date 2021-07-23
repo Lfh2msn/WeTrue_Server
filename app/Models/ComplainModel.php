@@ -90,14 +90,15 @@ class ComplainModel extends Model {
 		return json_encode($data);
 	}
 
-	public function limit($page, $size, $opt=[])
+	public function limit($page, $size, $offset, $opt=[])
 	{/*投诉列表分页
 		opt可选参数
 			[
 
 			];*/
-		$page = max(1, (int)$page);
-		$size = max(1, (int)$size);
+		$page   = max(1, (int)$page);
+		$size   = max(1, (int)$size);
+		$offset = max(0, (int)$offset);
 		$akToken   = $_SERVER['HTTP_AK_TOKEN'];
 		$isAkToken = $this->DisposeModel-> checkAddress($akToken);
 		$isAdmin   = $this->ValidModel-> isAdmin($akToken);
@@ -111,7 +112,7 @@ class ComplainModel extends Model {
 		$opt['userLogin'] = $akToken;
 
 		$countSql = "SELECT count(hash) FROM $this->wet_complain";
-		$limitSql = "SELECT hash FROM $this->wet_complain LIMIT $size OFFSET ".($page-1) * $size;
+		$limitSql = "SELECT hash FROM $this->wet_complain LIMIT $size OFFSET ".(($page-1) * $size + $offset);
 
 		$data = $this->cycle($page, $size, $countSql, $limitSql, $opt);
 		return json_encode($data);

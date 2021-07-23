@@ -104,17 +104,18 @@ class Submit extends BaseController {
 
 	public function search()
     {//搜索
-		$page = $this->request->getPost('page');
-        $size = $this->request->getPost('size');
-		$type = $this->request->getPost('type');
-		$key  = $this->request->getPost('key');
+		$page   = $this->request->getPost('page');
+        $size   = $this->request->getPost('size');
+        $offset = $this->request->getPost('offset');
+		$type   = $this->request->getPost('type');
+		$key    = $this->request->getPost('key');
 
 		$opt  = [
 			'type' => $type,
 			'key'  => $key
 		];
         if ($type && $key) {
-            $data = (new SearchModel())-> search($page, $size, $opt);
+            $data = (new SearchModel())-> search($page, $size, $offset, $opt);
 		    echo $data;
 		} else {
 			$data['code'] = 406;

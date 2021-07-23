@@ -18,7 +18,7 @@ class FocusModel extends Model {
 		$this->wet_behavior = "wet_behavior";
 	}
 
-    public function limit($page, $size, $opt=[])
+    public function limit($page, $size, $offset, $opt=[])
 	{/*分页
 	opt可选参数
 		[type	 => 列表标签类型
@@ -26,8 +26,9 @@ class FocusModel extends Model {
 		 address => 地址
 		];
 	*/
-		$page = max(1, (int)$page);
-		$size = max(1, (int)$size);
+		$page   = max(1, (int)$page);
+		$size   = max(1, (int)$size);
+		$offset = max(0, (int)$offset);
 		$address = $opt['address'];
 		if ($opt['type'] == 'userFocusUserList') {
 			if($opt['focus'] == "myFocus") {  //关注列表
@@ -42,7 +43,7 @@ class FocusModel extends Model {
 			$countSql = "SELECT count($field) FROM $this->tablename WHERE $field = '$address'";
 			$limitSql = "SELECT $contrary AS contrary FROM $this->tablename 
 								WHERE $field='$address' 
-								ORDER BY focus_time DESC LIMIT $size OFFSET ".($page-1) * $size;
+								ORDER BY focus_time DESC LIMIT $size OFFSET ".(($page-1) * $size + $offset);
 		}
 		
 		$data = $this->cycle($page, $size, $countSql, $limitSql);

@@ -32,8 +32,9 @@ class User extends BaseController {
 
 	public function contentList()
 	{//用户主贴列表
-		$page = $this->request->getPost('page');
-		$size = $this->request->getPost('size');
+		$page   = $this->request->getPost('page');
+        $size   = $this->request->getPost('size');
+        $offset = $this->request->getPost('offset');
 		$userAddress = $this->request->getPost('userAddress');
 		$isUserAddress = $this->DisposeModel-> checkAddress($userAddress);
 		if($isUserAddress){
@@ -42,7 +43,7 @@ class User extends BaseController {
 					'type' 		=> $type,
 					'publicKey' => $userAddress
 				];
-			$data = $this->PagesModel-> limit((int)$page, (int)$size, $opt);
+			$data = $this->PagesModel-> limit($page, $size, $offset, $opt);
 			echo $data;
 		}else{
 			$data['code'] = 406;
@@ -53,9 +54,10 @@ class User extends BaseController {
 
 	public function focusList()
 	{//关注用户列表
-		$page  = $this->request->getPost('page');
-		$size  = $this->request->getPost('size');
-		$focus = $this->request->getPost('focus');
+		$page    = $this->request->getPost('page');
+        $size    = $this->request->getPost('size');
+        $offset  = $this->request->getPost('offset');
+		$focus   = $this->request->getPost('focus');
 		$userAddress   = $this->request->getPost('userAddress');
 		$isUserAddress = $this->DisposeModel-> checkAddress($userAddress);
 		$type  = 'userFocusUserList';
@@ -65,7 +67,7 @@ class User extends BaseController {
 				'focus'   => $focus, //focus => 可选类型 myFocus\focusMy
 				'address' => $userAddress
 			];
-			$data  = $this->FocusModel-> limit($page, $size, $opt);
+			$data  = $this->FocusModel-> limit($page, $size, $offset, $opt);
 			echo $data;
 		}else{
 			$data['code'] = 406;

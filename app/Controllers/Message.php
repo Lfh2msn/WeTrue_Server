@@ -6,10 +6,11 @@ use App\Models\MsgModel;
 class Message extends BaseController {
 
 	public function list()
-	{//用户主贴列表
-		$page = $this->request->getPost('page');
-		$size = $this->request->getPost('size');
-		$data = (new MsgModel())-> getMsgList((int)$page, (int)$size);
+	{//用户消息列表
+		$page   = $this->request->getPost('page');
+        $size   = $this->request->getPost('size');
+        $offset = $this->request->getPost('offset');
+		$data   = (new MsgModel())-> getMsgList($page, $size, $offset);
 		if($data){	
 			echo $data;
 		}else{

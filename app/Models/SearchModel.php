@@ -22,10 +22,11 @@ class SearchModel extends Model {
 		$this->TopicModel	= new TopicModel();
 	}
 
-	public function search($page, $size, $opt)
+	public function search($page, $size, $offset, $opt=[])
 	{	
-		$page = max(1, (int)$page);
-		$size = max(1, (int)$size);
+		$page   = max(1, (int)$page);
+		$size   = max(1, (int)$size);
+		$offset = max(0, (int)$offset);
 		$akToken   = $_SERVER['HTTP_AK_TOKEN'];
 		$isAkToken = $this->DisposeModel-> checkAddress($akToken);
 		if ( $isAkToken ) {
@@ -37,7 +38,7 @@ class SearchModel extends Model {
 			$this->tablename = "wet_content";
 			$countSql = "SELECT count(hash) FROM $this->tablename WHERE payload ilike '%$opt[key]%'";
 			$limitSql = "SELECT hash FROM $this->tablename 
-								WHERE payload ilike '%$opt[key]%' ORDER BY utctime DESC LIMIT $size OFFSET ".($page-1) * $size;
+								WHERE payload ilike '%$opt[key]%' ORDER BY utctime DESC LIMIT $size OFFSET ".(($page-1) * $size + $offset);
 		} 
 		
 		elseif ( $opt['type'] == 'user' ) 
@@ -47,7 +48,7 @@ class SearchModel extends Model {
 			$limitSql = "SELECT address FROM $this->tablename 
 								WHERE nickname ilike '%$opt[key]%' 
 								ORDER BY uid DESC 
-								LIMIT $size OFFSET ".($page-1) * $size;
+								LIMIT $size OFFSET ".(($page-1) * $size + $offset);
 		}
 		
 		elseif ( $opt['type'] == 'topicTag' ) 
@@ -57,7 +58,7 @@ class SearchModel extends Model {
 			$limitSql = "SELECT keywords FROM $this->tablename 
 								WHERE keywords ilike '%$opt[key]%' 
 								ORDER BY read_sum DESC, utctime DESC 
-								LIMIT $size OFFSET ".($page-1) * $size;
+								LIMIT $size OFFSET ".(($page-1) * $size + $offset);
 			$upReadSql = "UPDATE $this->tablename 
 							SET read_sum = CASE keywords 
 								WHEN keywords THEN read_sum + 1

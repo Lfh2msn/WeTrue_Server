@@ -22,11 +22,12 @@ class MsgModel extends ComModel
 		$this->wet_message  = "wet_message";
     }
 
-    public function getMsgList($page, $size)
+    public function getMsgList($page, $size, $offset)
 	{//获取消息列表
 
-		$page = max(1, (int)$page);
-		$size = max(1, (int)$size);
+		$page   = max(1, (int)$page);
+		$size   = max(1, (int)$size);
+		$offset = max(0, (int)$offset);
 		$akToken   = $_SERVER['HTTP_AK_TOKEN'];
 		$isAkToken = $this->DisposeModel-> checkAddress($akToken);
 		if (!$isAkToken) return $this->DisposeModel-> wetJsonRt(401,'error_address');
@@ -43,13 +44,13 @@ class MsgModel extends ComModel
 					FROM $this->wet_message 
 					WHERE recipient_id = '$akToken'
 					ORDER BY state DESC, utctime DESC 
-					LIMIT $size OFFSET ".($page-1) * $size;
+					LIMIT $size OFFSET ".(($page-1) * $size + $offset);
 		$data = $this->cycle($page, $size, $countSql, $limitSql);
 
 		$upHashSql = "SELECT hash FROM $this->wet_message 
 						WHERE recipient_id = '$akToken'
 						AND state = 1
-					LIMIT $size OFFSET ".($page-1) * $size;
+					LIMIT $size OFFSET ".(($page-1) * $size + $offset);
 		$upStateSql = "UPDATE $this->wet_message 
 						SET state = CASE state
 							WHEN 1 THEN 0

@@ -7,6 +7,7 @@ class Comment extends BaseController {
     {//评论列表
         $page   = $this->request->getPost('page');
         $size   = $this->request->getPost('size');
+        $offset = $this->request->getPost('offset');
 		$hash   = $this->request->getPost('hash');
         $replyLimit = $this->request->getPost('replyLimit');
         $opt  = [
@@ -16,7 +17,7 @@ class Comment extends BaseController {
                 ];
         $isHash = $this->DisposeModel-> checkAddress($hash);
         if ($isHash) {
-            $data = $this->PagesModel-> limit($page, $size, $opt);
+            $data = $this->PagesModel-> limit($page, $size, $offset, $opt);
             echo $data;
         } else {
             $data['code'] = 406;

@@ -61,10 +61,11 @@ class TopicModel extends ComModel
 		
 	}
 
-	public function getTopicList($page, $size, $keyword)
+	public function getTopicList($page, $size, $offset, $keyword)
 	{//获取话题主贴列表
-		$page = max(1, (int)$page);
-		$size = max(1, (int)$size);
+		$page   = max(1, (int)$page);
+		$size   = max(1, (int)$size);
+		$offset = max(0, (int)$offset);
 		$akToken   = $_SERVER['HTTP_AK_TOKEN'];
 		$isAkToken = $this->DisposeModel-> checkAddress($akToken);
 		if ($isAkToken) $opt['userLogin'] = $akToken;
@@ -91,7 +92,7 @@ class TopicModel extends ComModel
 								AND wet_topic_content.state = '1' 
 								AND wet_topic_tag.keywords ilike '%$keyword%'
 								ORDER BY wet_topic_content.utctime DESC 
-								LIMIT $size OFFSET ".($page-1) * $size;
+								LIMIT $size OFFSET ".(($page-1) * $size + $offset);
 				
 
 				$query = $this->db-> query($limitSql);

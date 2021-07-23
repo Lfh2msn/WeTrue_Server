@@ -10,17 +10,19 @@ class Admin extends BaseController
 {//管理
 	public function complainList()
 	{//投诉列表
-		$page = $this->request->getPost('page');
-		$size = $this->request->getPost('size');
-		$data = (new ComplainModel())-> limit($page, $size);
+		$page   = $this->request->getPost('page');
+        $size   = $this->request->getPost('size');
+        $offset = $this->request->getPost('offset');
+		$data   = (new ComplainModel())-> limit($page, $size, $offset);
 		echo $data;
 	}
 
 	public function bloomList()
 	{//屏蔽列表
-		$page = $this->request->getPost('page');
-		$size = $this->request->getPost('size');
-		$data = (new BloomModel())-> limit($page, $size);
+		$page   = $this->request->getPost('page');
+        $size   = $this->request->getPost('size');
+        $offset = $this->request->getPost('offset');
+		$data   = (new BloomModel())-> limit($page, $size, $offset);
 		echo $data;
 	}
 

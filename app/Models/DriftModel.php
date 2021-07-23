@@ -17,11 +17,11 @@ class DriftModel extends Model {
 		
     }
 
-    public function limit($page, $size)
+    public function limit($page, $size, $offset)
 	{//分页
-		$page = max(1, (int)$page);
-		$size = max(1, (int)$size);
-
+		$page   = max(1, (int)$page);
+		$size   = max(1, (int)$size);
+		$offset = max(0, (int)$offset);
 		$data['code'] = 200;
 		$akToken   = $_SERVER['HTTP_AK_TOKEN'];
 		$isAkToken = $this->DisposeModel-> checkAddress($akToken);
@@ -33,7 +33,7 @@ class DriftModel extends Model {
 
 		$countSql = "SELECT count(to_hash) FROM $this->wet_drift_reply WHERE to_hash = '$opt[hash]'";
 		$limitSql = "SELECT hash FROM $this->wet_drift_reply WHERE to_hash = '$opt[hash]' 
-						ORDER BY uid DESC LIMIT $size OFFSET ".($page-1) * $size;
+						ORDER BY uid DESC LIMIT $size OFFSET "..(($page-1) * $size + $offset);
 
 		$data = $this->cycle($page, $size, $countSql, $limitSql, $opt);
 		return json_encode($data);

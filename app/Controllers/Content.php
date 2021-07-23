@@ -5,11 +5,12 @@ class Content extends BaseController
 {
 	public function list()
     {//主贴列表
-        $page = $this->request->getPost('page');
-        $size = $this->request->getPost('size');
-        $type = 'contentList';
-		$opt  =	['type' => $type];
-		$data = $this->PagesModel-> limit($page, $size, $opt);
+        $page   = $this->request->getPost('page');
+        $size   = $this->request->getPost('size');
+        $offset = $this->request->getPost('offset');
+        $type   = 'contentList';
+		$opt    =	['type' => $type];
+		$data   = $this->PagesModel-> limit($page, $size, $offset, $opt);
 		echo $data;
     }
 
@@ -33,28 +34,31 @@ class Content extends BaseController
 
     public function hotRec()
     {//热点推荐列表
-        $page = $this->request->getPost('page');
-        $size = $this->request->getPost('size');
+        $page   = $this->request->getPost('page');
+        $size   = $this->request->getPost('size');
+        $offset = $this->request->getPost('offset');
         $type = 'hotRecList';
 		$opt  =	['type' => $type];
-		$data = $this->PagesModel-> limit($page, $size, $opt);
+		$data = $this->PagesModel-> limit($page, $size, $offset, $opt);
 		echo $data;
     }
 
     public function focusList()
 	{//关注的用户主贴列表
-		$page = $this->request->getPost('page');
-		$size = $this->request->getPost('size');
+		$page   = $this->request->getPost('page');
+        $size   = $this->request->getPost('size');
+        $offset = $this->request->getPost('offset');
 		$type = 'userFocusContentList';
 		$opt  =	['type' => $type];
-		$data = $this->PagesModel-> limit($page, $size, $opt);
+		$data = $this->PagesModel-> limit($page, $size, $offset, $opt);
 		echo $data;
 	}
 
     public function starList()
     {//收藏列表
-        $page = $this->request->getPost('page');
-        $size = $this->request->getPost('size');
+        $page   = $this->request->getPost('page');
+        $size   = $this->request->getPost('size');
+        $offset = $this->request->getPost('offset');
         $userAddress   = $this->request->getPost('userAddress');
         $isUserAddress = $this->DisposeModel-> checkAddress($userAddress);
         if ($isUserAddress) {
@@ -63,7 +67,7 @@ class Content extends BaseController
                     'type' => $type,
                     'address' => $userAddress
                     ];
-            $data = $this->PagesModel-> limit($page, $size, $opt);
+            $data = $this->PagesModel-> limit($page, $size, $offset, $opt);
             echo $data;
         } else {
 			$data['code'] = 406;

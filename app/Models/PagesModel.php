@@ -24,7 +24,7 @@ class PagesModel extends Model {
 		$this->DisposeModel = new DisposeModel();
     }
 
-    public function limit($page, $size, $opt=[])
+    public function limit($page, $size, $offset, $opt=[])
 	{/*分页
 		opt可选参数
 			[
@@ -34,8 +34,9 @@ class PagesModel extends Model {
 				hash	  => hash
 				userLogin => 登录用户钱包地址
 			];*/
-		$page = max(1, (int)$page);
-		$size = max(1, (int)$size);
+		$page   = max(1, (int)$page);
+		$size   = max(1, (int)$size);
+		$offset = max(0, (int)$offset);
 		$akToken   = $_SERVER['HTTP_AK_TOKEN'];
 		$isAkToken = $this->DisposeModel-> checkAddress($akToken);
 		if ($isAkToken) $opt['userLogin'] = $akToken;
@@ -46,7 +47,7 @@ class PagesModel extends Model {
 			$this->tablename = "wet_content";
 			$countSql		 = "SELECT count(hash) FROM $this->tablename";
 			$limitSql		 = "SELECT hash FROM $this->tablename 
-									ORDER BY utctime DESC LIMIT $size OFFSET ".($page-1) * $size;
+									ORDER BY utctime DESC LIMIT $size OFFSET ".(($page-1) * $size + $offset);
 			/*
 			$limitSql		 = "SELECT hash FROM $this->tablename 
 									ORDER BY (
@@ -69,7 +70,7 @@ class PagesModel extends Model {
 			$this->tablename = "wet_comment";
 			$countSql		 = "SELECT count(to_hash) FROM $this->tablename WHERE to_hash = '$opt[hash]'";
 			$limitSql		 = "SELECT hash FROM $this->tablename WHERE to_hash = '$opt[hash]' 
-									ORDER BY utctime DESC LIMIT $size OFFSET ".($page-1) * $size;
+									ORDER BY utctime DESC LIMIT $size OFFSET ".(($page-1) * $size + $offset);
 			$opt['select']	 = "comment";
 		}
 
@@ -78,7 +79,7 @@ class PagesModel extends Model {
 			$this->tablename = "wet_reply";
 			$countSql		 = "SELECT count(to_hash) FROM $this->tablename WHERE to_hash = '$opt[hash]'";
 			$limitSql		 = "SELECT hash FROM $this->tablename WHERE to_hash = '$opt[hash]' 
-									ORDER BY utctime DESC LIMIT $size OFFSET ".($page-1) * $size;
+									ORDER BY utctime DESC LIMIT $size OFFSET ".(($page-1) * $size + $offset);
 			$opt['select']	 = "reply";
 		}
 
@@ -87,7 +88,7 @@ class PagesModel extends Model {
 			$this->tablename = "wet_content";
 			$countSql		 = "SELECT count(hash) FROM $this->tablename WHERE img_tx <> ''";
 			$limitSql		 = "SELECT hash FROM $this->tablename WHERE img_tx <> '' 
-									ORDER BY utctime DESC LIMIT $size OFFSET ".($page-1) * $size;
+									ORDER BY utctime DESC LIMIT $size OFFSET ".(($page-1) * $size + $offset);
 			$opt['select']	 = "content";
 		}
 
@@ -123,7 +124,7 @@ class PagesModel extends Model {
 													+ (wet_content.reward_sum / $factorReward)
 												)
 													- ( ( ($nowTime - utctime) / 86400000 ) * $factorTime)
-											) DESC LIMIT $size OFFSET ".($page-1) * $size;
+											) DESC LIMIT $size OFFSET ".(($page-1) * $size + $offset);
 			$opt['select']	 = "content";
 		}
 
@@ -132,7 +133,7 @@ class PagesModel extends Model {
 			$this->tablename = "wet_content";
 			$countSql		 = "SELECT count(sender_id) FROM $this->tablename WHERE sender_id = '$opt[publicKey]'";
 			$limitSql		 = "SELECT hash FROM $this->tablename WHERE sender_id = '$opt[publicKey]' 
-									ORDER BY utctime DESC LIMIT $size OFFSET ".($page-1) * $size;
+									ORDER BY utctime DESC LIMIT $size OFFSET ".(($page-1) * $size + $offset);
 			$opt['select']	 = "content";
 		}
 
@@ -148,7 +149,7 @@ class PagesModel extends Model {
 							ON wet_content.sender_id = wet_focus.focus 
 							AND wet_focus.fans = '$akToken' 
 							ORDER BY wet_content.utctime DESC 
-							LIMIT $size OFFSET ".($page-1) * $size;
+							LIMIT $size OFFSET ".(($page-1) * $size + $offset);
 			$opt['select'] = "content";
 		}
 
@@ -157,7 +158,7 @@ class PagesModel extends Model {
 			$this->tablename = "wet_star";
 			$countSql		 = "SELECT count(hash) FROM $this->tablename WHERE sender_id = '$opt[address]'";
 			$limitSql		 = "SELECT hash FROM $this->tablename WHERE sender_id = '$opt[address]' 
-									ORDER BY star_time DESC LIMIT $size OFFSET ".($page-1) * $size;
+									ORDER BY star_time DESC LIMIT $size OFFSET ".(($page-1) * $size + $offset);
 			$opt['select']	 = "content";
 		}
 

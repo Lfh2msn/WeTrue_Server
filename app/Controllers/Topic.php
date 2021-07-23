@@ -20,10 +20,11 @@ class Topic extends BaseController {
 
 	public function contentList()
 	{//话题列表
-		$page	 = $this->request->getPost('page');
-		$size	 = $this->request->getPost('size');
+		$page    = $this->request->getPost('page');
+        $size    = $this->request->getPost('size');
+        $offset  = $this->request->getPost('offset');
 		$keyword = $this->request->getPost('keyword');
-		$data	 = (new TopicModel())-> getTopicList($page, $size, $keyword);
+		$data	 = (new TopicModel())-> getTopicList($page, $size, $offset, $keyword);
 		echo json_encode($data);
 
 	}
