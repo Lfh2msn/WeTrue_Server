@@ -19,7 +19,7 @@ class TopicModel extends ComModel
 
 	public function isTopic($content)
 	{//内容搜索话题
-		$topicTag  = preg_match_all("/#[x80-xff\u4e00-\u9fa5\w ,，.。!！-]{1,25}#/u", $content, $keywords);
+		$topicTag  = preg_match_all("/#[x80-xff\u4e00-\u9fa5\w ,，.。!！-？·\?]{1,25}#/u", $content, $keywords);
 		return $topicTag ? $keywords[0] : false;
 	}
 
@@ -129,7 +129,7 @@ class TopicModel extends ComModel
 		$keywords = array_unique($keywords);
 		$keywords = array_values($keywords);
 		if ($keywords) {
-			$count = count($keywords) <= 10 ? count($keywords) : 10;
+			$count = count($keywords) <= 15 ? count($keywords) : 15;
 			for($i=0; $i<$count; $i++) {
 				$selectTag = "SELECT uid FROM $this->wet_topic_tag WHERE keywords ilike '%$keywords[$i]%' LIMIT 1";
 				$getTagRow = $this->db->query($selectTag)-> getRow();
