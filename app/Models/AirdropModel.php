@@ -11,11 +11,12 @@ class AirdropModel extends ComModel
 	public function __construct()
 	{
 		parent::__construct();
-		$this->session    = \Config\Services::session();
-		$this->AecliModel = new AecliModel();
-		$this->ValidModel = new ValidModel();
-		$this->wet_bloom  = "wet_bloom";
-		$this->wet_users  = "wet_users";
+		$this->session      = \Config\Services::session();
+		$this->AecliModel   = new AecliModel();
+		$this->ValidModel   = new ValidModel();
+		$this->DisposeModel = new DisposeModel();
+		$this->wet_bloom    = "wet_bloom";
+		$this->wet_users    = "wet_users";
     }
 
 	public function airdropAE($address)
@@ -24,7 +25,7 @@ class AirdropModel extends ComModel
 		$isAirdrop = $bsConfig['airdropAE'];
 		$amount    = $bsConfig['airdropAeAmount'];
 		$NewUser   = $this->session-> get('NewUser');
-		$getIP	   = (new DisposeModel())-> getRealIP();
+		$getIP	   = $this->DisposeModel-> getRealIP();
 		$ipBloom   = (new BloomModel())-> ipBloom($getIP);
 
 		if ($ipBloom || $NewUser == 'Repeat' || !$isAirdrop) {
@@ -59,7 +60,7 @@ class AirdropModel extends ComModel
 			$code    = $dejson['code'];*/
 			
 			$hash = $this->AecliModel-> spendAE($address, $amount);
-			$code = (new DisposeModel())-> checkAddress($hash) ? 200 : 406;
+			$code = $this->DisposeModel-> checkAddress($hash) ? 200 : 406;
 			if ($code == 200) {
 				$this->session ->set("NewUser","Repeat");
 				$inSql = "INSERT INTO $this->wet_bloom(bf_ip, bf_reason) VALUES ('$getIP','airdropAE')";
@@ -71,7 +72,7 @@ class AirdropModel extends ComModel
 	public function airdropWTT($opt = [])
 	{//空投WTT写入txt
 		$akToken   = $_SERVER['HTTP_AK_TOKEN'];
-		$isAkToken = (new DisposeModel())-> checkAddress($akToken);
+		$isAkToken = $this->DisposeModel-> checkAddress($akToken);
 		$isAdmin   = $this->ValidModel-> isAdmin($akToken);
 		$data['code'] = 200;
 		if (!$isAkToken || !$isAdmin) {

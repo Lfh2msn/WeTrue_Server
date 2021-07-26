@@ -213,7 +213,7 @@ class MiningModel extends ComModel
 			$msg = 'success';
 			$textFile   = fopen("log/mining/unmapping-".date("Y-m-d").".txt", "a");
 			$textTime   = date("Y-m-d h:i:s");
-			$appendText = "账户:{$address}\r\n领取:{$checEarning}\r\n时间:{$blockHeight}--{$textTime}\r\n\r\n";
+			$appendText = "账户:{$address}\r\n领取:{$checEarning}\r\n时间:{$textTime}\r\n\r\n";
 			fwrite($textFile, $appendText);
 			fclose($textFile);
 		}
@@ -245,7 +245,7 @@ class MiningModel extends ComModel
 				$data['earning'] = $checEarning;
 				$textFile   = fopen("log/mining/earning-".date("Y-m-d").".txt", "a");
 				$textTime   = date("Y-m-d h:i:s");
-				$appendText = "账户:{$address}\r\n领取:{$checEarning}\r\n时间:{$blockHeight}--{$textTime}\r\n\r\n";
+				$appendText = "账户:{$address}\r\n领取:{$checEarning}\r\n时间:{$textTime}\r\n\r\n";
 				fwrite($textFile, $appendText);
 				fclose($textFile);
 			}

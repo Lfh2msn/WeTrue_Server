@@ -4,6 +4,7 @@ use CodeIgniter\Model;
 use App\Models\UserModel;
 use App\Models\ConfigModel;
 use App\Models\ValidModel;
+use App\Models\DisposeModel;
 
 class RewardModel extends Model {
 //打赏Model
@@ -11,13 +12,14 @@ class RewardModel extends Model {
 	public function __construct(){
         //parent::__construct();
 		$this->db = \Config\Database::connect('default');
-		$this->ConfigModel = new ConfigModel();
-		$this->ValidModel  = new ValidModel();
-		$this->UserModel   = new UserModel();
-		$this->wet_temp    = "wet_temp";
-		$this->wet_content = "wet_content";
-		$this->wet_users   = "wet_users";
-		$this->wet_reward  = "wet_reward";
+		$this->ConfigModel  = new ConfigModel();
+		$this->ValidModel   = new ValidModel();
+		$this->UserModel    = new UserModel();
+		$this->DisposeModel = new DisposeModel();
+		$this->wet_temp     = "wet_temp";
+		$this->wet_content  = "wet_content";
+		$this->wet_users    = "wet_users";
+		$this->wet_reward   = "wet_reward";
     }
 
 	public function rewardList($hash)
