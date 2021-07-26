@@ -20,9 +20,7 @@ class Comment extends BaseController {
             $data = $this->PagesModel-> limit($page, $size, $offset, $opt);
             echo $data;
         } else {
-            $data['code'] = 406;
-			$data['msg']  = 'error_hash';
-            echo json_encode($data);
+            echo $this->DisposeModel-> wetJsonRt(406,'error_hash');
 		}
     }
 
@@ -35,9 +33,7 @@ class Comment extends BaseController {
             $data = $this->PagesModel-> Alone($hash, $opt);
             echo $data;
         } else {
-			$data['code'] = 406;
-			$data['msg']  = 'error_hash';
-            echo json_encode($data);
+            echo $this->DisposeModel-> wetJsonRt(406,'error_hash');
 		}
     }
 }

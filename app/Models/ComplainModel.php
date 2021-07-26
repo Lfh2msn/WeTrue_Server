@@ -102,28 +102,25 @@ class ComplainModel extends Model {
 		$akToken   = $_SERVER['HTTP_AK_TOKEN'];
 		$isAkToken = $this->DisposeModel-> checkAddress($akToken);
 		$isAdmin   = $this->ValidModel-> isAdmin($akToken);
-		$data['code'] = 200;
-		$data['data']['data'] = [];
+		$data['data'] = [];
 		if (!$isAkToken || !$isAdmin) {
-			$data['code'] = 401;
-			$data['msg']  = 'error_login';
-			return json_encode($data);
+			return $this->DisposeModel-> wetJsonRt(401, 'error_login');
 		}
 		$opt['userLogin'] = $akToken;
 
 		$countSql = "SELECT count(hash) FROM $this->wet_complain";
 		$limitSql = "SELECT hash FROM $this->wet_complain LIMIT $size OFFSET ".(($page-1) * $size + $offset);
-
 		$data = $this->cycle($page, $size, $countSql, $limitSql, $opt);
-		return json_encode($data);
+
+		return $this->DisposeModel-> wetJsonRt(200, 'success', $data);
     }
 
 	private function cycle($page, $size, $countSql, $limitSql, $opt)
 	{//列表循环
-		$data['code'] = 200;
-		$data['data'] = $this->pages($page, $size, $countSql);
+
+		$data = $this->pages($page, $size, $countSql);
 		$query = $this->db-> query($limitSql);
-		$data['data']['data'] = [];
+		$data['data'] = [];
 		foreach ($query-> getResult() as $row) {
 			$hash  = $row -> hash;
 
@@ -151,9 +148,8 @@ class ComplainModel extends Model {
 				$detaila[] = $this->ReplyModel-> txReply($hash, $opt);
 			}
 
-			$data['data']['data'] = $detaila;
+			$data['data'] = $detaila;
 		}
-		$data['msg'] = 'success';
 		return $data;
 	}
 

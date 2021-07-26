@@ -70,9 +70,7 @@ class User extends BaseController {
 			$data  = $this->FocusModel-> limit($page, $size, $offset, $opt);
 			echo $data;
 		}else{
-			$data['code'] = 406;
-			$data['msg']  = 'error';
-			echo json_encode($data);
+			echo $this->DisposeModel-> wetJsonRt(406,'error');
 		}
 	}
 
@@ -80,10 +78,8 @@ class User extends BaseController {
 	{//获取头像地址
 		$isAddress = $this->DisposeModel-> checkAddress($address);
 		if ($isAddress) {
-			$data['data']['url'] = $this->UserModel-> getPortraitUrl($address);
-			$data['code'] = 200;
-			$data['msg']  = 'success';
-			return json_encode($data);
+			$data['url'] = $this->UserModel-> getPortraitUrl($address);
+			return $this->DisposeModel-> wetJsonRt(200,'success',$data);
 		}
 	}
 
@@ -102,9 +98,12 @@ class User extends BaseController {
 	{//获取昵称是否存在
 		$nickname = $this->request->getPost('nickname');
 		$data['code'] = 200;
-		$data['isNickname'] = (new ValidModel())-> isNickname($nickname);
 		$data['msg']  = 'success';
+		$type = (new ValidModel())-> isNickname($nickname);
+		$data['isNickname'] = $type;
+		$data['data']['isNickname'] = $type;
 		echo json_encode($data);
+		//$this->DisposeModel-> wetJsonRt(200,'success',$data);
 	}
 
 }

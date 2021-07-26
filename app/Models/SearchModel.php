@@ -116,8 +116,7 @@ class SearchModel extends Model {
 			}
 			$data['data'] = $detaila;
 		}
-		$data = $this->DisposeModel-> wetRt(200,'success',$data);
-		return $data;
+		return $this->DisposeModel-> wetRt(200,'success',$data);
 	}
 
 	private function pages($page, $size, $sql)

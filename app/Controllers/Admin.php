@@ -34,9 +34,7 @@ class Admin extends BaseController
             $data = (new BloomModel())-> bloomHash($hash);
 			echo $data;
         } else {
-            $data['code'] = 406;
-			$data['msg']  = 'error_hash';
-            echo json_encode($data);
+			echo $this->DisposeModel-> wetJsonRt(406,'error_hash');
 		}
 	}
 
@@ -48,9 +46,7 @@ class Admin extends BaseController
             $data = (new BloomModel())-> unBloom($hash);
 			echo $data;
         } else {
-            $data['code'] = 406;
-			$data['msg']  = 'error_hash';
-            echo json_encode($data);
+			echo $this->DisposeModel-> wetJsonRt(406,'error_hash');
 		}
 	}
 
@@ -72,9 +68,7 @@ class Admin extends BaseController
             $data = (new MiningModel())-> adminOpenMapping($userAddress);
 			echo $data;
         } else {
-			$data['code'] = 406;
-			$data['msg']  = 'error';
-            echo json_encode($data);
+			echo $this->DisposeModel-> wetJsonRt(406,'error');
 		}
 	}
 }

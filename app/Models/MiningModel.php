@@ -26,15 +26,11 @@ class MiningModel extends ComModel
 		$tp_type   = "mapping";
 		$isTempHash = $this->ValidModel-> isTempHash($hash);
 		if ($isTempHash) {
-			$data['code'] = 406;
-			$data['msg']  = 'error_repeat_temp';
-			echo json_encode($data);
+			echo $this->DisposeModel-> wetJsonRt(406, 'error_repeat_temp');
 		} else {  //写入临时缓存
 			$insertTempSql = "INSERT INTO $this->wet_temp(tp_hash, tp_sender_id, tp_type) VALUES ('$hash', '$address', '$tp_type')";
 			$this->db->query($insertTempSql);
-			$data['code'] = 200;
-			$data['msg']  = 'success';
-			echo json_encode($data);
+			echo $this->DisposeModel-> wetJsonRt(200, 'success');
 		}
 
 		$delTempSql = "DELETE FROM $this->wet_temp WHERE tp_time <= now()-interval '1 D' AND tp_type = '$tp_type'";
@@ -127,24 +123,18 @@ class MiningModel extends ComModel
 		$bsConfig   = (new ConfigModel())-> backendConfig();
 		$mappingWTT = $bsConfig['mappingWTT'];
 		if (!$mappingWTT) {
-			$data['code'] = 406;
-			$data['msg']  = 'close_mapping';
-			return json_encode($data);
+			return $this->DisposeModel-> wetJsonRt(406, 'close_mapping');
 		}
 
 		$isAddress    = $this->DisposeModel-> checkAddress($address);
 		$isMapAccount = $this->ValidModel-> isMapAccount($address);
 		if (!$isAddress && !$isMapAccount) {
-			$data['code'] = 406;
-			$data['msg']  = 'did_not_open_mapping';
-			return json_encode($data);
+			return $this->DisposeModel-> wetJsonRt(406, 'did_not_open_mapping');
 		}
 
 		$isMapping = $this->ValidModel-> isMapState($address);
 		if ($isMapping) {
-			$data['code'] = 406;
-			$data['msg']  = 'repeat_mapping';
-			return json_encode($data);
+			return $this->DisposeModel-> wetJsonRt(406, 'repeat_mapping');
 		}
 
 		$accountsUrl  = $bsConfig['backendServiceNode'].'v3/accounts/'.$address;
@@ -152,9 +142,7 @@ class MiningModel extends ComModel
 		$accountsJson = (array) json_decode($getJson, true);
 
 		if (empty($getJson) && $accountsJson['balance'] <= $amount) {
-			$data['code'] = 406;
-			$data['msg']  = 'error_amount';
-        	return json_encode($data);
+        	return $this->DisposeModel-> wetJsonRt(406, 'error_amount');
         }
 
 		$blocksUrl   = $bsConfig['backendServiceNode'].'v3/key-blocks/current/height';
@@ -162,9 +150,7 @@ class MiningModel extends ComModel
 		$blocksJson  = (array) json_decode($getBlocks, true);
 		$blockHeight = $blocksJson['height'];
 		if (empty($blockHeight)) {
-			$data['code'] = 406;
-			$data['msg']  = 'get_block_height_error';
-        	return json_encode($data);
+        	return $this->DisposeModel-> wetJsonRt(406, 'get_block_height_error');
         }
 		$isMapAddress = $this->ValidModel-> isMapAddress($address);
 		if ($isMapAddress) {
@@ -187,26 +173,21 @@ class MiningModel extends ComModel
 			];
 			$this->db->table($this->wet_mapping)->insert($insertData);
 		}
-		$data['code'] = 200;
-		$data['data']['state'] = true;
-		$data['msg']  = 'success';
-		return json_encode($data);
+
+		$data['state'] = true;
+		return $this->DisposeModel-> wetJsonRt(200, 'success', $data);
 	}
 
 	public function unMapping($address)
 	{//用户解除映射
 		$checkRow = $this-> checkMapping($address);
 		if (!$checkRow) {
-			$data['code'] = 406;
-			$data['msg']  = 'error_unknown';
-			return json_encode($data);
+			return $this->DisposeModel-> wetJsonRt(406, 'error_unknown');
 		}
 
 		if ($checkRow['state'] == 0) {
-			$data['code'] = 406;
-			$data['data']['state'] = false;
-			$data['msg']  = 'no_mapping';
-			return json_encode($data);
+			$data['state'] = false;
+			return $this->DisposeModel-> wetJsonRt(406, 'no_mapping', $data);
 		}
 
 		$checEarning = $checkRow['earning'];
@@ -217,8 +198,7 @@ class MiningModel extends ComModel
 			$code = 200;
 		}
 
-		$data['code'] = $code;
-		$data['msg']  = 'error_unknown';
+		$msg = 'error_unknown';
 		if ($code == 200) {
 			$upData = [
 				'height_map'   => 0,
@@ -229,15 +209,15 @@ class MiningModel extends ComModel
 				'utctime'      => (time() * 1000)
 			];
 			$this->db->table($this->wet_mapping)->where('address', $address)->update($upData);
-			$data['data']['earning'] = $checEarning;
-			$data['msg'] = 'success';
+			$data['earning'] = $checEarning;
+			$msg = 'success';
 			$textFile   = fopen("log/mining/unmapping-".date("Y-m-d").".txt", "a");
 			$textTime   = date("Y-m-d h:i:s");
 			$appendText = "账户:{$address}\r\n领取:{$checEarning}\r\n时间:{$blockHeight}--{$textTime}\r\n\r\n";
 			fwrite($textFile, $appendText);
 			fclose($textFile);
 		}
-		return json_encode($data);
+		return $this->DisposeModel-> wetJsonRt($code, $msg, $data);
 	}
 
 	public function getEarning($address)
@@ -400,11 +380,11 @@ class MiningModel extends ComModel
 			$appendText = "{$akToken}--Admin\r\n";
 			fwrite($textFile, $appendText);
 			fclose($textFile);
-			$data = $this->DisposeModel-> wetJsonRt(200, 'success', 'open');
+			$data['isOpen'] = true;
 		} else {
-			$data = $this->DisposeModel-> wetJsonRt(401, 'error', 'open_error');
+			$data['isOpen'] = false;
 		}
-		return $data;
+		return $this->DisposeModel-> wetJsonRt(200, 'success', $data);
 	}
 
 		

@@ -7,48 +7,51 @@ class Config extends BaseController {
 
 	public function info()
 	{//获取前端配置
-		$data['code'] = 200;
-		$data['data'] = '';
+		
 		$address = $this->request->getPost('address');
 		$userAddress = $this->request->getPost('userAddress');
 		$reqAddress  =  $address ?? $userAddress;
 		$aktAddress  = $_SERVER['HTTP_AK_TOKEN'];
 		$config  = (new ConfigModel())-> frontConfig($aktAddress ?? $reqAddress);
 		if($config){
-			$data['data'] = $config;
-			$data['msg']  = 'success';
+			$code = 200;
+			$msg  = 'success';
+			$data = $config;
 		}else{
-			$data['msg']  = 'error';
+			$code = 406;
+			$msg  = 'error';
 		}
-		echo json_encode($data);
+		echo $this->DisposeModel-> wetJsonRt($code, $msg, $data);
     }
 
 	public function nodes()
 	{//获取节点列表
-		$data['code'] = 200;
-		$data['data'] = [];
 		$config  = (new ConfigModel())-> nodesConfig();
+		$data['data'] = [];
 		if($config){
-			$data['data'] = $config;
-			$data['msg']  = 'success';
+			$code = 200;
+			$msg  = 'success';
+			$data = $config;
 		}else{
-			$data['msg']  = 'error';
+			$code = 406;
+			$msg  = 'error';
 		}
-		echo json_encode($data);
+		echo $this->DisposeModel-> wetJsonRt($code, $msg, $data);
     }
 
 	public function compiler()
 	{//获取编译器列表
-		$data['code'] = 200;
-		$data['data'] = [];
 		$config  = (new ConfigModel())-> compilerConfig();
+		$data['data'] = [];
 		if($config){
-			$data['data'] = $config;
-			$data['msg']  = 'success';
+			$code = 200;
+			$msg  = 'success';
+			$data = $config;
 		}else{
-			$data['msg']  = 'error';
+			$code = 406;
+			$msg  = 'error';
 		}
-		echo json_encode($data);
+		echo $this->DisposeModel-> wetJsonRt($code, $msg, $data);
     }
 
 	public function version()

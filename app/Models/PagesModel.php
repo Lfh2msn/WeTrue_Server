@@ -168,14 +168,11 @@ class PagesModel extends Model {
 
 	public function Alone($hash, $opt=[])
 	{//内容单页
-		$data['code'] = 200;
 		$akToken   = $_SERVER['HTTP_AK_TOKEN'];
 		$isAkToken = $this->DisposeModel-> checkAddress($akToken);
 		if($isAkToken) {
 			$opt['userLogin'] = $akToken;
 		}
-		
-		$data['data'] = '';
 
 		if($opt['select'] == 'content') {
 			$opt['rewardList'] = true;
@@ -187,13 +184,15 @@ class PagesModel extends Model {
 		}
 
 		if($Content) {
-			$data['data'] = $Content;
-			$data['msg']  = 'success';
+			$code = 200;
+			$msg  = 'success';
+			$data = $Content;
 		} else {
-			$data['msg']  = 'error_hash';
+			$code = 406;
+			$msg  = 'error_hash';
 		}
 
-		return json_encode($data);
+		return $this->DisposeModel-> wetJsonRt($code, $msg, $data);
     }
 
 	private function cycle($page, $size, $countSql, $limitSql, $opt)
@@ -235,8 +234,7 @@ class PagesModel extends Model {
 			}
 		}
 		
-		$data = $this->DisposeModel-> wetRt(200,'success',$data);
-		return $data;
+		return $this->DisposeModel-> wetRt(200,'success',$data);
 	}
 
 	private function pages($page, $size, $sql)

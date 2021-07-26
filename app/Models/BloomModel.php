@@ -64,24 +64,18 @@ class BloomModel extends Model {
         $akToken   = $_SERVER['HTTP_AK_TOKEN'];
 		$isAkToken = $this->DisposeModel-> checkAddress($akToken);
 		$isAdmin   = $this->ValidModel-> isAdmin($akToken);
-		$data['code'] = 200;
 		if (!$isAkToken || !$isAdmin) {
-			$data['code'] = 401;
-			$data['msg']  = 'error_login';
-			return json_encode($data);
+			return $this->DisposeModel-> wetJsonRt(401, 'error_login');
 		}
 
         $isComplain = (new ComplainModel())-> isComplain($hash);
         if (!$isComplain) {
-            $data['code'] = 401;
-			$data['msg']  = 'error_no_complain';
-			return json_encode($data);
+			return $this->DisposeModel-> wetJsonRt(401, 'error_no_complain');
         }
 
         $txBloom = $this->txBloom($hash);
         if ($txBloom) {
-			$data['msg']  = 'error_repeat';
-			return json_encode($data);
+			return $this->DisposeModel-> wetJsonRt(200, 'error_repeat');
         }
 
         $insertBloom = "INSERT INTO $this->wet_bloom(bf_hash,bf_reason) VALUES ('$hash','admin_bf')";
@@ -103,8 +97,7 @@ class BloomModel extends Model {
 		];
 		$this->db->table($this->wet_behavior)->insert($insetrBehaviorDate);
 
-        $data['msg']  = 'success';
-        return json_encode($data);
+		return $this->DisposeModel-> wetJsonRt(200, 'success');
     }
 
     public function unBloom($hash)
@@ -112,18 +105,13 @@ class BloomModel extends Model {
         $akToken   = $_SERVER['HTTP_AK_TOKEN'];
 		$isAkToken = $this->DisposeModel-> checkAddress($akToken);
 		$isAdmin   = $this->ValidModel-> isAdmin($akToken);
-		$data['code'] = 200;
 		if (!$isAkToken || !$isAdmin) {
-			$data['code'] = 401;
-			$data['msg']  = 'error_login';
-			return json_encode($data);
+			return $this->DisposeModel-> wetJsonRt(401, 'error_login');
 		}
 
         (new ComplainModel())-> deleteComplain($hash);
         $this-> deleteBloom($hash);
-
-        $data['msg']  = 'success';
-        return json_encode($data);
+        return $this->DisposeModel-> wetJsonRt(200, 'success');
     }
 
     public function limit($page, $size, $offset, $opt=[])
@@ -134,28 +122,25 @@ class BloomModel extends Model {
 		$akToken   = $_SERVER['HTTP_AK_TOKEN'];
 		$isAkToken = $this->DisposeModel-> checkAddress($akToken);
 		$isAdmin   = $this->ValidModel-> isAdmin($akToken);
-		$data['code'] = 200;
-		$data['data']['data'] = [];
 		if ( !$isAkToken || !$isAdmin ) {
-			$data['code'] = 401;
-			$data['msg']  = 'error_login';
-			return json_encode($data);
+			return $this->DisposeModel-> wetJsonRt(401, 'error_login');
 		}
 		$opt['userLogin'] = $akToken;
 
 		$countSql = "SELECT count(bf_hash) FROM $this->wet_bloom";
 		$limitSql = "SELECT bf_hash AS hash FROM $this->wet_bloom LIMIT $size OFFSET ".(($page-1) * $size + $offset);
-
+		$data['data'] = [];
 		$data = $this->cycle($page, $size, $countSql, $limitSql, $opt);
-		return json_encode($data);
+
+		return $this->DisposeModel-> wetJsonRt(200, 'success', $data);
     }
 
 	private function cycle($page, $size, $countSql, $limitSql, $opt)
 	{//列表循环
-		$data['code'] = 200;
-		$data['data'] = $this->pages($page, $size, $countSql);
+
+		$data = $this->pages($page, $size, $countSql);
 		$query = $this->db-> query($limitSql);
-		$data['data']['data'] = [];
+		$data['data'] = [];
 		foreach ($query-> getResult() as $row) {
 			$hash  = $row -> hash;
 
@@ -183,9 +168,8 @@ class BloomModel extends Model {
 				$detaila[] = (new ReplyModel())-> txReply($hash, $opt);
 			}
 
-			$data['data']['data'] = $detaila;
+			$data['data'] = $detaila;
 		}
-		$data['msg'] = 'success';
 		return $data;
 	}
 

@@ -47,21 +47,20 @@ class FocusModel extends Model {
 		}
 		
 		$data = $this->cycle($page, $size, $countSql, $limitSql);
-		return json_encode($data);
+		return $this->DisposeModel-> wetJsonRt(200, 'success', $data);
     }
 
 	private function cycle($page, $size, $countSql, $limitSql)
 	{  //用户列表循环
-		$data['code'] = 200;
-		$data['data'] = $this->pages($page, $size, $countSql);
-		$data['data']['data'] = [];
+
+		$data = $this->pages($page, $size, $countSql);
+		$data['data'] = [];
 		$query = $this-> db-> query($limitSql);
 		foreach ($query-> getResult() as $row) {
 			$userAddress  = $row -> contrary;
 			$userInfo[]	  = $this->UserModel-> userAllInfo($userAddress);
-			$data['data']['data'] = $userInfo;
+			$data['data'] = $userInfo;
 		}
-		$data['msg'] = 'success';
 		return $data;
 	}
 
@@ -82,13 +81,10 @@ class FocusModel extends Model {
 
 	public function focus($userAddress)
 	{//关注
-		$data['code'] = 200;
 		$akToken = $_SERVER['HTTP_AK_TOKEN'];
 		$isAkToken = $this->DisposeModel-> checkAddress($akToken);
 		if (!$isAkToken) {
-			$data['code'] = 401;
-			$data['msg']  = 'error_login';
-			return json_encode($data);
+			return $this->DisposeModel-> wetJsonRt(401, 'error_login');
 		}
 
 		$verify = $this->ValidModel-> isFocus($userAddress, $akToken);
@@ -109,9 +105,8 @@ class FocusModel extends Model {
 		];
 		$this->db->table($this->wet_behavior)->insert($insetrBehaviorDate);
 		$isFocus = $this->ValidModel-> isFocus($userAddress, $akToken);
-		$data['data']['isFocus'] = $isFocus;
-		$data['msg'] = 'success';
-		return json_encode($data);
+		$data['isFocus'] = $isFocus;
+		return $this->DisposeModel-> wetJsonRt(200, 'success',$data);
 	}
 
 	public function autoFocus($focus ,$fans)

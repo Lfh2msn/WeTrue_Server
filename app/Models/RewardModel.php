@@ -46,22 +46,16 @@ class RewardModel extends Model {
 		$tp_type   = "reward";
 		$isRewardHash = $this->ValidModel-> isRewardHash($hash);
 		if ($isRewardHash) {
-			$data['code'] = 406;
-			$data['msg']  = 'error_repeat';
-			return json_encode($data);
+			return $this->DisposeModel-> wetJsonRt(406, 'error_repeat');
 		}
 
 		$isTempHash = $this->ValidModel-> isTempHash($hash);
 		if ($isTempHash) {
-			$data['code'] = 406;
-			$data['msg']  = 'error_repeat_temp';
-			echo json_encode($data);
+			echo $this->DisposeModel-> wetJsonRt(406, 'error_repeat_temp');
 		} else {  //写入临时缓存
 			$insertTempSql = "INSERT INTO $this->wet_temp(tp_hash, tp_to_hash, tp_type) VALUES ('$hash', '$to_hash', '$tp_type')";
 			$this->db->query($insertTempSql);
-			$data['code'] = 200;
-			$data['msg']  = 'success';
-			echo json_encode($data);
+			echo $this->DisposeModel-> wetJsonRt(200);
 		}
 
 		$delTempSql = "DELETE FROM $this->wet_temp WHERE tp_time <= now()-interval '3 D' AND tp_type = '$tp_type'";

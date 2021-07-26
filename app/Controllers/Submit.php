@@ -19,9 +19,7 @@ class Submit extends BaseController {
             $data = (new PraiseModel())-> praise($hash, $type);
 		    echo $data;
         } else {
-			$data['code'] = 406;
-			$data['msg']  = 'error';
-			echo json_encode($data);
+			echo $this->DisposeModel-> wetJsonRt(406, 'error');
 		}
 		
     }
@@ -34,9 +32,7 @@ class Submit extends BaseController {
             $data = $this->FocusModel-> focus($userAddress);
 		    echo $data;
         } else {
-			$data['code'] = 406;
-			$data['msg']  = 'error';
-            echo json_encode($data);
+			echo $this->DisposeModel-> wetJsonRt(406, 'error');
 		}
 	}
 
@@ -48,9 +44,7 @@ class Submit extends BaseController {
             $data = (new StarModel())-> star($hash);
 			echo $data;
         } else {
-			$data['code'] = 406;
-			$data['msg']  = 'error_hash';
-            echo json_encode($data);
+            echo $this->DisposeModel-> wetJsonRt(406, 'error_hash');
 		}
 	}
 
@@ -62,13 +56,9 @@ class Submit extends BaseController {
             $data = (new HashReadModel())-> split($hash);
 			echo $data;
         } elseif (!$hash) {
-			$data['code'] = 406;
-			$data['msg']  = 'error_type';
-			echo json_encode($data);
+			echo $this->DisposeModel-> wetJsonRt(406, 'error_type');
 		} else {
-			$data['code'] = 406;
-			$data['msg']  = 'error_hash';
-			echo json_encode($data);
+			echo $this->DisposeModel-> wetJsonRt(406, 'error_hash');
 		}
 	}
 
@@ -82,9 +72,7 @@ class Submit extends BaseController {
 		if ($isHash && $isToHash) {
             (new RewardModel())-> reward($hash, $to_hash);
         } else {
-			$data['code'] = 406;
-			$data['msg']  = 'error_hash';
-			echo json_encode($data);
+			echo $this->DisposeModel-> wetJsonRt(406, 'error_hash');
 		}
 	}
 
@@ -96,9 +84,7 @@ class Submit extends BaseController {
             $data = (new ComplainModel())-> txHash($hash);
 			echo $data;
         } else {
-			$data['code'] = 406;
-			$data['msg']  = 'error_hash';
-            echo json_encode($data);
+			echo $this->DisposeModel-> wetJsonRt(406, 'error_hash');
 		}
 	}
 
@@ -118,9 +104,7 @@ class Submit extends BaseController {
             $data = (new SearchModel())-> search($page, $size, $offset, $opt);
 		    echo $data;
 		} else {
-			$data['code'] = 406;
-			$data['msg']  = 'error';
-			echo json_encode($data);
+			echo $this->DisposeModel-> wetJsonRt(406, 'error');
 		}
 		
     }

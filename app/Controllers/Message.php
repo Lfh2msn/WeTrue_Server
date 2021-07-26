@@ -14,9 +14,7 @@ class Message extends BaseController {
 		if($data){	
 			echo $data;
 		}else{
-			$data['code'] = 406;
-			$data['msg']  = 'error';
-			echo json_encode($data);
+			echo $this->DisposeModel-> wetJsonRt(406, 'error');
 		}
 	}
 

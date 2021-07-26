@@ -26,7 +26,6 @@ class StarModel extends Model {
 			return $this->DisposeModel-> wetJsonRt(401,'error_login',[]);
 		}
 
-		
 		if (!$hash) {
 			return $this->DisposeModel-> wetJsonRt(200,'error_hash',[]);
 		}
@@ -59,9 +58,7 @@ class StarModel extends Model {
 		$row		= $query-> getRow();
 		$data['star']   = (int)$row->star_sum;
 		$data['isStar'] = $isStar;
-
-		$data = $this->DisposeModel-> wetJsonRt(200,'success',$data);
-		return $data;
+		return $this->DisposeModel-> wetJsonRt(200,'success',$data);
 	}
 
 }

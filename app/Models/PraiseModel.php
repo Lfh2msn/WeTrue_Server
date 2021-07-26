@@ -21,16 +21,12 @@ class PraiseModel extends Model {
 	
 	public function praise($hash, $type)
 	{//点赞
-		$data['code'] = 200;
 		$akToken = $_SERVER['HTTP_AK_TOKEN'];
 		$isAkToken = $this->DisposeModel-> checkAddress($akToken);
 		if ( !$isAkToken ) {
-			$data['code'] = 401;
-			$data['msg']  = 'error_login';
-			return json_encode($data);
+			return $this->DisposeModel-> wetJsonRt(401, 'error_login');
 		}
-
-		$data['data'] = [];
+		
 		if ( $type === 'topic' ) {
 			$this->tablename = 'wet_content';
 
@@ -41,15 +37,15 @@ class PraiseModel extends Model {
 			$this->tablename = 'wet_reply';
 
 		} else {
-			$data['msg'] = 'error_type';
-			return json_encode($data);
+			return $this->DisposeModel-> wetJsonRt(401, 'error_type');
 		}
 
+		$data = [];
 		$isHashSql = "SELECT hash, praise FROM $this->tablename WHERE hash = '$hash' LIMIT 1";
 		$query = $this->db-> query($isHashSql);
 		$row   = $query-> getRow();
 		if(!$row) {
-			$data['msg']  = 'error_hash';
+			$msg = 'error_hash';
 		} else {
 			$verify = $this->ValidModel-> isPraise($hash, $akToken);
 			if(!$verify) {
@@ -86,12 +82,12 @@ class PraiseModel extends Model {
 			} else {
 				$praiseSum = $praise - 1;
 			}
-			$data['data']['praise'] = $praiseSum;
+			$data['praise'] = $praiseSum;
 			$isPraise = $this->ValidModel-> isPraise($hash, $akToken);
-			$data['data']['isPraise'] = $isPraise;
-			$data['msg'] = 'success';
+			$data['isPraise'] = $isPraise;
+			$msg = 'success';
 		}
-		return json_encode($data);
+		return $this->DisposeModel-> wetJsonRt(200, $msg, $data);
 	}
 }
 

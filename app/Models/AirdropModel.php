@@ -113,9 +113,7 @@ class AirdropModel extends ComModel
 			}
 		}
 
-		$data['code'] = 200;
-		$data['msg']  = 'success';
-		return json_encode($data);
+		return $this->DisposeModel-> wetJsonRt(200, 'success');
 	}
 
 }
