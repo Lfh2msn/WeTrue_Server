@@ -33,6 +33,7 @@ class Topic extends BaseController {
 	{//热点话题
 		$data = (new TopicModel())-> hotRecTopic();
 		echo json_encode($data);
+		$this->cachePage(1);
 	}
 	
 
