@@ -29,4 +29,11 @@ class Topic extends BaseController {
 
 	}
 
+	public function hotTopic()
+	{//热点话题
+		$data = (new TopicModel())-> hotRecTopic();
+		echo json_encode($data);
+	}
+	
+
 }

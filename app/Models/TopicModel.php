@@ -144,6 +144,45 @@ class TopicModel extends ComModel
 		return $this->DisposeModel-> wetRt($code, $msg, $data);
 	}
 
+	public function hotRecTopic()
+	{//获取热点话题
+		$nowTime   = time() * 1000;
+		$cycleTime = $nowTime - (86400000 * 7);
+		$selectUid = "SELECT tag_uid, count(tag_uid) 
+						FROM wet_topic_content 
+						WHERE utctime >= '$cycleTime' AND state = '1'
+						GROUP BY tag_uid 
+						ORDER BY count DESC
+						LIMIT 20";
+		$query = $this->db-> query($selectUid);
+		$getResult = $query-> getResult();
+		$data['data'] = [];
+		if ($getResult) {
+			foreach ($getResult as $row) {
+				$tagUid = $row->tag_uid;
+				$tagHot = $row->count;
+				$keyword = $this->tagUidToKeyWord($tagUid);
+				if ($keyword) {
+					$isData['keyword'] = $keyword;
+					$isData['tagHot']  = $tagHot;
+				}
+				if(isset($isData)) $detaila[] = $isData;
+				$data['data'] = $detaila;
+			}
+		}
+		return $this->DisposeModel-> wetRt(200, 'success', $data);
+	}
+
+	public function tagUidToKeyWord($uid)
+	{//Uid查询话题关键词
+			$select = "SELECT keywords
+						FROM $this->wet_topic_tag 
+						WHERE uid = $uid 
+						LIMIT 1";
+			$row  = $this->db->query($select)-> getRow();
+			return $row->keywords;
+	}
+
 	public function insertTopic($topic=[])
 	{/*话题入库
 		topic = [
