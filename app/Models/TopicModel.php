@@ -9,7 +9,7 @@ class TopicModel extends ComModel
 
 	public function __construct(){
         parent::__construct();
-		$this->content 			 = new ContentModel();
+		$this->ContentModel 	 = new ContentModel();
 		$this->BloomModel 		 = new BloomModel();
 		$this->DisposeModel 	 = new DisposeModel();
 		$this->UserModel 	 	 = new UserModel();
@@ -36,7 +36,7 @@ class TopicModel extends ComModel
 								 topic_sum, 
 								 read_sum
 							FROM $this->wet_topic_tag 
-							WHERE keywords ilike '%$keyword%' AND state = '1' 
+							WHERE keywords ilike '$keyword' AND state = '1' 
 							LIMIT 1";
 			$getTagRow = $this->db->query($selectTag)-> getRow();
 			$data = [
@@ -53,7 +53,7 @@ class TopicModel extends ComModel
 			if($opt['read']) {
 				$updateSql = "UPDATE $this->wet_topic_tag 
 							SET read_sum = read_sum + 1
-							WHERE keywords = '$getTagRow->keywords'";
+							WHERE keywords ilike '$getTagRow->keywords'";
 				$this->db->query($updateSql);
 			}
 			return $data;
@@ -73,46 +73,75 @@ class TopicModel extends ComModel
 
 		$isTopic = $this->isTopic($keyword);
 		if ($isTopic) {
-			$selectTag = "SELECT topic_sum 
+			$selectTag = "SELECT uid, topic_sum
 							FROM $this->wet_topic_tag 
-							WHERE keywords ilike '%$keyword%' 
+							WHERE keywords ilike '$keyword' 
 							AND state = '1' LIMIT 1";
 			$getTagRow = $this->db->query($selectTag)-> getRow();
+
 			$data  = [
-								'page'		=> $page,  //当前页
-								'size'		=> $size,  //每页数量
-								'totalPage'	=> (int)ceil($getTagRow-> topic_sum/$size),  //总页数
-								'totalSize'	=> (int)$getTagRow-> topic_sum,  //总数量
-							];
+					'page'		=> $page,  //当前页
+					'size'		=> $size,  //每页数量
+					'totalPage'	=> (int) ceil(($getTagRow->topic_sum) / $size),  //总页数
+					'totalSize'	=> (int) $getTagRow->topic_sum,  //总数量
+				];
 			if ($getTagRow) {
-				$limitSql = "SELECT wet_topic_content.hash 
+				/*
+				$limitSql = "SELECT wet_topic_content.hash
 								FROM wet_topic_content 
 								INNER JOIN wet_topic_tag 
 								ON wet_topic_content.tag_uid = wet_topic_tag.uid 
 								AND wet_topic_content.state = '1' 
-								AND wet_topic_tag.keywords ilike '%$keyword%'
+								AND wet_topic_tag.keywords ilike '$keyword' 
 								ORDER BY wet_topic_content.utctime DESC 
 								LIMIT $size OFFSET ".(($page-1) * $size + $offset);
-				
-
+				*/
+				$topicTagUid = $getTagRow->uid;
+				$limitSql = "SELECT hash FROM wet_topic_content 
+								WHERE tag_uid = '$topicTagUid' AND state = '1'
+								ORDER BY utctime DESC 
+								LIMIT $size OFFSET ".(($page-1) * $size + $offset);
 				$query = $this->db-> query($limitSql);
-				foreach ($query-> getResult() as $row) {
-					$hash  = $row -> hash;
+				$getResult = $query-> getResult();
+
+				foreach ($getResult as $row) {
+					$arrList[] = $row->hash;
+				}
+	
+				if($page <= 1){
+					$addList = [];
+					$arrList = $this->DisposeModel-> arrayToArray($addList, $arrList);
+				}
+
+				$data['data'] = [];
+				foreach ($arrList as $hash) {
 					$txBloom = $this->BloomModel-> txBloom($hash);
 					if (!$txBloom) {
-						$detaila[] = $this->content-> txContent($hash, $opt);
+						$isData = $this->ContentModel-> txContent($hash, $opt);
+						if(isset($isData)) $detaila[] = $isData;
 					}
 					$data['data'] = $detaila;
 				}
-				$data = $this->DisposeModel-> wetRt(200,'success',$data);
-			} else {
-				$data = $this->DisposeModel-> wetRt(200,'no_data',[]);
-			}
 
+				$countList = (int) count($arrList);
+				if ($countList > 0) {  //更新阅读数量
+					$updateSql = "UPDATE $this->wet_topic_tag 
+							SET read_sum = read_sum + '$countList'
+							WHERE keywords ilike '$keyword'";
+					$this->db->query($updateSql);
+				}
+
+				$code = 200;
+				$msg  = 'success';
+			} else {
+				$code = 200;
+				$msg  = 'no_data';
+			}
 		} else {
-			$data = $this->DisposeModel-> wetRt(406,'error');
+			$code = 406;
+			$msg  = 'error';
 		}
-		return $data;
+		return $this->DisposeModel-> wetRt($code, $msg, $data);
 	}
 
 	public function insertTopic($topic=[])
