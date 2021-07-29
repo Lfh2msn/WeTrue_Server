@@ -46,9 +46,9 @@ class ReplyModel extends Model {
 			$data['replyType']	  = $row-> reply_type;
 			$data['replyHash']    = $row-> reply_hash;
 			$data['payload']	  = $this->DisposeModel-> delete_xss($row-> payload);
-			$data['senderId']	  = $sender_id;
 			$data['toAddress']    = $to_address;
 			$data['receiverName'] = $to_address ? $this->UserModel-> getName($to_address) : '';
+			$data['receiverIsAuth'] = $to_address ? $this->ValidModel-> isAuthUser($to_address) : false;
 			$data['utcTime']	  = (int) $row-> utctime;
 			$data['praise']		  = (int) $row-> praise;
 			$data['isPraise']	  = $opt['userLogin'] ? $this->ValidModel-> isPraise($hash, $opt['userLogin']) : false;

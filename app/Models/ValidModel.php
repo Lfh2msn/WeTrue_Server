@@ -59,6 +59,14 @@ class ValidModel extends Model {
 		return $row ? true : false;
 	}
 
+	public function isAuthUser($address)
+	{//用户ID是否认证
+		$sql   = "SELECT is_auth FROM wet_users WHERE address = '$address' LIMIT 1";
+        $query = $this->db->query($sql);
+		$row   = $query->getRow();
+		return $row->is_auth ? true : false;
+	}
+
 	public function isAdmin($address)
 	{//管理员校验
 		$bsConfig = $this->ConfigModel-> backendConfig();

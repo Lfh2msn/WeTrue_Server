@@ -251,6 +251,16 @@ class HashReadModel extends Model {
 				$data['toHash']    = trim($payload['to_hash']);
 				$data['toAddress'] = trim($payload['to_address']);
 				$data['replyHash'] = trim($payload['reply_hash']);
+
+				if ($data['replyType'] != "comment" && $data['replyType'] != "reply") {
+					$this->deleteTemp($hash);
+					$textFile   = fopen("log/hash_read/".date("Y-m-d").".txt", "a");
+					$appendText = "无效格式{$data['replyType']}-回复hash：{$data['hash']}\r\n";
+					fwrite($textFile, $appendText);
+					fclose($textFile);
+					return $this->DisposeModel-> wetJsonRt(406,'error');
+				}
+
 				$insertData = [
 					'hash'		   => $data['hash'],
 					'to_hash'	   => $data['toHash'],
@@ -278,6 +288,18 @@ class HashReadModel extends Model {
 						'type'	   	   => $data['type'],
 						'sender_id'	   => $data['sender'],
 						'recipient_id' => $toHashID,
+						'utctime' 	   => $data['mbTime']
+					];
+					$this->MsgModel-> addMsg($msgData);
+				}
+				//@回复写入消息
+				if($data['replyType'] == 'reply' && $data['toAddress']) {
+					$msgData = [
+						'hash' 		   => $data['hash'],
+						'to_hash' 	   => $data['toHash'],
+						'type'	   	   => $data['type'],
+						'sender_id'	   => $data['sender'],
+						'recipient_id' => $data['toAddress'],
 						'utctime' 	   => $data['mbTime']
 					];
 					$this->MsgModel-> addMsg($msgData);
