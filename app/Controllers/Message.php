@@ -25,6 +25,4 @@ class Message extends BaseController {
 		echo $this->DisposeModel-> wetJsonRt(200, 'success', $data);
 	}
 
-	
-
 }

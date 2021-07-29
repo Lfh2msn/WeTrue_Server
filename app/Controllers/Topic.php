@@ -35,6 +35,5 @@ class Topic extends BaseController {
 		echo json_encode($data);
 		$this->cachePage(1);
 	}
-	
 
 }

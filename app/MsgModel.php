@@ -2,23 +2,23 @@
 namespace App\Models;
 
 use App\Models\ComModel;
+use App\Models\ValidModel;
 use App\Models\ContentModel;
 use App\Models\CommentModel;
 use App\Models\ReplyModel;
 use App\Models\RewardModel;
-use App\Models\ValidModel;
 
 class MsgModel extends ComModel
 {//消息Model
 
 	public function __construct(){
         parent::__construct();
-		$this->DisposeModel	= new DisposeModel();
 		$this->ContentModel = new ContentModel();
 		$this->CommentModel = new CommentModel();
 		$this->ReplyModel 	= new ReplyModel();
 		$this->RewardModel	= new RewardModel();
 		$this->ValidModel	= new ValidModel();
+		$this->DisposeModel	= new DisposeModel();
 		$this->wet_message  = "wet_message";
     }
 

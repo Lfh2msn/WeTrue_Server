@@ -107,4 +107,11 @@ class Mining extends BaseController {
 		echo $data;
     }
 
+	public function top()
+	{//映射榜单
+		$data = (new MiningModel())-> topTen();
+		echo $data;
+		$this->cachePage(1);
+    }
+
 }

@@ -107,7 +107,9 @@ class UserModel extends ComModel
 		$data['star'] 		  = (int)$row->star_sum;
 		$data['focus'] 		  = (int)$row->focus_sum;
 		$data['fans']  		  = (int)$row->fans_sum;
-		$data['is_map']  	  = $row->is_map ? true : false;
+		$is_map = $row->is_map ? true : false;
+		$data['is_map']  	  = $is_map;
+		$data['isMapping']    = $is_map;
 		$data['isAuth']  	  = $row->is_auth ? true : false;
 		if ($opt['type'] == 'login')
 		{

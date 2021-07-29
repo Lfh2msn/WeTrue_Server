@@ -357,8 +357,8 @@ class MiningModel extends ComModel
 
 	private function getTotalAE()
 	{//统计映射AE总量
-		$total = "SELECT SUM(amount) AS total_ae FROM $this->wet_mapping WHERE state = '1'";
-		$query = $this->db->query($total);
+		$sql = "SELECT SUM(amount) AS total_ae FROM $this->wet_mapping WHERE state = '1'";
+		$query = $this->db->query($sql);
 		$total = $query->getRow();
 		return $total->total_ae;
 	}
@@ -367,6 +367,23 @@ class MiningModel extends ComModel
 	{//删除临时缓存
 		$delete = "DELETE FROM $this->wet_temp WHERE tp_hash = '$hash'";
 		$this->db->query($delete);
+	}
+
+	public function topTen()
+	{//前10榜
+		$sql    = "SELECT address, amount FROM $this->wet_mapping ORDER BY amount DESC LIMIT 10";
+		$query  = $this->db-> query($sql);
+		$getRes = $query->getResult();
+		$data = [];
+		foreach ($getRes as $row) {
+			$address = $row->address;
+			$amount  = $row->amount;
+			$isData['userAddress'] = $address;
+			$isData['amount'] 	   = $amount;
+			if(isset($isData)) $detaila[] = $isData;
+			$data = $detaila;
+		}
+		return $this->DisposeModel-> wetJsonRt(200,'success',$data);
 	}
 
 	public function adminOpenMapping($address)
@@ -386,7 +403,5 @@ class MiningModel extends ComModel
 		}
 		return $this->DisposeModel-> wetJsonRt(200, 'success', $data);
 	}
-
-		
 
 }

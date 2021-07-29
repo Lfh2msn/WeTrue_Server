@@ -5,6 +5,7 @@ use App\Models\UserModel;
 use App\Models\ConfigModel;
 use App\Models\ValidModel;
 use App\Models\DisposeModel;
+use App\Models\MsgModel;
 
 class RewardModel extends Model {
 //打赏Model
@@ -28,7 +29,7 @@ class RewardModel extends Model {
 						 amount,
 						 sender_id,
 						 block_height
-						FROM $this->wet_reward WHERE to_hash = '$hash' ORDER BY block_height DESC LIMIT 50";
+					FROM $this->wet_reward WHERE to_hash = '$hash' ORDER BY block_height DESC LIMIT 50";
         $query     = $this->db->query($sql);
 		$getResult = $query->getResult();
 		$data = [];
@@ -40,6 +41,21 @@ class RewardModel extends Model {
 			$detaila['block_height'] = $row->block_height;
 			$data[] = $detaila;
 		}
+		return $data;
+	}
+
+	public function simpleReward($hash)
+	{//简单打赏信息
+		$sql   = "SELECT hash,
+						 amount,
+						 sender_id
+					FROM $this->wet_reward WHERE hash = '$hash' LIMIT 1";
+        $query = $this->db->query($sql);
+		$row   = $query->getRow();
+		$data['hash']      = $row->hash;
+		$data['amount']    = $row->amount;
+		$data['nickname']  = $this->UserModel-> getName($row->sender_id);
+		$data['sender_id'] = $row->sender_id;
 		return $data;
 	}
 	
@@ -101,7 +117,7 @@ class RewardModel extends Model {
 			fclose($textFile);
 			return;
         }
-		
+
 		$recipient_id = $json['recipient_id'];
 		$amount 	  = $json['amount'];
 		$return_type  = $json['return_type'];
@@ -142,6 +158,16 @@ class RewardModel extends Model {
 			$this->db-> query($upContSql);
 			$this->db-> query($upUserSql);
 			$this->deleteTemp($hash);
+
+			//写入消息
+			$msgData = [
+				'hash' 		   => $hash,
+				'to_hash' 	   => $to_hash,
+				'type'	   	   => 'reward',
+				'sender_id'	   => $sender_id,
+				'recipient_id' => $conID
+			];
+			(new MsgModel())-> addMsg($msgData);
 		}
 	}
 

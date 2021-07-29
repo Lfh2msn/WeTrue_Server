@@ -159,8 +159,8 @@ class TopicModel extends ComModel
 		$data['data'] = [];
 		if ($getResult) {
 			foreach ($getResult as $row) {
-				$tagUid = $row->tag_uid;
-				$tagHot = $row->count;
+				$tagUid = (int) $row->tag_uid;
+				$tagHot = (int) $row->count;
 				$keyword = $this->tagUidToKeyWord($tagUid);
 				if ($keyword) {
 					$isData['keyword'] = $keyword;

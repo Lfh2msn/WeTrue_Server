@@ -80,8 +80,7 @@ class SearchModel extends Model {
 		$query  = $this->db-> query($limitSql);
 		$getRes = $query-> getResult();
 		$data['data'] = [];
-		foreach ($getRes as $row)
-		{
+		foreach ($getRes as $row) {
 			$hash  	  = $row->hash;
 			$address  = $row->address;
 			$keywords = $row->keywords;

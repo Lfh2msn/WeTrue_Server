@@ -56,7 +56,7 @@ class CommentModel extends Model {
 					$hash  = $row -> hash;
 					$txBloom = $this->BloomModel-> txBloom($hash);
 					if (!$txBloom) {
-						$opt['substr']	  = 140; //限制输出
+						$opt['substr'] = 140; //限制输出
 						$list[] = $this->ReplyModel-> txReply($hash, $opt);
 					}
 					$data['commentList'] = $list;
@@ -79,11 +79,9 @@ class CommentModel extends Model {
 		$sql = "SELECT
 					to_hash,
 					sender_id,
-					$payload,
-					utctime
+					$payload
 				FROM $this->wet_comment 
 				WHERE hash='$hash' LIMIT 1";
-
         $query = $this-> db-> query($sql);
 		$row   = $query-> getRow();
         if ($row) {
@@ -94,8 +92,9 @@ class CommentModel extends Model {
 			$isStrCount		 = $strCount ? $operation : $row->payload;
 			$deleteXss		 = $this->DisposeModel-> delete_xss($isStrCount);
 			$data['payload'] = $this->DisposeModel-> sensitive($deleteXss);
-			$data['utcTime'] = (int) $row-> utctime;
-			$data['imgTx']   = $this->UserModel-> getPortraitUrl($sender_id);
+			if (!$opt['imgTx']) {
+				$data['imgTx'] = $this->UserModel-> getPortraitUrl($sender_id);
+			}
 			$data['users']   = $this->UserModel-> getUser($sender_id);
         }
     	return $data;

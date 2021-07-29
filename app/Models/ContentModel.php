@@ -106,8 +106,7 @@ class ContentModel extends ComModel
 			$data['payload'] = $this->DisposeModel-> sensitive($deleteXss);
 			$data['imgTx']   = $row->img_tx ? "https://api.wetrue.io/Image/toimg/".$hash : $this->UserModel-> getPortraitUrl($sender_id);
 			$data['users']['nickname'] = $this->UserModel-> getName($sender_id);
-			//$upReadSql = "UPDATE $this->tablename SET read_sum = read_sum + 1 WHERE hash = '$hash'";
-			//$this->db-> query($upReadSql);			
+			$data['users']['userAddress'] = $sender_id;	
         }
     	return $data;
     }
