@@ -1,21 +1,23 @@
 <?php namespace App\Models;
 
-use CodeIgniter\Model;
+//use CodeIgniter\Model;
+use App\Models\ComModel;
 use App\Models\DisposeModel;
 use App\Models\UserModel;
 use App\Models\ConfigModel;
 use App\Models\ContentModel;
 use App\Models\CommentModel;
+use App\Models\ComplainModel;
 use App\Models\ReplyModel;
 use App\Models\ValidModel;
 
-class BloomModel extends Model {
+class BloomModel extends ComModel {
 //过滤Model
 
 	public function __construct()
 	{
-		//parent::__construct();
-		$this->db			 = \Config\Database::connect('default');
+		parent::__construct();
+		//$this->db = \Config\Database::connect('default');
 		$this->DisposeModel  = new DisposeModel();
 		$this->UserModel	 = new UserModel();
         $this->ConfigModel	 = new ConfigModel();
@@ -68,7 +70,7 @@ class BloomModel extends Model {
 			return $this->DisposeModel-> wetJsonRt(401, 'error_login');
 		}
 
-        $isComplain = (new ComplainModel())-> isComplain($hash);
+        $isComplain = $this->ValidModel-> isComplain($hash);
         if (!$isComplain) {
 			return $this->DisposeModel-> wetJsonRt(401, 'error_no_complain');
         }

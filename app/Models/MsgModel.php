@@ -40,7 +40,7 @@ class MsgModel extends ComModel
 						utctime 
 					FROM $this->wet_message 
 					WHERE recipient_id = '$akToken'
-					ORDER BY state DESC, utctime DESC 
+					ORDER BY utctime DESC, state DESC 
 					LIMIT $size OFFSET ".(($page-1) * $size + $offset);
 		$returnData = $this->cycle($page, $size, $countSql, $limitSql);
 

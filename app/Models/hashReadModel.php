@@ -293,7 +293,7 @@ class HashReadModel extends Model {
 					$this->MsgModel-> addMsg($msgData);
 				}
 				//@回复写入消息
-				if($data['replyType'] == 'reply' && $data['toAddress']) {
+				if($data['replyType'] == 'reply' && $data['toAddress'] && $data['toAddress'] != $toHashID) {
 					$msgData = [
 						'hash' 		   => $data['hash'],
 						'to_hash' 	   => $data['toHash'],
