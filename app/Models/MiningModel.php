@@ -33,7 +33,7 @@ class MiningModel extends ComModel
 			echo $this->DisposeModel-> wetJsonRt(200, 'success');
 		}
 
-		$delTempSql = "DELETE FROM $this->wet_temp WHERE tp_time <= now()-interval '1 D' AND tp_type = '$tp_type'";
+		$delTempSql = "DELETE FROM $this->wet_temp WHERE tp_time <= now()-interval '2 D' AND tp_type = '$tp_type'";
 		$this->db->query($delTempSql);
 
 		$tempSql = "SELECT tp_hash FROM $this->wet_temp WHERE tp_type = '$tp_type' ORDER BY tp_time DESC LIMIT 30";
@@ -58,7 +58,7 @@ class MiningModel extends ComModel
 			$json 	   = (array) json_decode($contents, true);
 			$sender_id = $json['sender_id'];
 			$cuntnum++;
-			sleep(3);
+			sleep(6);
 		}
 
 		if (empty($sender_id)) {
@@ -77,7 +77,7 @@ class MiningModel extends ComModel
 			@$getTop   = file_get_contents($blocksUrl);
 			$chainJson = (array) json_decode($getTop, true);
 			$cuntnum++;
-			sleep(3);
+			sleep(6);
 		}
 
 		if (empty($chainJson)) {
@@ -387,7 +387,7 @@ class MiningModel extends ComModel
 	}
 
 	public function adminOpenMapping($address)
-	{//管理员直开
+	{//管理员开通映射账户
 		$akToken   = $_SERVER['HTTP_AK_TOKEN'];
 		$isAdmin   = $this->ValidModel-> isAdmin($akToken);
 		if($isAdmin && $address) {
