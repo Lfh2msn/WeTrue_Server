@@ -63,7 +63,7 @@ class MiningModel extends ComModel
 
 		if (empty($sender_id)) {
 			$textFile   = fopen("log/mining/".date("Y-m-d").".txt", "a");
-			$appendText = "Type:Mapping--aeknow_api_error--hash：{$hash}\r\n\r\n";
+			$appendText = "开通映射获取AEKnow-API错误--hash：{$hash}\r\n\r\n";
 			fwrite($textFile, $appendText);
 			fclose($textFile);
 			return;
@@ -82,7 +82,7 @@ class MiningModel extends ComModel
 
 		if (empty($chainJson)) {
 			$textFile   = fopen("log/mining/".date("Y-m-d").".txt", "a");
-			$appendText = "Type:Mapping--getChainTopError--hash：{$hash}\r\n\r\n";
+			$appendText = "开通映射获取链上高度失败--hash：{$hash}\r\n\r\n";
 			fwrite($textFile, $appendText);
 			fclose($textFile);
 			return;
@@ -110,8 +110,8 @@ class MiningModel extends ComModel
 		) {
 			$this->UserModel-> userPut($sender_id);
 			$this->db->table($this->wet_users)->where('address', $sender_id)->update( ['is_map' => '1'] );
-			$textFile   = fopen("log/mining/".date("Y-m-d")."-open.txt", "a");
-			$appendText = "{$sender_id}:{$amount}:{$block_height}:{$hash}\r\n";
+			$textFile   = fopen("log/mining/open-mapping-".date("Y-m-d").".txt", "a");
+			$appendText = "成功开通映射挖矿--{$sender_id}:{$amount}:{$block_height}:{$hash}\r\n";
 			fwrite($textFile, $appendText);
 			fclose($textFile);
 			$this->deleteTemp($hash);
@@ -191,7 +191,9 @@ class MiningModel extends ComModel
 		}
 
 		$checEarning = $checkRow['earning'];
-		if ($checEarning >= 1e17) {
+		$earnLock    = $checkRow['earning_lock'];
+		if ($checEarning >= 1e17 && $earnLock == 0) {
+			$this->earningLock($address, 1); //打开锁
 			$hash = $this->AecliModel-> spendWTT($address, $checEarning);
 			$code = $this->DisposeModel-> checkAddress($hash) ? 200 : 406;
 		} else {
@@ -206,14 +208,15 @@ class MiningModel extends ComModel
 				'state' 	   => 0,
 				'amount'       => 0,
 				'earning'      => 0,
+				'earning_lock' => 0, //关闭锁
 				'utctime'      => (time() * 1000)
 			];
 			$this->db->table($this->wet_mapping)->where('address', $address)->update($upData);
 			$data['earning'] = $checEarning;
 			$msg = 'success';
-			$textFile   = fopen("log/mining/unmapping-".date("Y-m-d").".txt", "a");
+			$textFile   = fopen("log/mining/".date("Y-m-d").".txt", "a");
 			$textTime   = date("Y-m-d h:i:s");
-			$appendText = "账户:{$address}\r\n领取:{$checEarning}\r\n时间:{$textTime}\r\n\r\n";
+			$appendText = "解除映射--账户:{$address}\r\n领取:{$checEarning}\r\n时间:{$textTime}\r\n\r\n";
 			fwrite($textFile, $appendText);
 			fclose($textFile);
 		}
@@ -233,8 +236,9 @@ class MiningModel extends ComModel
 		}
 
 		$checEarning = $checkRow['earning'];
-		
-		if ($checEarning >= 1e17) {
+		$earnLock    = $checkRow['earning_lock'];
+		if ($checEarning >= 1e17 && $earnLock == 0) {
+			$this->earningLock($address, 1); //打开锁
 			$hash = $this->AecliModel-> spendWTT($address, $checEarning);
 			$code = $this->DisposeModel-> checkAddress($hash) ? 200 : 406;
 			if ($code == 200) {
@@ -242,15 +246,16 @@ class MiningModel extends ComModel
 					'earning' => 0
 				];
 				$this->db->table($this->wet_mapping)->where('address', $address)->update($upData);
+				$this->earningLock($address, 0); //关闭锁
 				$data['earning'] = $checEarning;
-				$textFile   = fopen("log/mining/earning-".date("Y-m-d").".txt", "a");
+				$textFile   = fopen("log/mining/".date("Y-m-d").".txt", "a");
 				$textTime   = date("Y-m-d h:i:s");
-				$appendText = "账户:{$address}\r\n领取:{$checEarning}\r\n时间:{$textTime}\r\n\r\n";
+				$appendText = "领取收益--账户:{$address}\r\n领取:{$checEarning}\r\n时间:{$textTime}\r\n\r\n";
 				fwrite($textFile, $appendText);
 				fclose($textFile);
 			}
 		} else {
-			return $this->DisposeModel-> wetJsonRt(200, 'error_earning_low');
+			return $this->DisposeModel-> wetJsonRt(406, 'error_earning');
 		}
 		return $this->DisposeModel-> wetJsonRt($code, 'success', $data);
 	}
@@ -268,6 +273,13 @@ class MiningModel extends ComModel
 		$bsConfig     = (new ConfigModel())-> backendConfig();
 		$blocksUrl    = $bsConfig['backendServiceNode'].'v3/key-blocks/current/height';
 		@$getTop	  = file_get_contents($blocksUrl);
+
+		$num = 0;
+		while (!$getTop && $num < 5) { //防止意外获取失败
+			@$getTop = file_get_contents($blocksUrl);
+			$num++;
+		}
+
 		$blocksJson   = (array) json_decode($getTop, true);
 		$blockHeight  = (int)$blocksJson['height'];
 
@@ -295,7 +307,7 @@ class MiningModel extends ComModel
 			//小黑屋判断
 				$textFile   = fopen("log/mining/black-house-".date("Y-m-d").".txt", "a");
 				$textTime   = date("Y-m-d h:i:s");
-				$appendText = "账户:{$address}\r\n链上:{$chainBalance}\r\n映射:{$mapAmount}\r\n时间:{$blockHeight}--{$textTime}\r\n\r\n";
+				$appendText = "小黑屋--账户:{$address}\r\n链上:{$chainBalance}\r\n映射:{$mapAmount}\r\n时间:{$blockHeight}--{$textTime}\r\n\r\n";
 				fwrite($textFile, $appendText);
 				fclose($textFile);
 				$upMapData = [
@@ -337,7 +349,8 @@ class MiningModel extends ComModel
 						height_check,
 						state,
 						amount,
-						earning
+						earning,
+						earning_lock
 					FROM $this->wet_mapping WHERE address = '$address' AND state = 1 LIMIT 1";
         $query  = $this->db->query($mapSql);
 		$rowMap = $query->getRow();
@@ -350,23 +363,10 @@ class MiningModel extends ComModel
 			'state' 	   => $rowMap->state,
 			'amount' 	   => $rowMap->amount,
 			'earning' 	   => $rowMap->earning,
-			'total_ae' 	   => $totalAE
+			'total_ae' 	   => $totalAE,
+			'earning_lock' => $rowMap->earning_lock
 		];
 		return $data;
-	}
-
-	private function getTotalAE()
-	{//统计映射AE总量
-		$sql = "SELECT SUM(amount) AS total_ae FROM $this->wet_mapping WHERE state = '1'";
-		$query = $this->db->query($sql);
-		$total = $query->getRow();
-		return $total->total_ae;
-	}
-
-	private function deleteTemp($hash)
-	{//删除临时缓存
-		$delete = "DELETE FROM $this->wet_temp WHERE tp_hash = '$hash'";
-		$this->db->query($delete);
 	}
 
 	public function topTen()
@@ -393,7 +393,7 @@ class MiningModel extends ComModel
 		if($isAdmin && $address) {
 			$this->UserModel-> userPut($address);
 			$this->db->table($this->wet_users)->where('address', $address)->update( ['is_map' => '1'] );
-			$textFile   = fopen("log/mining/".date("Y-m-d")."-open.txt", "a");
+			$textFile   = fopen("log/mining/open-mapping".date("Y-m-d").".txt", "a");
 			$appendText = "{$akToken}--Admin\r\n";
 			fwrite($textFile, $appendText);
 			fclose($textFile);
@@ -402,6 +402,28 @@ class MiningModel extends ComModel
 			$data['isOpen'] = false;
 		}
 		return $this->DisposeModel-> wetJsonRt(200, 'success', $data);
+	}
+
+	private function getTotalAE()
+	{//统计映射AE总量
+		$sql = "SELECT SUM(amount) AS total_ae FROM $this->wet_mapping WHERE state = '1'";
+		$query = $this->db->query($sql);
+		$total = $query->getRow();
+		return $total->total_ae;
+	}
+
+	private function deleteTemp($hash)
+	{//删除临时缓存
+		$delete = "DELETE FROM $this->wet_temp WHERE tp_hash = '$hash'";
+		$this->db->query($delete);
+	}
+
+	private function earningLock($address, $value)
+	{//改变锁状态
+		$upData = [
+			'earning_lock' => $value
+		];
+		$this->db->table($this->wet_mapping)->where('address', $address)->update($upData);
 	}
 
 }
