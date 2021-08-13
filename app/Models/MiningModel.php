@@ -62,7 +62,7 @@ class MiningModel extends ComModel
 		}
 
 		if (empty($sender_id)) {
-			$textFile   = fopen("log/mining/".date("Y-m-d").".txt", "a");
+			$textFile   = fopen("log/mining/error-".date("Y-m-d").".txt", "a");
 			$appendText = "开通映射获取AEKnow-API错误--hash：{$hash}\r\n\r\n";
 			fwrite($textFile, $appendText);
 			fclose($textFile);
@@ -81,7 +81,7 @@ class MiningModel extends ComModel
 		}
 
 		if (empty($chainJson)) {
-			$textFile   = fopen("log/mining/".date("Y-m-d").".txt", "a");
+			$textFile   = fopen("log/mining/error-".date("Y-m-d").".txt", "a");
 			$appendText = "开通映射获取链上高度失败--hash：{$hash}\r\n\r\n";
 			fwrite($textFile, $appendText);
 			fclose($textFile);
@@ -111,7 +111,8 @@ class MiningModel extends ComModel
 			$this->UserModel-> userPut($sender_id);
 			$this->db->table($this->wet_users)->where('address', $sender_id)->update( ['is_map' => '1'] );
 			$textFile   = fopen("log/mining/open-mapping-".date("Y-m-d").".txt", "a");
-			$appendText = "成功开通映射挖矿--{$sender_id}:{$amount}:{$block_height}:{$hash}\r\n";
+			$wtt_ttos   = ($amount / 1e18);
+			$appendText = "开通映射--账户:{$sender_id}\r\n花费WTT:{$wtt_ttos}\r\n高度:{$block_height}\r\nHash:{$hash}\r\n\r\n";
 			fwrite($textFile, $appendText);
 			fclose($textFile);
 			$this->deleteTemp($hash);
@@ -148,6 +149,13 @@ class MiningModel extends ComModel
 		$blocksUrl   = $bsConfig['backendServiceNode'].'v3/key-blocks/current/height';
 		@$getBlocks	 = file_get_contents($blocksUrl);
 		$blocksJson  = (array) json_decode($getBlocks, true);
+		$cuntnum     = 0;
+		while (!$blocksJson && $cuntnum < 5) { //防止意外获取失败
+			@$getBlocks = file_get_contents($blocksUrl);
+			$blocksJson = (array) json_decode($getBlocks, true);
+			$cuntnum++;
+		}
+		
 		$blockHeight = $blocksJson['height'];
 		if (empty($blockHeight)) {
         	return $this->DisposeModel-> wetJsonRt(406, 'get_block_height_error');
@@ -173,6 +181,12 @@ class MiningModel extends ComModel
 			];
 			$this->db->table($this->wet_mapping)->insert($insertData);
 		}
+		//写入日志
+		$textFile   = fopen("log/mining/".date("Y-m-d").".txt", "a");
+		$aettos     = ($amount / 1e18);
+		$appendText = "开启映射--账户:{$address}\r\n映射AE:{$aettos}\r\n高度:{$blockHeight}\r\n\r\n";
+		fwrite($textFile, $appendText);
+		fclose($textFile);
 
 		$data['state'] = true;
 		return $this->DisposeModel-> wetJsonRt(200, 'success', $data);
@@ -216,7 +230,9 @@ class MiningModel extends ComModel
 			$msg = 'success';
 			$textFile   = fopen("log/mining/".date("Y-m-d").".txt", "a");
 			$textTime   = date("Y-m-d h:i:s");
-			$appendText = "解除映射--账户:{$address}\r\n领取:{$checEarning}\r\n时间:{$textTime}\r\n\r\n";
+			$aettos     = ($checkRow['amount'] / 1e18);
+			$wtt_ttos   = $checEarning/1e18;
+			$appendText = "解除映射--账户:{$address}\r\n映射AE:{$aettos}\r\n领取WTT:{$wtt_ttos}\r\n时间:{$textTime}\r\n\r\n";
 			fwrite($textFile, $appendText);
 			fclose($textFile);
 		}
@@ -250,7 +266,9 @@ class MiningModel extends ComModel
 				$data['earning'] = $checEarning;
 				$textFile   = fopen("log/mining/".date("Y-m-d").".txt", "a");
 				$textTime   = date("Y-m-d h:i:s");
-				$appendText = "领取收益--账户:{$address}\r\n领取:{$checEarning}\r\n时间:{$textTime}\r\n\r\n";
+				$aettos     = ($checkRow['amount'] / 1e18);
+				$wtt_ttos   = $checEarning/1e18;
+				$appendText = "领取收益--账户:{$address}\r\n映射AE:{$aettos}\r\n领取WTT:{$wtt_ttos}\r\n时间:{$textTime}\r\n\r\n";
 				fwrite($textFile, $appendText);
 				fclose($textFile);
 			}
@@ -273,17 +291,16 @@ class MiningModel extends ComModel
 		$bsConfig     = (new ConfigModel())-> backendConfig();
 		$blocksUrl    = $bsConfig['backendServiceNode'].'v3/key-blocks/current/height';
 		@$getTop	  = file_get_contents($blocksUrl);
-
-		$num = 0;
-		while (!$getTop && $num < 5) { //防止意外获取失败
-			@$getTop = file_get_contents($blocksUrl);
-			$num++;
+		$blocksJson   = (array) json_decode($getTop, true);
+		$cuntnum      = 0;
+		while (!$blocksJson && $cuntnum < 5) { //防止意外获取失败
+			@$getTop 	= file_get_contents($blocksUrl);
+			$blocksJson = (array) json_decode($getTop, true);
+			$cuntnum++;
 		}
 
-		$blocksJson   = (array) json_decode($getTop, true);
-		$blockHeight  = (int)$blocksJson['height'];
-
-		$mapInfo = $this->getUserMapInfo($address);
+		$blockHeight  	= (int)$blocksJson['height'];
+		$mapInfo 		= $this->getUserMapInfo($address);
 		$heightCheckOld = (int)$mapInfo['height_check'];
 		$heightMap	    = (int)$mapInfo['height_map'];
 		if (
@@ -301,13 +318,21 @@ class MiningModel extends ComModel
 			$accountsUrl  = $bsConfig['backendServiceNode'].'v3/accounts/'.$address;
 			@$getBalance  = file_get_contents($accountsUrl);
 			$accountsJson = (array) json_decode($getBalance, true);
+			$cuntnum      = 0;
+			while (!$accountsJson && $cuntnum < 5) { //防止意外获取失败
+				@$getBalance = file_get_contents($accountsUrl);
+				$accountsJson = (array) json_decode($getBalance, true);
+				$cuntnum++;
+			}
 			$chainBalance = $accountsJson['balance'];  //链上金额
 			$mapAmount 	  = $mapInfo['amount'];  //映射金额
 			if ($chainBalance && $chainBalance < $mapAmount) {  //对比[映射]及[链上]金额
 			//小黑屋判断
 				$textFile   = fopen("log/mining/black-house-".date("Y-m-d").".txt", "a");
 				$textTime   = date("Y-m-d h:i:s");
-				$appendText = "小黑屋--账户:{$address}\r\n链上:{$chainBalance}\r\n映射:{$mapAmount}\r\n时间:{$blockHeight}--{$textTime}\r\n\r\n";
+				$chainTtos  = ($chainBalance/1e18);
+				$aettos  	= ($mapAmount/1e18);
+				$appendText = "小黑屋--账户:{$address}\r\n链上AE:{$chainTtos}\r\n映射AE:{$aettos}\r\n时间:{$blockHeight}--{$textTime}\r\n\r\n";
 				fwrite($textFile, $appendText);
 				fclose($textFile);
 				$upMapData = [
@@ -393,8 +418,8 @@ class MiningModel extends ComModel
 		if($isAdmin && $address) {
 			$this->UserModel-> userPut($address);
 			$this->db->table($this->wet_users)->where('address', $address)->update( ['is_map' => '1'] );
-			$textFile   = fopen("log/mining/open-mapping".date("Y-m-d").".txt", "a");
-			$appendText = "{$akToken}--Admin\r\n";
+			$textFile   = fopen("log/mining/open-mapping-".date("Y-m-d").".txt", "a");
+			$appendText = "开通映射--{$akToken}--Admin\r\n";
 			fwrite($textFile, $appendText);
 			fclose($textFile);
 			$data['isOpen'] = true;
