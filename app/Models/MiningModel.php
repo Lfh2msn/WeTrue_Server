@@ -111,8 +111,9 @@ class MiningModel extends ComModel
 			$this->UserModel-> userPut($sender_id);
 			$this->db->table($this->wet_users)->where('address', $sender_id)->update( ['is_map' => '1'] );
 			$textFile   = fopen("log/mining/open-mapping-".date("Y-m-d").".txt", "a");
+			$textTime   = date("Y-m-d h:i:s");
 			$wtt_ttos   = ($amount / 1e18);
-			$appendText = "开通映射--账户:{$sender_id}\r\n花费WTT:{$wtt_ttos}\r\n高度:{$block_height}\r\nHash:{$hash}\r\n\r\n";
+			$appendText = "开通映射--账户:{$sender_id}\r\n花费WTT:{$wtt_ttos}\r\n高度:{$block_height}\r\n时间:{$textTime}\r\nHash:{$hash}\r\n\r\n";
 			fwrite($textFile, $appendText);
 			fclose($textFile);
 			$this->deleteTemp($hash);
@@ -183,8 +184,9 @@ class MiningModel extends ComModel
 		}
 		//写入日志
 		$textFile   = fopen("log/mining/".date("Y-m-d").".txt", "a");
+		$textTime   = date("Y-m-d h:i:s");
 		$aettos     = ($amount / 1e18);
-		$appendText = "开启映射--账户:{$address}\r\n映射AE:{$aettos}\r\n高度:{$blockHeight}\r\n\r\n";
+		$appendText = "开启映射--账户:{$address}\r\n映射AE:{$aettos}\r\n时间:{$blockHeight}--{$textTime}\r\n\r\n";
 		fwrite($textFile, $appendText);
 		fclose($textFile);
 
@@ -271,6 +273,8 @@ class MiningModel extends ComModel
 				$appendText = "领取收益--账户:{$address}\r\n映射AE:{$aettos}\r\n领取WTT:{$wtt_ttos}\r\n时间:{$textTime}\r\n\r\n";
 				fwrite($textFile, $appendText);
 				fclose($textFile);
+			} else {
+				$this->earningLock($address, 0); //关闭锁
 			}
 		} else {
 			return $this->DisposeModel-> wetJsonRt(406, 'error_earning');
