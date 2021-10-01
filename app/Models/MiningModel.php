@@ -292,11 +292,25 @@ class MiningModel extends ComModel
 			return $data;
 		}
 
-		$bsConfig     = (new ConfigModel())-> backendConfig();
-		$blocksUrl    = $bsConfig['backendServiceNode'].'v3/key-blocks/current/height';
-		@$getTop	  = file_get_contents($blocksUrl);
-		$blocksJson   = (array) json_decode($getTop, true);
-		$cuntnum      = 0;
+		$bsConfig   = (new ConfigModel())-> backendConfig();
+		$mappingWTT = $bsConfig['mappingWTT']; //映射挖矿开启状态
+		if (!$mappingWTT) {
+			$upMapData = [
+				'height_map'   => 0,
+				'height_check' => 0,
+				'earning' 	   => 0,
+				'state'   	   => 0,
+				'amount'  	   => 0
+			];
+			$this->db->table($this->wet_mapping)->where('address', $address)->update($upMapData);
+			$mapInfo = $this->getUserMapInfo($address);
+			return $mapInfo;
+		}
+		
+		$blocksUrl  = $bsConfig['backendServiceNode'].'v3/key-blocks/current/height';
+		@$getTop	= file_get_contents($blocksUrl);
+		$blocksJson = (array) json_decode($getTop, true);
+		$cuntnum    = 0;
 		while (!$blocksJson && $cuntnum < 5) { //防止意外获取失败
 			@$getTop 	= file_get_contents($blocksUrl);
 			$blocksJson = (array) json_decode($getTop, true);
@@ -307,7 +321,7 @@ class MiningModel extends ComModel
 		$mapInfo 		= $this->getUserMapInfo($address);
 		$heightCheckOld = (int)$mapInfo['height_check'];
 		$heightMap	    = (int)$mapInfo['height_map'];
-		if (
+		if (	
 				$mapInfo && //获取数据信息
 				$isMapState && //已映射
 				$blockHeight && //链上高度正常
