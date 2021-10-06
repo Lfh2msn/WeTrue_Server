@@ -146,6 +146,18 @@ class HashReadModel extends Model {
 					$this->DisposeModel->wetFwriteLog($logMsg);
 					return $this->DisposeModel-> wetJsonRt(406,'error');
 				}
+				
+				$holdAE = $bsConfig['usableHoldAE'];  //要求最低持有AE开关
+				if ($holdAE) {
+					$holdAettos     = $bsConfig['usableHoldAettos'];  //要求最低持有AE
+					$accountsAettos = $this->GetModel->getAccountsBalance($data['sender']);  //查询链上金额
+					if ($accountsAettos < $holdAettos) {
+						$this->deleteTemp($hash);
+						$logMsg = "持有AE不足最低要求:{$data['hash']}\r\n";
+						$this->DisposeModel->wetFwriteLog($logMsg);
+						return $this->DisposeModel-> wetJsonRt(406,'hold_aettos_low');
+					}
+				}
 
 				$data['imgList'] = trim($payload['img_list']);
 				$insertData = [
