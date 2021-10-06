@@ -49,12 +49,12 @@ class MiningModel extends ComModel
 
 	public function decodeMapping($hash)
 	{//新开户-解码开通
-		$bsConfig  = (new ConfigModel())-> backendConfig();
-
+		$bsConfig = (new ConfigModel())-> backendConfig();
+		$textTime = date("Y-m-d");
 		$aeknowApiJson = $this->GetModel->getAeknowContractTx($hash);
 		if (empty($aeknowApiJson)) {
 			$logMsg = "开通失败获取AEKnow-API错误：{$hash}\r\n\r\n";
-			$logPath = "airdrop/mining/error-{date('Y-m-d')}.txt";
+			$logPath = "airdrop/mining/error-{$textTime}.txt";
 			$this->DisposeModel->wetFwriteLog($logMsg, $logPath);
 			return;
         }
@@ -62,7 +62,7 @@ class MiningModel extends ComModel
 		$chainHeight = $this->GetModel->getChainHeight($hash);  //获取链上高度
 		if (empty($chainHeight)) {
 			$logMsg = "开通映射获取链上高度失败--hash：{$hash}\r\n\r\n";
-			$logPath = "airdrop/mining/error-{date('Y-m-d')}.txt";
+			$logPath = "airdrop/mining/error-{$textTime}.txt";
 			$this->DisposeModel->wetFwriteLog($logMsg, $logPath);
 			return;
         }
@@ -88,10 +88,10 @@ class MiningModel extends ComModel
 		) {
 			$this->UserModel-> userPut($sender_id);
 			$this->db->table($this->wet_users)->where('address', $sender_id)->update( ['is_map' => '1'] );
-			$textTime   = date("Y-m-d h:i:s");
-			$wtt_ttos   = ($amount / 1e18);
-			$logMsg  = "开通映射--账户:{$sender_id}\r\n花费WTT:{$wtt_ttos}\r\n高度:{$block_height}\r\n时间:{$textTime}\r\nHash:{$hash}\r\n\r\n";
-			$logPath = "log/mining/open-mapping-{date('Y-m-d')}.txt";
+			$ymdhTime = date("Y-m-d h:i:s");
+			$wtt_ttos = ($amount / 1e18);
+			$logMsg  = "开通映射--账户:{$sender_id}\r\n花费WTT:{$wtt_ttos}\r\n高度:{$block_height}\r\n时间:{$ymdhTime}\r\nHash:{$hash}\r\n\r\n";
+			$logPath = "log/mining/open-mapping-{$textTime}.txt";
 			$this->DisposeModel->wetFwriteLog($logMsg, $logPath);
 			$this->deleteTemp($hash);
 		}
@@ -149,8 +149,8 @@ class MiningModel extends ComModel
 		}
 		//写入日志
 		$aettos  = ($amount / 1e18);
-		$logMsg  = "开启映射--账户:{$address}\r\n映射AE:{$aettos}\r\n时间:{$blockHeight}--{$textTime}\r\n\r\n";
-		$logPath = "log/mining/{date('Y-m-d')}.txt";
+		$logMsg  = "开启映射--账户:{$address}\r\n映射AE:{$aettos}\r\n时间:{$blockHeight}--".date('Y-m-d')."\r\n\r\n";
+		$logPath = "log/mining/".date('Y-m-d').".txt";
 		$this->DisposeModel->wetFwriteLog($logMsg, $logPath);
 
 		$data['state'] = true;
@@ -192,11 +192,11 @@ class MiningModel extends ComModel
 			];
 			$this->db->table($this->wet_mapping)->where('address', $address)->update($upData);
 			$data['earning'] = $checEarning;
-			$textTime   = date("Y-m-d h:i:s");
-			$aettos     = ($checkRow['amount'] / 1e18);
-			$wtt_ttos   = $checEarning/1e18;
-			$logMsg  = "解除映射--账户:{$address}\r\n映射AE:{$aettos}\r\n领取WTT:{$wtt_ttos}\r\n时间:{$textTime}\r\n\r\n";
-			$logPath = "log/mining/{date('Y-m-d')}.txt";
+			$ymdhTime = date("Y-m-d h:i:s");
+			$aettos   = ($checkRow['amount'] / 1e18);
+			$wtt_ttos = $checEarning/1e18;
+			$logMsg  = "解除映射--账户:{$address}\r\n映射AE:{$aettos}\r\n领取WTT:{$wtt_ttos}\r\n时间:{$ymdhTime}\r\n\r\n";
+			$logPath = "log/mining/".date('Y-m-d').".txt";
 			$this->DisposeModel->wetFwriteLog($logMsg, $logPath);
 			$msg = 'success';
 		}
@@ -228,11 +228,11 @@ class MiningModel extends ComModel
 				$this->db->table($this->wet_mapping)->where('address', $address)->update($upData);
 				$this->earningLock($address, 0); //关闭锁
 				$data['earning'] = $checEarning;
-				$textTime = date("Y-m-d h:i:s");
+				$ymdhTime = date("Y-m-d h:i:s");
 				$aettos   = ($checkRow['amount'] / 1e18);
 				$wtt_ttos = $checEarning/1e18;
-				$logMsg   = "领取收益--账户:{$address}\r\n映射AE:{$aettos}\r\n领取WTT:{$wtt_ttos}\r\n时间:{$textTime}\r\n\r\n";
-				$logPath  = "log/mining/{date('Y-m-d')}.txt";
+				$logMsg   = "领取收益--账户:{$address}\r\n映射AE:{$aettos}\r\n领取WTT:{$wtt_ttos}\r\n时间:{$ymdhTime}\r\n\r\n";
+				$logPath  = "log/mining/".date('Y-m-d').".txt";
 				$this->DisposeModel->wetFwriteLog($logMsg, $logPath);
 			} else {
 				$this->earningLock($address, 0); //关闭锁
@@ -288,11 +288,11 @@ class MiningModel extends ComModel
 			$mapAmount = $mapInfo['amount'];  //映射金额
 			if ($accountsBalance && $accountsBalance < $mapAmount) {  //对比[映射]及[链上]金额
 			//小黑屋判断
-				$textTime  = date("Y-m-d h:i:s");
+				$ymdhTime  = date("Y-m-d h:i:s");
 				$chainTtos = ($accountsBalance/1e18);
 				$aettos    = ($mapAmount/1e18);
-				$logMsg    = "小黑屋--账户:{$address}\r\n链上AE:{$chainTtos}\r\n映射AE:{$aettos}\r\n时间:{$blockHeight}--{$textTime}\r\n\r\n";
-				$logPath   = "log/mining/black-house-{date('Y-m-d')}.txt";
+				$logMsg    = "小黑屋--账户:{$address}\r\n链上AE:{$chainTtos}\r\n映射AE:{$aettos}\r\n时间:{$blockHeight}--{$ymdhTime}\r\n\r\n";
+				$logPath   = "log/mining/black-house-".date('Y-m-d').".txt";
 				$this->DisposeModel->wetFwriteLog($logMsg, $logPath);
 				$upMapData = [
 					'height_map'   => 0,
@@ -378,7 +378,7 @@ class MiningModel extends ComModel
 			$this->UserModel-> userPut($address);
 			$this->db->table($this->wet_users)->where('address', $address)->update( ['is_map' => '1'] );
 			$logMsg  = "开通映射--{$akToken}--Admin\r\n";
-			$logPath = "log/mining/open-mapping-{date('Y-m-d')}.txt";
+			$logPath = "log/mining/open-mapping-".date('Y-m-d').".txt";
 			$this->DisposeModel->wetFwriteLog($logMsg, $logPath);
 			$data['isOpen'] = true;
 		} else {

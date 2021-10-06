@@ -58,7 +58,7 @@ class HashReadModel extends Model {
 			$bloomAddress = $this->BloomModel ->addressBloom( $json['tx']['sender_id'] );
 
 			if ( !$json || $bloomAddress) {
-				$logMsg = "bloomAddress:$tp_hash\r\n";
+				$logMsg = "被bloom过滤账户:$tp_hash\r\n";
 				$this->DisposeModel->wetFwriteLog($logMsg);
 				continue;
 			}
@@ -83,7 +83,7 @@ class HashReadModel extends Model {
 		$bsConfig 	= $this->ConfigModel-> backendConfig();
         $microBlock = $json['block_hash'];
 		if(!$microBlock){
-			$logMsg = "error_block_hash:$microBlock\r\n";
+			$logMsg = "错误区块hash:$microBlock\r\n";
 			$this->DisposeModel->wetFwriteLog($logMsg);
 			return $this->DisposeModel-> wetJsonRt(406,'error_block_hash');
 		}
@@ -131,7 +131,7 @@ class HashReadModel extends Model {
 
 		if ($data['amount'] < $userAmount) {
 			$this->deleteTemp($hash);
-			$logMsg = "费用异常:{$data['hash']}\r\n";
+			$logMsg = "费用异常:{$hash}\r\n";
 			$this->DisposeModel->wetFwriteLog($logMsg);
 			return $this->DisposeModel-> wetJsonRt(406,'error_amount');
 		}
@@ -142,7 +142,7 @@ class HashReadModel extends Model {
 				$isContentHash = $this->ValidModel-> isContentHash($data['hash']);
 				if ($isContentHash) {
 					$this->deleteTemp($hash);
-					$logMsg = "重复主贴Hash:{$data['hash']}\r\n";
+					$logMsg = "重复主贴Hash:{$hash}\r\n";
 					$this->DisposeModel->wetFwriteLog($logMsg);
 					return $this->DisposeModel-> wetJsonRt(406,'error');
 				}
@@ -153,8 +153,9 @@ class HashReadModel extends Model {
 					$accountsAettos = $this->GetModel->getAccountsBalance($data['sender']);  //查询链上金额
 					if ($accountsAettos < $holdAettos) {
 						$this->deleteTemp($hash);
-						$logMsg = "持有AE不足最低要求:{$data['hash']}\r\n";
-						$this->DisposeModel->wetFwriteLog($logMsg);
+						$logMsg  = date('Y-m-d')."-持有AE不足最低要求:{$hash}\r\n";
+						$logPath = "log/chain_read/holdAeLow-".date('Y-m').".txt";
+						$this->DisposeModel->wetFwriteLog($logMsg, $logPath);
 						return $this->DisposeModel-> wetJsonRt(406,'hold_aettos_low');
 					}
 				}

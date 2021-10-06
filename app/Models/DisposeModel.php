@@ -130,7 +130,7 @@ class DisposeModel extends Model {
     public function wetFwriteLog($msg, $path)
     {//写入Log
         if(!$path){
-            $path = "log/chain_read/{date('Y-m-d')}.txt";
+            $path = "log/chain_read/".date('Y-m-d').".txt";
         }
         $textFile   = fopen($path, "a");
         $appendText = $msg;
