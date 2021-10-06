@@ -8,6 +8,7 @@ use App\Models\CommentModel;
 use App\Models\ReplyModel;
 use App\Models\BloomModel;
 use App\Models\ValidModel;
+use App\Models\GetModel;
 
 class ComplainModel extends Model {
 //投诉Model
@@ -22,6 +23,7 @@ class ComplainModel extends Model {
 		$this->ReplyModel 	 = new ReplyModel();
 		$this->BloomModel 	 = new BloomModel();
 		$this->ValidModel 	 = new ValidModel();
+		$this->GetModel 	 = new GetModel();
 		$this->wet_complain  = "wet_complain";
 		$this->wet_bloom     = "wet_bloom";
 		$this->wet_behavior  = "wet_behavior";
@@ -59,7 +61,7 @@ class ComplainModel extends Model {
 			return json_encode($data);
         }
 
-		$rpSenderId = $this->HashReadModel-> getSenderId($hash);  //获取tx发送人ID
+		$rpSenderId = $this->GetModel-> getTxSenderId($hash);  //获取tx发送人ID
         if ( empty($rpSenderId) ) {
 			$data['msg'] = 'error_unknown';
         	return json_encode($data);

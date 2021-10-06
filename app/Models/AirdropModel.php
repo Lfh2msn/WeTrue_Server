@@ -101,10 +101,9 @@ class AirdropModel extends ComModel
 				$userBloom  = (new BloomModel())-> addressBloom($address);
 				$uaValue	= $uactive - $lastActive;
 				if( $address != "" && !$userBloom && $uactive >= $lastActive) {
-					$textFile   = fopen("airdrop/WTT/".date("Y-m-d").".txt","a");
-					$appendText = $address.":".($uaValue * $bsConfig['airdropWTTRatio'])."\r\n";
-					fwrite($textFile, $appendText);
-					fclose($textFile);
+					$logMsg = $address.":".($uaValue * $bsConfig['airdropWTTRatio'])."\r\n";
+					$logPath = "airdrop/WTT/".date("Y-m-d").".txt"
+					$this->DisposeModel->wetFwriteLog($logMsg, $logPath);
 				}
 
 				if($uactive >= $lastActive && !$userBloom) {

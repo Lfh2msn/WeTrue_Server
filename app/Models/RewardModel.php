@@ -6,6 +6,7 @@ use App\Models\ConfigModel;
 use App\Models\ValidModel;
 use App\Models\DisposeModel;
 use App\Models\MsgModel;
+use App\Models\GetModel;
 
 class RewardModel extends Model {
 //打赏Model
@@ -17,6 +18,7 @@ class RewardModel extends Model {
 		$this->ValidModel   = new ValidModel();
 		$this->UserModel    = new UserModel();
 		$this->DisposeModel = new DisposeModel();
+		$this->GetModel     = new GetModel();
 		$this->wet_temp     = "wet_temp";
 		$this->wet_content  = "wet_content";
 		$this->wet_users    = "wet_users";
@@ -97,32 +99,21 @@ class RewardModel extends Model {
 			return;
 		}
 		$bsConfig  = $this->ConfigModel-> backendConfig();
-		$getUrl	   = 'https://www.aeknow.org/api/contracttx/'.$hash;
-		@$contents = file_get_contents($getUrl);
-		$json 	   = (array) json_decode($contents, true);
-		$sender_id = $json['sender_id'];
-		$cuntnum   = 0;
-		while ( !$sender_id && $cuntnum < 20) {
-			@$contents = file_get_contents($getUrl);
-			$json 	   = (array) json_decode($contents, true);
-			$sender_id = $json['sender_id'];
-			$cuntnum++;
-			sleep(3);
-		}
 
-		if (empty($sender_id)) {
-			$textFile   = fopen("log/reward/".date("Y-m-d").".txt", "a");
-			$appendText = "error_aeknow_api--hash：{$hash}\r\nto_hash：{$to_hash}\r\n\r\n";
-			fwrite($textFile, $appendText);
-			fclose($textFile);
+		$aeknowApiJson = $this->GetModel->getAeknowContractTx($hash);
+		if (empty($aeknowApiJson)) {
+			$logMsg = "error_aeknow_api--hash：{$hash}\r\nto_hash：{$to_hash}\r\n\r\n";
+			$logPath = "airdrop/reward/{date('Y-m-d')}.txt";
+			$this->DisposeModel->wetFwriteLog($logMsg, $logPath);
 			return;
         }
 
-		$recipient_id = $json['recipient_id'];
-		$amount 	  = $json['amount'];
-		$return_type  = $json['return_type'];
-		$block_height = (int)$json['block_height'];
-		$contract_id  = $json['contract_id'];
+		$sender_id    = $aeknowApiJson['sender_id'];
+		$recipient_id = $aeknowApiJson['recipient_id'];
+		$amount 	  = $aeknowApiJson['amount'];
+		$return_type  = $aeknowApiJson['return_type'];
+		$block_height = (int)$aeknowApiJson['block_height'];
+		$contract_id  = $aeknowApiJson['contract_id'];
 
 		if ($return_type == "revert") {
 			$this->deleteTemp($hash);

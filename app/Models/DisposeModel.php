@@ -127,7 +127,16 @@ class DisposeModel extends Model {
         return json_encode($rt);
     }
 
-    
+    public function wetFwriteLog($msg, $path)
+    {//写入Log
+        if(!$path){
+            $path = "log/chain_read/{date('Y-m-d')}.txt";
+        }
+        $textFile   = fopen($path, "a");
+        $appendText = $msg;
+        fwrite($textFile, $appendText);
+        fclose($textFile);
+    }
 
     public function activeGrade($number)
 	{//活跃度等级划分

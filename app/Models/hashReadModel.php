@@ -8,6 +8,7 @@ use App\Models\BloomModel;
 use App\Models\TopicModel;
 use App\Models\ValidModel;
 use App\Models\MsgModel;
+use App\Models\GetModel;
 
 class HashReadModel extends Model {
 //链上hash入库Model
@@ -21,6 +22,7 @@ class HashReadModel extends Model {
 		$this->TopicModel	 = new TopicModel();
 		$this->ValidModel	 = new ValidModel();
 		$this->MsgModel	 	 = new MsgModel();
+		$this->GetModel	 	 = new GetModel();
 		$this->wet_temp 	 = "wet_temp";
 		$this->wet_behavior  = "wet_behavior";
 		$this->wet_content 	 = "wet_content";
@@ -43,8 +45,6 @@ class HashReadModel extends Model {
 			log_message('error_repeat_'.$hash, 4);
 			echo $this->DisposeModel-> wetJsonRt(406,'error_repeat');
 		}
-
-		//fastcgi_finish_request(); //冲刷增速
 		
 		$delTempSql = "DELETE FROM $this->wet_temp WHERE tp_time <= now()-interval '1 D' AND tp_type = '$tp_type'";
 		$this->db->query($delTempSql);
@@ -54,14 +54,12 @@ class HashReadModel extends Model {
 		$result  = $tpquery-> getResult();
 		foreach ($result as $row) {
 			$tp_hash  = $row-> tp_hash;
-			$json 	  = $this->getTxDetails($tp_hash);
+			$json 	  = $this->GetModel->getTransactions($tp_hash);
 			$bloomAddress = $this->BloomModel ->addressBloom( $json['tx']['sender_id'] );
 
 			if ( !$json || $bloomAddress) {
-				$textFile   = fopen("log/hash_read/".date("Y-m-d").".txt", "a");
-				$appendText = "bloomAddress:$tp_hash\r\n";
-				fwrite($textFile, $appendText);
-				fclose($textFile);
+				$logMsg = "bloomAddress:$tp_hash\r\n";
+				$this->DisposeModel->wetFwriteLog($logMsg);
 				continue;
 			}
 
@@ -72,10 +70,8 @@ class HashReadModel extends Model {
 					$json['tx']['payload'] == "ba_Xfbg4g=="
 				) ){
 					$this->deleteTemp($data['hash']);  //删除临时缓存
-					$textFile   = fopen("log/hash_read/".date("Y-m-d").".txt", "a");
-					$appendText = "错误类型:$hash\r\n";
-					fwrite($textFile, $appendText);
-					fclose($textFile);
+					$logMsg = "错误类型:$hash\r\n";
+					$this->DisposeModel->wetFwriteLog($logMsg);
 					continue;
 			}
 			$this->decodeContent($json);
@@ -87,13 +83,11 @@ class HashReadModel extends Model {
 		$bsConfig 	= $this->ConfigModel-> backendConfig();
         $microBlock = $json['block_hash'];
 		if(!$microBlock){
-			$textFile   = fopen("log/hash_read/".date("Y-m-d").".txt", "a");
-			$appendText = "error_block_hash:$microBlock\r\n";
-			fwrite($textFile, $appendText);
-			fclose($textFile);
+			$logMsg = "error_block_hash:$microBlock\r\n";
+			$this->DisposeModel->wetFwriteLog($logMsg);
 			return $this->DisposeModel-> wetJsonRt(406,'error_block_hash');
 		}
-		$utcTime = $this->getMicroBlockTime($microBlock);
+		$utcTime = $this->GetModel->getMicroBlockTime($microBlock);
 		$json['mb_time'] = $utcTime;
 		$payload = $this->DisposeModel-> decodePayload($json['tx']['payload']);
 		$hash	 = $json['hash'];
@@ -104,17 +98,12 @@ class HashReadModel extends Model {
 		{  //版本号错误或低
 			if(!$WeTrue){ //非WeTrue
 				$this->deleteTemp($hash);
-				$textFile   = fopen("log/hash_read/".date("Y-m-d").".txt", "a");
-				$appendText = "非WeTrue格式:{$hash},版本号：{$WeTrue}\r\n";
-				fwrite($textFile, $appendText);
-				fclose($textFile);
+				$logMsg = "非WeTrue格式:{$hash},版本号：{$WeTrue}\r\n";
+				$this->DisposeModel->wetFwriteLog($logMsg);
 				return $this->DisposeModel-> wetJsonRt(406,'error_WeTrue');
 			}
-
-			$textFile   = fopen("log/hash_read/".date("Y-m-d").".txt", "a");
-			$appendText = "版本号异常:{$hash},版本号：{$WeTrue}\r\n";
-			fwrite($textFile, $appendText);
-			fclose($textFile);
+			$logMsg = "版本号异常:{$hash},版本号：{$WeTrue}\r\n";
+			$this->DisposeModel->wetFwriteLog($logMsg);
 			return $this->DisposeModel-> wetJsonRt(406,'error_version');
 		}
 
@@ -142,10 +131,8 @@ class HashReadModel extends Model {
 
 		if ($data['amount'] < $userAmount) {
 			$this->deleteTemp($hash);
-			$textFile   = fopen("log/hash_read/".date("Y-m-d").".txt", "a");
-			$appendText = "费用异常:{$data['hash']}\r\n";
-			fwrite($textFile, $appendText);
-			fclose($textFile);
+			$logMsg = "费用异常:{$data['hash']}\r\n";
+			$this->DisposeModel->wetFwriteLog($logMsg);
 			return $this->DisposeModel-> wetJsonRt(406,'error_amount');
 		}
 		try{
@@ -155,10 +142,8 @@ class HashReadModel extends Model {
 				$isContentHash = $this->ValidModel-> isContentHash($data['hash']);
 				if ($isContentHash) {
 					$this->deleteTemp($hash);
-					$textFile   = fopen("log/hash_read/".date("Y-m-d").".txt", "a");
-					$appendText = "重复主贴Hash:{$data['hash']}\r\n";
-					fwrite($textFile, $appendText);
-					fclose($textFile);
+					$logMsg = "重复主贴Hash:{$data['hash']}\r\n";
+					$this->DisposeModel->wetFwriteLog($logMsg);
 					return $this->DisposeModel-> wetJsonRt(406,'error');
 				}
 
@@ -196,10 +181,8 @@ class HashReadModel extends Model {
 				$isCommentHash = $this->ValidModel-> isCommentHash($data['hash']);
 				if ($isCommentHash) {
 					$this->deleteTemp($hash);
-					$textFile   = fopen("log/hash_read/".date("Y-m-d").".txt", "a");
-					$appendText = "重复评论hash:{$data['hash']}\r\n";
-					fwrite($textFile, $appendText);
-					fclose($textFile);
+					$logMsg = "重复评论hash:{$data['hash']}\r\n";
+					$this->DisposeModel->wetFwriteLog($logMsg);
 					return $this->DisposeModel-> wetJsonRt(406,'error');
 				}
 
@@ -240,10 +223,8 @@ class HashReadModel extends Model {
 				$isReplyHash = $this->ValidModel-> isReplyHash($data['hash']);
 				if ($isReplyHash) {
 					$this->deleteTemp($hash);
-					$textFile   = fopen("log/hash_read/".date("Y-m-d").".txt", "a");
-					$appendText = "重复回复hash:{$data['hash']}\r\n";
-					fwrite($textFile, $appendText);
-					fclose($textFile);
+					$logMsg = "重复回复hash:{$data['hash']}\r\n";
+					$this->DisposeModel->wetFwriteLog($logMsg);
 					return $this->DisposeModel-> wetJsonRt(406,'error');
 				}
 
@@ -254,10 +235,8 @@ class HashReadModel extends Model {
 
 				if ($data['replyType'] != "comment" && $data['replyType'] != "reply") {
 					$this->deleteTemp($hash);
-					$textFile   = fopen("log/hash_read/".date("Y-m-d").".txt", "a");
-					$appendText = "无效格式{$data['replyType']}-回复hash：{$data['hash']}\r\n";
-					fwrite($textFile, $appendText);
-					fclose($textFile);
+					$logMsg = "无效格式{$data['replyType']}-回复hash：{$data['hash']}\r\n";
+					$this->DisposeModel->wetFwriteLog($logMsg);
 					return $this->DisposeModel-> wetJsonRt(406,'error');
 				}
 
@@ -314,10 +293,8 @@ class HashReadModel extends Model {
 				$isNickname = $this->ValidModel-> isNickname($data['content']);
 				if ($isNickname) {
 					$this->deleteTemp($hash);
-					$textFile   = fopen("log/hash_read/".date("Y-m-d").".txt", "a");
-					$appendText = "重复昵称hash:{$data['hash']}\r\n";
-					fwrite($textFile, $appendText);
-					fclose($textFile);
+					$logMsg = "重复昵称hash:{$data['hash']}\r\n";
+					$this->DisposeModel->wetFwriteLog($logMsg);
 					return $this->DisposeModel-> wetJsonRt(406,'error');
 				}
 
@@ -338,10 +315,8 @@ class HashReadModel extends Model {
 			{//性别
 				$data['content'] = (int)trim($payload['content']);
 				if (!is_numeric($data['content']) || $data['content'] >= 3){
-					$textFile   = fopen("log/hash_read/".date("Y-m-d").".txt", "a");
-					$appendText = "性别hash_err_sex:{$data['hash']}\r\n";
-					fwrite($textFile, $appendText);
-					fclose($textFile);
+					$logMsg = "性别hash_err_sex:{$data['hash']}\r\n";
+					$this->DisposeModel->wetFwriteLog($logMsg);
 					$this->deleteTemp($hash);
 					return $this->DisposeModel-> wetJsonRt(406,'error');
 				}
@@ -360,10 +335,8 @@ class HashReadModel extends Model {
 				$getRow		= $this->db->query($selectHash)-> getRow();
 				if ($getRow) {
 					$this->deleteTemp($hash);
-					$textFile   = fopen("log/hash_read/".date("Y-m-d").".txt", "a");
-					$appendText = "重复头像hash:{$data['hash']}\r\n";
-					fwrite($textFile, $appendText);
-					fclose($textFile);
+					$logMsg = "重复头像hash:{$data['hash']}\r\n";
+					$this->DisposeModel->wetFwriteLog($logMsg);
 					return $this->DisposeModel-> wetJsonRt(406,'error');
 				}
 
@@ -391,7 +364,8 @@ class HashReadModel extends Model {
 				$getRow		= $this->db->query($selectHash)-> getRow();
 				if ($getRow) {
 					$this->deleteTemp($hash);
-					log_message('Repeat_Drift_Hash:'.$data['hash'], 4);
+					$logMsg = "Repeat_Drift_Hash:{$data['hash']}\r\n";
+					$this->DisposeModel->wetFwriteLog($logMsg);
 					return $this->DisposeModel-> wetJsonRt(406,'error');
 				}
 
@@ -417,10 +391,8 @@ class HashReadModel extends Model {
 				$active = $bsConfig['replyActive'];
 			} else {
 				$this->deleteTemp($hash);
-				$textFile   = fopen("log/hash_read/".date("Y-m-d").".txt", "a");
-				$appendText = "data[type]标签错误:{$hash}\r\n";
-				fwrite($textFile, $appendText);
-				fclose($textFile);
+				$logMsg = "data[type]标签错误:{$hash}\r\n";
+				$this->DisposeModel->wetFwriteLog($logMsg);
 				return $this->DisposeModel-> wetJsonRt(406,'error');
 			}
 
@@ -438,83 +410,11 @@ class HashReadModel extends Model {
 			return json_encode($this->DisposeModel-> wetRt(200,'success'));
 		} catch (Exception $err) {
 			$this->deleteTemp($hash);
-			$textFile   = fopen("log/hash_read/".date("Y-m-d").".txt", "a");
-			$appendText = "未知错误:{$err}\r\n";
-			fwrite($textFile, $appendText);
-			fclose($textFile);
+			$logMsg = "未知错误:{$err}\r\n";
+			$this->DisposeModel->wetFwriteLog($logMsg);
 			return $this->DisposeModel-> wetJsonRt(406,'error');
 		}
     }
-
-	public function getSenderId($hash)
-	{//获取tx 发送人
-        $json = $this->getTxDetails($hash);
-		if (empty($json)) {
-			$textFile   = fopen("log/hash_read/".date("Y-m-d").".txt", "a");
-			$appendText = "查不到发送人:{$hash}\r\n";
-			fwrite($textFile, $appendText);
-			fclose($textFile);
-        	return "empty";
-        }
-		return $json['tx']['sender_id'];
-	}
-
-	public function getMicroBlockTime($microBlock)
-	{//微块时间
-        $bsConfig = $this->ConfigModel-> backendConfig();
-        $url	  = $bsConfig['backendServiceNode'].'v3/micro-blocks/hash/'.$microBlock.'/header';
-        @$get	  = file_get_contents($url);
-		$num = 0;
-		while ( !$get && $num < 20 ) {
-			@$get = file_get_contents($url);
-			$num++;
-			$textFile   = fopen("log/hash_read/".date("Y-m-d").".txt", "a");
-			$appendText = "读取micro_blocks失败:{$url}\r\n";
-			fwrite($textFile, $appendText);
-			fclose($textFile);
-			sleep(6);
-		}
-
-		if (empty($get)) {
-			$textFile   = fopen("log/hash_read/".date("Y-m-d").".txt", "a");
-			$appendText = "读取微块时间失败:{$url}\r\n";
-			fwrite($textFile, $appendText);
-			fclose($textFile);
-        	return "Get MicroBlock Time Error";
-        }
-
-        $json = (array) json_decode($get, true);
-		$utcTime = $json['time'];
-		return $utcTime;
-	}
-
-	public function getTxDetails($hash)
-	{//获取tx 详情
-		$bsConfig  = $this->ConfigModel-> backendConfig();
-		$url 	   = $bsConfig['backendServiceNode'].'v3/transactions/'.$hash;
-		@$get	   = file_get_contents($url);
-		$json	   = (array) json_decode($get, true);
-		$blockHash = substr($json['block_hash'], 0, 3);
-		$number	   = 0;
-		while ( !$get && $number < 20 || $blockHash != "mh_") {
-			@$get	   = file_get_contents($url);
-			$json	   = (array) json_decode($get, true);
-			$blockHash = substr($json['block_hash'], 0, 3);
-			$number++;
-			sleep(6);
-		}
-
-        if (!$get || $blockHash != "mh_") {
-			$textFile   = fopen("log/hash_read/".date("Y-m-d").".txt", "a");
-			$appendText = "节点读取错误:{$hash}\r\n";
-			fwrite($textFile, $appendText);
-			fclose($textFile);
-        	return "Node Data Error";
-        }
-
-        $json = (array) json_decode($get, true);
-		return $json;
-	}
 
 	private function deleteTemp($hash)
 	{//删除临时缓存
