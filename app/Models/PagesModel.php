@@ -70,7 +70,7 @@ class PagesModel extends Model {
 			$this->tablename = "wet_comment";
 			$countSql		 = "SELECT count(to_hash) FROM $this->tablename WHERE to_hash = '$opt[hash]'";
 			$limitSql		 = "SELECT hash FROM $this->tablename WHERE to_hash = '$opt[hash]' 
-									ORDER BY utctime DESC LIMIT $size OFFSET ".(($page-1) * $size + $offset);
+									/*ORDER BY utctime DESC */LIMIT $size OFFSET ".(($page-1) * $size + $offset);
 			$opt['select']	 = "comment";
 		}
 
@@ -79,7 +79,7 @@ class PagesModel extends Model {
 			$this->tablename = "wet_reply";
 			$countSql		 = "SELECT count(to_hash) FROM $this->tablename WHERE to_hash = '$opt[hash]'";
 			$limitSql		 = "SELECT hash FROM $this->tablename WHERE to_hash = '$opt[hash]' 
-									ORDER BY utctime DESC LIMIT $size OFFSET ".(($page-1) * $size + $offset);
+									/*ORDER BY utctime DESC */LIMIT $size OFFSET ".(($page-1) * $size + $offset);
 			$opt['select']	 = "reply";
 		}
 
@@ -197,10 +197,10 @@ class PagesModel extends Model {
 
 	private function cycle($page, $size, $countSql, $limitSql, $opt)
 	{//列表循环
-		$data = $this->pages($page, $size, $countSql);
+		$data  = $this->pages($page, $size, $countSql);
 		$query = $this->db-> query($limitSql);
-		$data['data'] = [];
 		$getResult = $query-> getResult();
+		$data['data'] = [];
 
 		if($getResult){
 			foreach ($getResult as $row) {

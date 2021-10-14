@@ -35,8 +35,9 @@ class HashReadModel extends Model {
 
 	public function split($hash)
 	{//上链内容入库
-		$tp_type   = "common";
+		$tp_type    = "common";
 		$isTempHash = $this->ValidModel-> isTempHash($hash);
+		$bsConfig 	= $this->ConfigModel-> backendConfig();
 		if (!$isTempHash) {  //写入临时缓存
 			$insertTempSql = "INSERT INTO $this->wet_temp(tp_hash, tp_type) VALUES ('$hash', '$tp_type')";
 			$this->db->query($insertTempSql);
@@ -58,7 +59,7 @@ class HashReadModel extends Model {
 			$bloomAddress = $this->BloomModel ->addressBloom( $json['tx']['sender_id'] );
 
 			if ( !$json || $bloomAddress) {
-				$logMsg = "被bloom过滤账户:$tp_hash\r\n";
+				$logMsg = "被bloom过滤账户:{$tp_hash}\r\n";
 				$this->DisposeModel->wetFwriteLog($logMsg);
 				continue;
 			}
@@ -69,8 +70,8 @@ class HashReadModel extends Model {
 					$json['tx']['payload'] == null || 
 					$json['tx']['payload'] == "ba_Xfbg4g=="
 				) ){
-					$this->deleteTemp($data['hash']);  //删除临时缓存
-					$logMsg = "错误类型:$hash\r\n";
+					$this->deleteTemp($hash);  //删除临时缓存
+					$logMsg = "错误类型:{$hash}\r\n";
 					$this->DisposeModel->wetFwriteLog($logMsg);
 					continue;
 			}
@@ -112,7 +113,7 @@ class HashReadModel extends Model {
 		$sourceDelXSS 	 = $this->DisposeModel-> delete_xss($isSource);
 		$sourceSubstr	 = substr($sourceDelXSS, 0, 10);
 		$data['source']  = $sourceSubstr;
-		$data['type']    = $payload['type'];
+		$data['type']    = $this->DisposeModel-> delete_xss($payload['type']);
 		$data['hash']    = $hash;
 		$data['receipt'] = $json['tx']['recipient_id'];
 		$data['sender']  = $json['tx']['sender_id'];
@@ -122,12 +123,12 @@ class HashReadModel extends Model {
 
 		//用户费用检测
 		$ftConfig = $this->ConfigModel-> frontConfig($data['sender']);
-		if ($data['type'] == 'topic')    $userAmount = $ftConfig['topicAmount'];
-		if ($data['type'] == 'comment')  $userAmount = $ftConfig['commentAmount'];
-		if ($data['type'] == 'reply')    $userAmount = $ftConfig['replyAmount'];
-		if ($data['type'] == 'nickname') $userAmount = $ftConfig['nicknameAmount'];
-		if ($data['type'] == 'portrait') $userAmount = $ftConfig['portraitAmount'];
-		if ($data['type'] == 'sex')      $userAmount = $ftConfig['sexAmount'];
+		if ($data['type'] == 'topic')    {$userAmount = $ftConfig['topicAmount'];}
+		if ($data['type'] == 'comment')  {$userAmount = $ftConfig['commentAmount'];}
+		if ($data['type'] == 'reply')    {$userAmount = $ftConfig['replyAmount'];}
+		if ($data['type'] == 'nickname') {$userAmount = $ftConfig['nicknameAmount'];}
+		if ($data['type'] == 'portrait') {$userAmount = $ftConfig['portraitAmount'];}
+		if ($data['type'] == 'sex')      {$userAmount = $ftConfig['sexAmount'];}
 
 		if ($data['amount'] < $userAmount) {
 			$this->deleteTemp($hash);
@@ -199,7 +200,7 @@ class HashReadModel extends Model {
 					return $this->DisposeModel-> wetJsonRt(406,'error');
 				}
 
-				$data['toHash'] = trim($payload['toHash']);
+				$data['toHash'] = $this->DisposeModel-> delete_xss($payload['toHash']);
 				$insertData = [
 					'hash'		   => $data['hash'],
 					'to_hash'	   => $data['toHash'],
@@ -241,12 +242,12 @@ class HashReadModel extends Model {
 					return $this->DisposeModel-> wetJsonRt(406,'error');
 				}
 
-				$data['replyType'] = trim($payload['reply_type']);
-				$data['toHash']    = trim($payload['to_hash']);
-				$data['toAddress'] = trim($payload['to_address']);
-				$data['replyHash'] = trim($payload['reply_hash']);
+				$data['replyType'] = $this->DisposeModel-> delete_xss($payload['reply_type']);
+				$data['toHash']    = $this->DisposeModel-> delete_xss($payload['to_hash']);
+				$data['toAddress'] = $this->DisposeModel-> delete_xss($payload['to_address']);
+				$data['replyHash'] = $this->DisposeModel-> delete_xss($payload['reply_hash']);
 
-				if ($data['replyType'] != "comment" && $data['replyType'] != "reply") {
+				if ($data['replyType'] != "comment" || $data['replyType'] != "reply") {
 					$this->deleteTemp($hash);
 					$logMsg = "无效格式{$data['replyType']}-回复hash：{$data['hash']}\r\n";
 					$this->DisposeModel->wetFwriteLog($logMsg);
