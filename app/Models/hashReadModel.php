@@ -247,7 +247,7 @@ class HashReadModel extends Model {
 				$data['toAddress'] = $this->DisposeModel-> delete_xss($payload['to_address']);
 				$data['replyHash'] = $this->DisposeModel-> delete_xss($payload['reply_hash']);
 
-				if ($data['replyType'] != "comment" || $data['replyType'] != "reply") {
+				if ($data['replyType'] != "comment" && $data['replyType'] != "reply") {
 					$this->deleteTemp($hash);
 					$logMsg = "无效格式{$data['replyType']}-回复hash：{$data['hash']}\r\n";
 					$this->DisposeModel->wetFwriteLog($logMsg);

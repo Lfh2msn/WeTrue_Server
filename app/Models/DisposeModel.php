@@ -314,4 +314,21 @@ class DisposeModel extends Model {
         return $log;
     }
 
+    public function to_pg_array($arr)
+    {//PHP数组转PG_SQL数组
+		settype($arr, 'array'); //可以用标量或数组调用
+		$result = array();
+		foreach ($arr as $t) {
+			if (is_array($t)) {
+				$result[] = $this->to_pg_array($t);
+			} else {
+				$t = str_replace('"', '\\"', $t); //逃避双引号
+				if (! is_numeric($t)) //非数字值
+					$t = "'" . $t . "'";
+				$result[] = $t;
+			}
+		}
+		return  implode(",", $result) ; //格式化
+	}
+
 }
