@@ -77,10 +77,12 @@ class MsgModel extends ComModel
 					$isData['type']    = $type;
 					$isData['utctime'] = $utctime;
 					$isData['topic']   = $this->ContentModel-> simpleContent($toHash, $opt=[]);
+					$isShTipid = $this->DisposeModel-> checkSuperheroTipid($toHash);
+					if ($isShTipid) $isData['topic'] = $this->SuperheroContentModel-> simpleContent($toHash, $opt=[]);
 					$isData['comment'] = $this->CommentModel-> simpleComment($hash, $opt);
 					$isData['reply']   = [];
 					$isData['reward']  = [];
-					if($isData['topic'] && $isData['comment']) {
+					if ($isData['topic'] && $isData['comment']) {
 						$detaila[] = $isData;
 					}
 				}
@@ -159,15 +161,19 @@ class MsgModel extends ComModel
 
 	public function toHashSendID($hash, $opt=[])
 	{//hash获取被评论人ID
+		$whereHash = 'hash';
 		if ($opt['type'] == 'comment') {
 			$this->tablename = "wet_content";
 		} elseif ($opt['type'] == 'reply') {
 			$this->tablename = "wet_comment";
+		} elseif ($opt['type'] == 'shTipid') {
+			$this->tablename = "wet_content_sh";
+			$whereHash = 'tip_id';
 		} else {
 			return;
 		}
-		
-		$sql   = "SELECT sender_id FROM $this->tablename WHERE hash = '$hash' LIMIT 1";
+
+		$sql   = "SELECT sender_id FROM $this->tablename WHERE $whereHash = '$hash' LIMIT 1";
         $query = $this->db->query($sql);
 		$row   = $query->getRow();
 		$send  = $row->sender_id;

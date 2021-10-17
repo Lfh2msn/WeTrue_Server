@@ -9,6 +9,7 @@ use App\Models\TopicModel;
 use App\Models\ValidModel;
 use App\Models\MsgModel;
 use App\Models\GetModel;
+use App\Models\SuperheroModel;
 
 class HashReadModel extends Model {
 //链上hash入库Model
@@ -23,6 +24,7 @@ class HashReadModel extends Model {
 		$this->ValidModel	 = new ValidModel();
 		$this->MsgModel	 	 = new MsgModel();
 		$this->GetModel	 	 = new GetModel();
+		$this->SuperheroModel = new SuperheroModel();
 		$this->wet_temp 	 = "wet_temp";
 		$this->wet_behavior  = "wet_behavior";
 		$this->wet_content 	 = "wet_content";
@@ -76,6 +78,14 @@ class HashReadModel extends Model {
 					continue;
 			}
 			$this->decodeContent($json);
+			/**
+			 * 抓取超级英雄数据，及写入
+			 * 服务器10-12小时=中国时间23--01点执行
+			 */
+			$currentHour = date('H');
+			if ($currentHour>=10 && $currentHour<=12) {
+				$this->SuperheroModel-> getContent(1);
+			}
 		}
 	}
 
@@ -174,9 +184,7 @@ class HashReadModel extends Model {
 								'source' 	   => $data['source']
 							];
 				$this->db->table($this->wet_content)->insert($insertData);
-				$upSql       = "UPDATE $this->wet_users SET topic_sum = topic_sum + 1 WHERE address = '$data[sender]'";
-				$this->db->query($upSql);
-				$active      = $bsConfig['topicActive'];
+				$active = $bsConfig['topicActive'];
 
 				$isTopic = $this->TopicModel-> isTopic($data['content']);
 				if($isTopic) {
@@ -212,12 +220,17 @@ class HashReadModel extends Model {
 					'payload' 	   => $data['content']
 				];
 				$this->db->table($this->wet_comment)->insert($insertData);
-				$upSql  	 = "UPDATE $this->wet_content SET comment_sum = comment_sum + 1 WHERE hash = '$data[toHash]'";
+				$upSql = "UPDATE $this->wet_content SET comment_sum = comment_sum + 1 WHERE hash = '$data[toHash]'";
 				$this->db->query($upSql);
-				$active 	 = $bsConfig['commentActive'];
+				$active = $bsConfig['commentActive'];
 
 				//写入消息
 				$msgOpt = [ 'type'=>$data['type'] ];
+				$isShTipid = $this->DisposeModel-> checkSuperheroTipid($data['toHash']);
+				if ($isShTipid) {
+					$msgOpt = [ 'type'=>'shTipid' ];
+				}
+	
 				$toHashID = $this->MsgModel-> toHashSendID($data['toHash'], $msgOpt);  //获取被评论ID
 				if($toHashID) {
 					$msgData = [
@@ -420,6 +433,12 @@ class HashReadModel extends Model {
 			];
 			$this->db->table($this->wet_behavior)->insert($insetrBehaviorDate);
 			$this->UserModel-> userActive($data['sender'], $active, $e = true);
+			
+			if( $data['type'] == 'topic' ) { //发布主贴用户发帖量+1
+				$upSql = "UPDATE $this->wet_users SET topic_sum = topic_sum + 1 WHERE address = '$data[sender]'";
+				$this->db->query($upSql);
+			}
+				
 			$this->deleteTemp($hash);
 			return json_encode($this->DisposeModel-> wetRt(200,'success'));
 		} catch (Exception $err) {

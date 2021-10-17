@@ -14,11 +14,10 @@ class StarModel extends Model {
 		$this->ValidModel   = new ValidModel();
 		$this->wet_star     = "wet_star";
 		$this->wet_users	= "wet_users";
-		$this->wet_content  = "wet_content";
 		$this->wet_behavior = "wet_behavior";
 	}
 
-	public function star($hash)
+	public function star($hash, $select)
 	{//收藏
 		$akToken   = $_SERVER['HTTP_AK_TOKEN'];
 		$isAkToken = $this->DisposeModel-> checkAddress($akToken);
@@ -26,20 +25,24 @@ class StarModel extends Model {
 			return $this->DisposeModel-> wetJsonRt(401,'error_login',[]);
 		}
 
-		if (!$hash) {
-			return $this->DisposeModel-> wetJsonRt(200,'error_hash',[]);
+		$this->tablename = 'wet_content';
+		$whereHash = 'hash';
+
+		if ($select === 'shTipidStar') {
+			$this->tablename = 'wet_content_sh';
+			$whereHash = 'tip_id';
 		}
 
 		$data = [];
 		$verify = $this->ValidModel-> isStar($hash, $akToken);
 		if (!$verify) {
 			$starSql    = "INSERT INTO $this->wet_star(hash, sender_id) VALUES ('$hash', '$akToken')";
-			$upContent  = "UPDATE $this->wet_content SET star_sum = star_sum + 1 WHERE hash = '$hash'";
+			$upContent  = "UPDATE $this->tablename SET star_sum = star_sum + 1 WHERE $whereHash = '$hash'";
 			$upUsers    = "UPDATE $this->wet_users SET star_sum = star_sum + 1 WHERE address = '$akToken'";
 			$isStar	    = true;
 		} else {
 			$starSql    = "DELETE FROM $this->wet_star WHERE hash = '$hash' AND sender_id = '$akToken'";
-			$upContent  = "UPDATE $this->wet_content SET star_sum = star_sum - 1 WHERE hash = '$hash'";
+			$upContent  = "UPDATE $this->tablename SET star_sum = star_sum - 1 WHERE $whereHash = '$hash'";
 			$upUsers    = "UPDATE $this->wet_users SET star_sum = star_sum - 1 WHERE address = '$akToken'";
 			$isStar	    = false;
 		}
@@ -53,7 +56,7 @@ class StarModel extends Model {
 			'thing'   => 'isStar'
 		];
 		$this->db->table($this->wet_behavior)->insert($insetrBehaviorDate);
-		$getStarSql = "SELECT star_sum FROM $this->wet_content WHERE hash = '$hash' LIMIT 1";
+		$getStarSql = "SELECT star_sum FROM $this->tablename WHERE hash = '$hash' LIMIT 1";
 		$query 		= $this->db-> query($getStarSql);
 		$row		= $query-> getRow();
 		$data['star']   = (int)$row->star_sum;

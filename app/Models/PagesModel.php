@@ -7,6 +7,7 @@ use App\Models\CommentModel;
 use App\Models\ReplyModel;
 use App\Models\ConfigModel;
 use App\Models\DisposeModel;
+use App\Models\SuperheroContentModel;
 
 class PagesModel extends Model {
 //分页列表模型
@@ -22,6 +23,8 @@ class PagesModel extends Model {
 		$this->ReplyModel 	= new ReplyModel();
 		$this->ConfigModel 	= new ConfigModel();
 		$this->DisposeModel = new DisposeModel();
+		$this->SuperheroContentModel = new SuperheroContentModel();
+		
     }
 
     public function limit($page, $size, $offset, $opt=[])
@@ -43,7 +46,7 @@ class PagesModel extends Model {
 		$opt['substr']	  = 160; //限制输出
 
 		if ( $opt['type'] == 'contentList' )
-		{//主贴列表
+		{//最新主贴列表
 			$this->tablename = "wet_content";
 			$countSql		 = "SELECT count(hash) FROM $this->tablename";
 			$limitSql		 = "SELECT hash FROM $this->tablename 
@@ -63,7 +66,7 @@ class PagesModel extends Model {
 							END 
 							WHERE hash IN ($limitSql)";
 			$this->db-> query($upReadSql);
-	}
+		}
 
 		if ( $opt['type'] == 'commentList' )
 		{//评论列表
@@ -162,11 +165,20 @@ class PagesModel extends Model {
 			$opt['select']	 = "content";
 		}
 
+		if ( $opt['type'] == 'shTipidList' )
+		{//最新Superhero主贴列表
+			$this->tablename = "wet_content_sh";
+			$countSql		 = "SELECT count(tip_id) FROM $this->tablename";
+			$limitSql		 = "SELECT tip_id AS hash FROM $this->tablename 
+									ORDER BY utctime DESC LIMIT $size OFFSET ".(($page-1) * $size + $offset);
+			$opt['select']	 = "content_sh";
+		}
+
 		$data = $this->cycle($page, $size, $countSql, $limitSql, $opt);
 		return json_encode($data);
     }
 
-	public function Alone($hash, $opt=[])
+	public function alone($hash, $opt=[])
 	{//内容单页
 		$akToken   = $_SERVER['HTTP_AK_TOKEN'];
 		$isAkToken = $this->DisposeModel-> checkAddress($akToken);
@@ -183,13 +195,17 @@ class PagesModel extends Model {
 			$Content = $this->CommentModel-> txComment($hash, $opt);
 		}
 
+		if($opt['select'] == 'shTipid') {
+			$Content = $this->SuperheroContentModel-> txContent($hash, $opt);
+		}
+
 		if($Content) {
 			$code = 200;
 			$msg  = 'success';
 			$data = $Content;
 		} else {
 			$code = 406;
-			$msg  = 'error_hash';
+			$msg  = 'error_hash_or_id';
 		}
 
 		return $this->DisposeModel-> wetJsonRt($code, $msg, $data);
@@ -227,6 +243,11 @@ class PagesModel extends Model {
 	
 					if ($opt['select'] == 'reply') {
 						$isData = $this->ReplyModel-> txReply($hash, $opt);
+						if(isset($isData)) $detaila[] = $isData;
+					}
+
+					if ($opt['select']  == 'content_sh') {
+						$isData = $this->SuperheroContentModel-> txContent($hash, $opt);
 						if(isset($isData)) $detaila[] = $isData;
 					}
 				}

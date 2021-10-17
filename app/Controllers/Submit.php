@@ -14,8 +14,19 @@ class Submit extends BaseController {
     {//点赞
         $hash   = $this->request->getPost('hash');
         $type   = $this->request->getPost('type');
-		$isHash = $this->DisposeModel-> checkAddress($hash);
-        if ($isHash && $type == 'topic' || $type == 'comment' || $type == 'reply') {
+		if ($type == 'shTipid') {
+			$isHash = $this->DisposeModel-> checkSuperheroTipid($hash);
+		} else {
+			$isHash = $this->DisposeModel-> checkAddress($hash);
+		}
+
+        if (
+			$isHash 
+			&& $type == 'topic' 
+			|| $type == 'comment' 
+			|| $type == 'reply' 
+			|| $type == 'shTipid'
+		) {
             $data = (new PraiseModel())-> praise($hash, $type);
 		    echo $data;
         } else {
@@ -38,10 +49,18 @@ class Submit extends BaseController {
 
     public function contentStar()
 	{//收藏
-		$hash  = $this->request->getPost('hash');
-		$isHash = $this->DisposeModel-> checkAddress($hash);
-		if ($isHash) {
-            $data = (new StarModel())-> star($hash);
+		$getHash   = $this->request->getPost('hash');
+		$isHash    = $this->DisposeModel-> checkAddress($getHash);
+		$isShTipid = $this->DisposeModel-> checkSuperheroTipid($getHash);
+		$isCheck   = $isHash ?? $isShTipid;
+
+		$select == 'contentStar';
+		if ($isShTipid) {
+			$select == 'shTipidStar';
+		}
+
+		if ($isCheck) {
+            $data = (new StarModel())-> star($getHash, $select);
 			echo $data;
         } else {
             echo $this->DisposeModel-> wetJsonRt(406, 'error_hash');

@@ -27,6 +27,7 @@ class PraiseModel extends Model {
 			return $this->DisposeModel-> wetJsonRt(401, 'error_login');
 		}
 		
+		$whereHash = 'hash';
 		if ( $type === 'topic' ) {
 			$this->tablename = 'wet_content';
 
@@ -36,43 +37,46 @@ class PraiseModel extends Model {
 		} elseif ( $type === 'reply' ) {
 			$this->tablename = 'wet_reply';
 
+		} elseif ( $type === 'shTipid' ) {
+			$this->tablename = 'wet_content_sh';
+			$whereHash = 'tip_id';
 		} else {
 			return $this->DisposeModel-> wetJsonRt(401, 'error_type');
 		}
 
 		$data = [];
-		$isHashSql = "SELECT hash, praise FROM $this->tablename WHERE hash = '$hash' LIMIT 1";
+		$isHashSql = "SELECT $whereHash,praise FROM $this->tablename WHERE $whereHash = '$hash' LIMIT 1";
 		$query = $this->db-> query($isHashSql);
 		$row   = $query-> getRow();
 		if(!$row) {
-			$msg = 'error_hash';
+			$msg = 'error_hash_or_id';
 		} else {
 			$verify = $this->ValidModel-> isPraise($hash, $akToken);
 			if(!$verify) {
-				$updateSql = "UPDATE $this->tablename SET praise = praise + 1 WHERE hash = '$hash'";
+				$updateSql = "UPDATE $this->tablename SET praise = praise + 1 WHERE $whereHash = '$hash'";
 				$praiseSql = "INSERT INTO wet_praise(hash, sender_id) VALUES ('$hash', '$akToken')";
 				$e = TRUE;
 			} else {
-				$updateSql = "UPDATE $this->tablename SET praise = praise - 1 WHERE hash = '$hash'";
+				$updateSql = "UPDATE $this->tablename SET praise = praise - 1 WHERE $whereHash = '$hash'";
 				$praiseSql = "DELETE FROM wet_praise WHERE hash = '$hash' AND sender_id = '$akToken'";
 				$e = FALSE;
 			}
 			$this->db->query($updateSql);
 			$this->db->query($praiseSql);
 			//用户活跃入库
-			$backendConfig = $this->ConfigModel-> backendConfig();
-			$praiseActive  = $backendConfig['praiseActive'];
+			$bkConfig  = $this->ConfigModel-> backendConfig();
+			$pActive   = $bkConfig['praiseActive'];
 			$countSql  = "SELECT count(hash) AS count_pick FROM wet_praise WHERE sender_id = '$akToken' AND praise_time >= now()-interval '1 D'";
 			$countqy   = $this->db-> query($countSql);
 			$countPick = $countqy-> getRow()-> count_pick;
 			if ($countPick <= 20) { //24小时内小于20赞
-				$this->UserModel-> userActive($akToken, $praiseActive, $e);
+				$this->UserModel-> userActive($akToken, $pActive, $e);
 			}
 			//入库行为记录
 			$insetrBehaviorDate = [
 				'address'   => $akToken,
 				'thing'     => 'isPraise',
-				'influence' => $praiseActive,
+				'influence' => $pActive,
 				'toaddress' => $hash
 			];
 			$this->db->table($this->wet_behavior)->insert($insetrBehaviorDate);

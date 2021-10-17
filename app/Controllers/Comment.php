@@ -30,7 +30,7 @@ class Comment extends BaseController {
         $isHash = $this->DisposeModel-> checkAddress($hash);
 		if ($isHash) {
             $opt  = ['select' => 'comment'];
-            $data = $this->PagesModel-> Alone($hash, $opt);
+            $data = $this->PagesModel-> alone($hash, $opt);
             echo $data;
         } else {
             echo $this->DisposeModel-> wetJsonRt(406,'error_hash');
