@@ -1,6 +1,7 @@
 # Introduction
 
-New version 2.0.0 based on CI4, a new architecture. It is more powerful and robust, but is no longer compatible with 1.x.x, You need to provide front-end data with [WeTrue_UI](https://github.com/Lfh2msn/WeTrue_UI) already provided.
+New version 2.0.0 based on CI4, a new architecture. It is more powerful and robust.
+but is no longer compatible with 1.x.x, You need to provide front-end data with [WeTrue_UI](https://github.com/Lfh2msn/WeTrue_UI) already provided.
 
 [WeTrue](https://www.WeTrue.io) is a decentralized broadcast social Aepp which based on Aeternity(AE) blockchain technology, through sharing,  dissemination and acquisition relationship information of users , and sharing short real-time message through attention mechanism.
 
