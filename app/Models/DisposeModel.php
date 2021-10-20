@@ -102,9 +102,10 @@ class DisposeModel extends Model {
     }
 
 
-    public function bigNumber($x, $m, $n = "1000000000000000000")
-    {/**使用方法:
-        * $x = out 数输出
+    public function bigNumber($x, string $m, string $n = "1000000000000000000")
+    {/**大数计算--注意必须为string
+        * 使用方法:
+        * $x = out 原数输出
         * $x 代表传入的方法，如: add, sub, mul, pow, mod 等
         * $m和$n代表传入的两个数值，主要就是这两个数值之间的比较
         * $scale  代表传入的小数点位数。这个根据需求更改即可
@@ -117,8 +118,9 @@ class DisposeModel extends Model {
         * */
         $errors = array('被除数不能为零', '负数没有平方根');
         if ( $x == 'out' ) {
-            return $m;
+            return (string) $m;
         }
+
         switch($x){
             case 'add':
                 $t = bcadd($m, $n);
