@@ -101,6 +101,63 @@ class DisposeModel extends Model {
         return $json;
     }
 
+
+    public function bigNumber($x, $m, $n = "1000000000000000000")
+    {/**使用方法:
+        * $x = out 数输出
+        * $x 代表传入的方法，如: add, sub, mul, pow, mod 等
+        * $m和$n代表传入的两个数值，主要就是这两个数值之间的比较
+        * $scale  代表传入的小数点位数。这个根据需求更改即可
+        * bigNumber(参数1, 参数2, 参数3);
+        * 参数1指定运算方法:  add加, sub减, mul乖, div除, pow幂, mod取模, sqrt求算术平方根
+        * 加减乖除:          参数2 加上/减去/乘以/除以 参数3
+        * 幂:                参数2 的 参数3 次方.
+        * 模:                参数2 除以 参数3 得到的余数.
+        * 算术平方根:         求 参数2 的算术平方根.参数3不起作用,但不能省略.
+        * */
+        $errors = array('被除数不能为零', '负数没有平方根');
+        if ( $x == 'out' ) {
+            return $m;
+        }
+        switch($x){
+            case 'add':
+                $t = bcadd($m, $n);
+                break;
+            case 'sub':
+                $t = bcsub($m, $n);
+                break;
+            case 'mul':
+                $t = bcmul($m, $n);
+                break;
+            case 'div':
+                if ( $n != 0 ) {
+                    $t = bcdiv($m, $n);
+                } else {
+                    return $errors[0];
+                }
+                break;
+            case 'pow':
+                $t = bcpow($m, $n);
+                break;
+            case 'mod':
+                if ( $n != 0 ) {
+                    $t = bcmod($m, $n);
+                } else {
+                    return $errors[0];
+                }
+                break;
+            case 'sqrt':
+                if ( $m >=0 ) {
+                    $t = bcsqrt($m);
+                } else {
+                    return $errors[1];
+                }
+                break;
+        }
+        $t = preg_replace("/\..*0+$/",'',$t);
+        return $t;
+    }
+
     public function arrayToArray($a1, $a2)
 	{//组装数组
 		$a = [];
@@ -171,7 +228,7 @@ class DisposeModel extends Model {
 
     public function rewardGrade($number)
 	{//打赏金额等级划分
-		(int)$number = ($number / 1e18);
+		$number = $this->bigNumber('div', $number);
         if ($number >= 10000000) {
             $Grade = 6;
         } elseif ($number >= 5000000) {
@@ -187,10 +244,10 @@ class DisposeModel extends Model {
         } else {
             $Grade = 0;
         }
-		return $Grade;
+		return (int)$Grade;
     }
 
-	public function versionCompare($versionA,$versionB)
+	public function versionCompare($versionA, $versionB)
 	{/*版本号比较
 	*    @param $version1 版本A 如:5.3.2 
 	*    @param $version2 版本B 如:5.3.0 
@@ -202,7 +259,7 @@ class DisposeModel extends Model {
 	*        3.不设位默认补0计算，如：版本号5等于版号5.0.0
 	*        4.不包括数字 或 负数 的版本号 ,统一按0处理
     */
-		if ($versionA>2147483646 || $versionB>2147483646) {
+		if ($versionA > 2147483646 || $versionB > 2147483646) {
             return false;
         }
 

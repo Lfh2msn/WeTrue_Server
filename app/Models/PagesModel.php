@@ -73,7 +73,7 @@ class PagesModel extends Model {
 			$this->tablename = "wet_comment";
 			$countSql		 = "SELECT count(to_hash) FROM $this->tablename WHERE to_hash = '$opt[hash]'";
 			$limitSql		 = "SELECT hash FROM $this->tablename WHERE to_hash = '$opt[hash]' 
-									/*ORDER BY utctime DESC */LIMIT $size OFFSET ".(($page-1) * $size + $offset);
+									ORDER BY utctime /*DESC*/ LIMIT $size OFFSET ".(($page-1) * $size + $offset);
 			$opt['select']	 = "comment";
 		}
 
@@ -82,7 +82,7 @@ class PagesModel extends Model {
 			$this->tablename = "wet_reply";
 			$countSql		 = "SELECT count(to_hash) FROM $this->tablename WHERE to_hash = '$opt[hash]'";
 			$limitSql		 = "SELECT hash FROM $this->tablename WHERE to_hash = '$opt[hash]' 
-									/*ORDER BY utctime DESC */LIMIT $size OFFSET ".(($page-1) * $size + $offset);
+									ORDER BY utctime /*DESC*/ LIMIT $size OFFSET ".(($page-1) * $size + $offset);
 			$opt['select']	 = "reply";
 		}
 
@@ -223,9 +223,11 @@ class PagesModel extends Model {
 				$arrList[] = $row->hash;
 			}
 
-			if($opt['type'] == 'contentList' && $page <= 1){
-				$addList = [];
+			$addList = [];
+			if($addList && $opt['type'] == 'contentList' && $page=1) {
 				$arrList = $this->DisposeModel-> arrayToArray($addList, $arrList);
+				$arrList = array_unique($arrList);
+				$arrList = array_values($arrList);
 			}
 
 			foreach ($arrList as $hash) {

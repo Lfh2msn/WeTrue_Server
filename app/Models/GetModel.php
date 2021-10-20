@@ -125,7 +125,7 @@ class GetModel extends Model {
 		return $json;
 	}
 
-	public function getChainHeight($hash)
+	public function getChainHeight($hash="null")
 	{//获取链上高度
 		$bsConfig  = $this->ConfigModel-> backendConfig();
         $url  = $bsConfig['backendServiceNode'].'v3/key-blocks/current/height';

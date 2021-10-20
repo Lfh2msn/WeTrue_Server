@@ -80,10 +80,11 @@ class HashReadModel extends Model {
 			$this->decodeContent($json);
 			/**
 			 * 抓取超级英雄数据，及写入
-			 * 服务器10-12小时=中国时间23--01点执行
+			 * 服务器9-12小时=中国时间22--00点执行
+			 * 服务器21-23小时=中国时间10--14点执行
 			 */
 			$currentHour = date('H');
-			if ($currentHour>=10 && $currentHour<=12) {
+			if (($currentHour>=9 && $currentHour<=11) || ($currentHour>=21 && $currentHour<=1)) {
 				$this->SuperheroModel-> getContent(1);
 			}
 		}
@@ -298,6 +299,7 @@ class HashReadModel extends Model {
 					];
 					$this->MsgModel-> addMsg($msgData);
 				}
+				
 				//@回复写入消息
 				if($data['replyType'] == 'reply' && $data['toAddress'] && $data['toAddress'] != $toHashID) {
 					$msgData = [
@@ -387,35 +389,7 @@ class HashReadModel extends Model {
 
 			elseif ( $data['type'] == 'drift' )
 			{//漂流瓶
-				$selectHash = "SELECT hash FROM $this->wet_reply WHERE hash = '$data[hash]' LIMIT 1";
-				$getRow		= $this->db->query($selectHash)-> getRow();
-				if ($getRow) {
-					$this->deleteTemp($hash);
-					$logMsg = "Repeat_Drift_Hash:{$data['hash']}\r\n";
-					$this->DisposeModel->wetFwriteLog($logMsg);
-					return $this->DisposeModel-> wetJsonRt(406,'error');
-				}
 
-				$data['replyType'] = trim($payload['reply_type']);
-				$data['toHash']    = trim($payload['to_hash']);
-				$data['toAddress'] = trim($payload['to_address']);
-				$data['replyHash'] = trim($payload['reply_hash']);
-				$insertData = [
-					'hash'		   => $data['hash'],
-					'to_hash'	   => $data['toHash'],
-					'reply_hash'   => $data['replyHash'],
-					'reply_type'   => $data['replyType'],
-					'to_address'   => $data['toAddress'],
-					'sender_id'	   => $data['sender'],
-					'recipient_id' => $data['receipt'],
-					'utctime'	   => $data['mbTime'],
-					'amount'	   => $data['amount'],
-					'payload' 	   => $data['content']
-				];
-				$this->db->table($this->wet_reply)->insert($insertData);
-				$upSql  = "UPDATE $this->wet_comment SET comment_sum = comment_sum + 1 WHERE hash = '$data[toHash]'";
-				$this->db->query($upSql);
-				$active = $bsConfig['replyActive'];
 			} else {
 				$this->deleteTemp($hash);
 				$logMsg = "data[type]标签错误:{$hash}\r\n";
