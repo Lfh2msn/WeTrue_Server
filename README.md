@@ -11,4 +11,4 @@ It will make the distance between people infinitely shorter and within reach.
 
 # Sponsor
 
-WeTrue_Server AND WeTrue_V1 development work is funded by Aeternity Crypto Foundation
+WeTrue_Server AND [WeTrue_V1](https://github.com/Lfh2msn/WeTrue_v1) development work is funded by Aeternity Crypto Foundation
