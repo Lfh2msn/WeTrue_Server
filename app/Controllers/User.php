@@ -11,22 +11,27 @@ class User extends BaseController {
 		$typeLogin     = $this->request->getPost('type');
 		$isUserAddress = $this->DisposeModel-> checkAddress($userAddress);
 		if($isUserAddress){
-			$data['code'] = 200;
+			$code = 200;
 			if($typeLogin){
 				$opt = ['type' => $typeLogin];
 			}
-			$userInfo	  = $this->UserModel-> userAllInfo($userAddress, $opt);
-			$data['data'] = '';
+			$userInfo = $this->UserModel-> userAllInfo($userAddress, $opt);
+			$content  = '';
 			if($userInfo){
-				$data['data'] = $userInfo;
-				$data['msg']  = 'success';
+				$content = $userInfo;
+				$msg = 'success';
 			}else{
-				$data['msg']  = 'error_address';
+				$msg = 'error_address';
 			}
 		}else{
-			$data['code'] = 406;
-			$data['msg']  = 'error';
+			$code = 406;
+			$msg  = 'error';
 		}
+		$data = [
+			'code' => $code,
+			'msg'  => $msg,
+			'data' => $content
+		];
 		echo json_encode($data);
     }
 
