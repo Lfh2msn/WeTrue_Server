@@ -27,12 +27,7 @@ class User extends BaseController {
 			$code = 406;
 			$msg  = 'error';
 		}
-		$data = [
-			'code' => $code,
-			'msg'  => $msg,
-			'data' => $content
-		];
-		echo json_encode($data);
+		echo $this->DisposeModel-> wetJsonRt($code, $msg, $content);
     }
 
 	public function contentList()
@@ -102,13 +97,13 @@ class User extends BaseController {
 	public function isNickname()
 	{//获取昵称是否存在
 		$nickname = $this->request->getPost('nickname');
-		$data['code'] = 200;
-		$data['msg']  = 'success';
+		$data['code'] = 200;  //升级合并后可删除
+		$data['msg']  = 'success';  //升级合并后可删除
 		$type = (new ValidModel())-> isNickname($nickname);
+		$data['data']['isNickname'] = $type;  //升级合并后可删除
 		$data['isNickname'] = $type;
-		$data['data']['isNickname'] = $type;
-		echo json_encode($data);
-		//$this->DisposeModel-> wetJsonRt(200,'success',$data);
+		echo json_encode($data);  //升级合并后可删除
+		//echo $this->DisposeModel-> wetJsonRt(200,'success',$data);
 	}
 
 }

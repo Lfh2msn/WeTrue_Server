@@ -16,7 +16,7 @@ class GetModel extends Model {
 	public function getMicroBlockTime($microBlockHash)
 	{//微块时间
         $bsConfig = $this->ConfigModel-> backendConfig();
-        $url	  = $bsConfig['backendServiceNode'].'v3/micro-blocks/hash/'.$microBlockHash.'/header';
+        $url	  = $bsConfig['backendServiceNode'].'/v3/micro-blocks/hash/'.$microBlockHash.'/header';
         @$get	  = file_get_contents($url);
 		$num = 0;
 		while ( !$get && $num < 20 ) {
@@ -42,7 +42,7 @@ class GetModel extends Model {
 	public function getTransactions($hash)
 	{//获取tx 详情
 		$bsConfig = $this->ConfigModel-> backendConfig();
-		$url  = $bsConfig['backendServiceNode'].'v3/transactions/'.$hash;
+		$url  = $bsConfig['backendServiceNode'].'/v3/transactions/'.$hash;
 		@$get = file_get_contents($url);
 		$json = (array) json_decode($get, true);
 		$mh   = substr($json['block_hash'], 0, 3);
@@ -68,7 +68,7 @@ class GetModel extends Model {
 	public function getAccountsBalance($address)
 	{//获取账户AE金额
 		$bsConfig = $this->ConfigModel-> backendConfig();
-		$url  = $bsConfig['backendServiceNode'].'v3/accounts/'.$address;
+		$url  = $bsConfig['backendServiceNode'].'/v3/accounts/'.$address;
 		@$get = file_get_contents($url);
 		$num  = 0;
 		while ( !$get && $num < 20 ) {
@@ -128,7 +128,7 @@ class GetModel extends Model {
 	public function getChainHeight($hash="null")
 	{//获取链上高度
 		$bsConfig  = $this->ConfigModel-> backendConfig();
-        $url  = $bsConfig['backendServiceNode'].'v3/key-blocks/current/height';
+        $url  = $bsConfig['backendServiceNode'].'/v3/key-blocks/current/height';
 		@$get = file_get_contents($url);
 		$json = (array) json_decode($get, true);
 		$num  = 0;
