@@ -16,7 +16,8 @@ class Comment extends BaseController {
                     'replyLimit' => (int)$replyLimit
                 ];
         $isHash = $this->DisposeModel-> checkAddress($hash);
-        if ($isHash) {
+        $isShid = $this->DisposeModel-> checkSuperheroTipid($hash);
+        if ($isHash || $isShid) {
             $data = $this->PagesModel-> limit($page, $size, $offset, $opt);
             echo $data;
         } else {

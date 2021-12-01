@@ -52,11 +52,11 @@ class Submit extends BaseController {
 		$getHash   = $this->request->getPost('hash');
 		$isHash    = $this->DisposeModel-> checkAddress($getHash);
 		$isShTipid = $this->DisposeModel-> checkSuperheroTipid($getHash);
-		$isCheck   = $isHash ?? $isShTipid;
+		$isCheck   = $isShTipid ? $isShTipid : $isHash;
 
-		$select == 'contentStar';
+		$select = 'contentStar';
 		if ($isShTipid) {
-			$select == 'shTipidStar';
+			$select = "shTipidStar";
 		}
 
 		if ($isCheck) {
@@ -87,8 +87,9 @@ class Submit extends BaseController {
 		$to_hash  = $this->request->getPost('toHash');
 		$isHash   = $this->DisposeModel-> checkAddress($hash);
 		$isToHash = $this->DisposeModel-> checkAddress($to_hash);
+		$isShid   = $this->DisposeModel-> checkSuperheroTipid($to_hash);
 
-		if ($isHash && $isToHash) {
+		if ($isHash && ($isToHash || $isShid)) {
             (new RewardModel())-> reward($hash, $to_hash);
         } else {
 			echo $this->DisposeModel-> wetJsonRt(406, 'error_hash');

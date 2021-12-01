@@ -21,6 +21,7 @@ class RewardModel extends Model {
 		$this->GetModel     = new GetModel();
 		$this->wet_temp     = "wet_temp";
 		$this->wet_content  = "wet_content";
+		$this->wet_content_sh  = "wet_content_sh";
 		$this->wet_users    = "wet_users";
 		$this->wet_reward   = "wet_reward";
     }
@@ -66,7 +67,7 @@ class RewardModel extends Model {
 		$tp_type   = "reward";
 		$isRewardHash = $this->ValidModel-> isRewardHash($hash);
 		if ($isRewardHash) {
-			return $this->DisposeModel-> wetJsonRt(406, 'error_repeat');
+			return $this->DisposeModel-> wetJsonRt(406, 'reward_hash_repeat');
 		}
 
 		$isTempHash = $this->ValidModel-> isTempHash($hash);
@@ -126,10 +127,18 @@ class RewardModel extends Model {
 			return;
 		}
 
-		$sql   = "SELECT sender_id FROM $this->wet_content WHERE hash = '$to_hash' LIMIT 1";
-        $query = $this->db->query($sql);
-		$row   = $query->getRow();
-		$conID = $row-> sender_id;
+		$isShid = $this->DisposeModel-> checkSuperheroTipid($to_hash);
+		if ($isShid) { //SH ID 处理
+			$sql   = "SELECT sender_id FROM $this->wet_content_sh WHERE tip_id = '$to_hash' LIMIT 1";
+			$query = $this->db->query($sql);
+			$row   = $query->getRow();
+			$conID = $row-> sender_id;
+		} else {
+			$sql   = "SELECT sender_id FROM $this->wet_content WHERE hash = '$to_hash' LIMIT 1";
+			$query = $this->db->query($sql);
+			$row   = $query->getRow();
+			$conID = $row-> sender_id;
+		}
 
 		if ($row &&
 			$contract_id == $bsConfig['WTTContractAddress'] &&
@@ -144,7 +153,12 @@ class RewardModel extends Model {
 				'block_height' => $block_height
 			];
 			$this->db->table($this->wet_reward)->insert($inData);
-			$upContSql = "UPDATE $this->wet_content SET reward_sum = (reward_sum + $amount) WHERE hash = '$to_hash'";
+			if ($isShid) { //SH ID 处理
+				$upContSql = "UPDATE $this->wet_content_sh SET reward_sum = (reward_sum + $amount) WHERE tip_id = '$to_hash'";
+			} else {
+				$upContSql = "UPDATE $this->wet_content SET reward_sum = (reward_sum + $amount) WHERE hash = '$to_hash'";
+			}
+			
 			$upUserSql = "UPDATE $this->wet_users SET reward_sum = (reward_sum + $amount) WHERE address = '$sender_id'";
 			$this->db-> query($upContSql);
 			$this->db-> query($upUserSql);

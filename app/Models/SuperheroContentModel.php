@@ -32,19 +32,20 @@ class SuperheroContentModel extends ComModel
 			$payload  = "payload";
 		}
 
-		$sql = "SELECT sender_id, 
-						contract_id, 
-						source, 
-						type, 
+		$sql = "SELECT sender_id,
+						contract_id,
+						source,
+						type,
 						$payload,
-						image, 
-						media, 
-						language, 
-						praise, 
-						comment_sum, 
-						star_sum, 
-						read_sum, 
-						utctime, 
+						image,
+						media,
+						language,
+						praise,
+						comment_sum,
+						star_sum,
+						read_sum,
+						reward_sum,
+						utctime,
 						url
 		FROM $this->tablename 
 		WHERE tip_id = '$tip_id' LIMIT 1";
@@ -69,7 +70,10 @@ class SuperheroContentModel extends ComModel
 			$data['praise']			= (int) $row-> praise;
 			$data['star']			= (int) $row-> star_sum;
 			$data['read']			= (int) $row-> read_sum;
-
+			$data['reward']			= $row-> reward_sum;
+			if ($opt['rewardList']) {
+				$data['rewardList']	= $this->RewardModel-> rewardList($tip_id);
+			}
 			if ($opt['userLogin']) {
 				$data['isPraise']	= $this->ValidModel-> isPraise($tip_id, $opt['userLogin']);
 				$data['isStar']		= $this->ValidModel-> isStar($tip_id, $opt['userLogin']);

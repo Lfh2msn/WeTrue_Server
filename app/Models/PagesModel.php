@@ -162,7 +162,9 @@ class PagesModel extends Model {
 			$countSql		 = "SELECT count(hash) FROM $this->tablename WHERE sender_id = '$opt[address]'";
 			$limitSql		 = "SELECT hash FROM $this->tablename WHERE sender_id = '$opt[address]' 
 									ORDER BY star_time DESC LIMIT $size OFFSET ".(($page-1) * $size + $offset);
-			$opt['select']	 = "content";
+			//收藏可能包含sh
+			//$opt['select'] = "content";
+			$opt['select']   = "contentAndSH";
 		}
 
 		if ( $opt['type'] == 'shTipidList' )
@@ -196,6 +198,7 @@ class PagesModel extends Model {
 		}
 
 		if($opt['select'] == 'shTipid') {
+			$opt['rewardList'] = true;
 			$Content = $this->SuperheroContentModel-> txContent($hash, $opt);
 		}
 
@@ -252,6 +255,17 @@ class PagesModel extends Model {
 						$isData = $this->SuperheroContentModel-> txContent($hash, $opt);
 						if(isset($isData)) $detaila[] = $isData;
 					}
+
+					if ($opt['select']  == 'contentAndSH') { //收藏，包含主贴和sh主贴
+						$isData = $this->ContentModel-> txContent($hash, $opt);
+						if(isset($isData)){
+							$detaila[] = $isData;
+						} else {
+							$isData = $this->SuperheroContentModel-> txContent($hash, $opt);
+							if(isset($isData)) $detaila[] = $isData;
+						}
+					}
+					
 				}
 				$data['data'] = $detaila;
 			}

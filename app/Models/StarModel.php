@@ -28,7 +28,7 @@ class StarModel extends Model {
 		$this->tablename = 'wet_content';
 		$whereHash = 'hash';
 
-		if ($select === 'shTipidStar') {
+		if ($select == "shTipidStar") {
 			$this->tablename = 'wet_content_sh';
 			$whereHash = 'tip_id';
 		}
@@ -56,7 +56,7 @@ class StarModel extends Model {
 			'thing'   => 'isStar'
 		];
 		$this->db->table($this->wet_behavior)->insert($insetrBehaviorDate);
-		$getStarSql = "SELECT star_sum FROM $this->tablename WHERE hash = '$hash' LIMIT 1";
+		$getStarSql = "SELECT star_sum FROM $this->tablename WHERE $whereHash = '$hash' LIMIT 1";
 		$query 		= $this->db-> query($getStarSql);
 		$row		= $query-> getRow();
 		$data['star']   = (int)$row->star_sum;

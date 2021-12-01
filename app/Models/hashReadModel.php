@@ -221,14 +221,19 @@ class HashReadModel extends Model {
 					'payload' 	   => $data['content']
 				];
 				$this->db->table($this->wet_comment)->insert($insertData);
-				$upSql = "UPDATE $this->wet_content SET comment_sum = comment_sum + 1 WHERE hash = '$data[toHash]'";
+				//验证是否为Superhero ID
+				$isShTipid = $this->DisposeModel-> checkSuperheroTipid($data['toHash']);
+				if ($isShTipid) {
+					$upSql = "UPDATE $this->wet_content_sh SET comment_sum = comment_sum + 1 WHERE tip_id = '$data[toHash]'";
+				} else {
+					$upSql = "UPDATE $this->wet_content SET comment_sum = comment_sum + 1 WHERE hash = '$data[toHash]'";
+				}
 				$this->db->query($upSql);
 				$active = $bsConfig['commentActive'];
 
 				//写入消息
 				$msgOpt = [ 'type'=>$data['type'] ];
-				$isShTipid = $this->DisposeModel-> checkSuperheroTipid($data['toHash']);
-				if ($isShTipid) {
+				if ($isShTipid) { //Superhero ID
 					$msgOpt = [ 'type'=>'shTipid' ];
 				}
 	
