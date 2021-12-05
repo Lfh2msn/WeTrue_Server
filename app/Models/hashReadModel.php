@@ -32,6 +32,7 @@ class HashReadModel extends Model {
 		$this->wet_reply	 = "wet_reply";
 		$this->wet_users	 = "wet_users";
 		$this->wet_topic_tag = "wet_topic_tag";
+		$this->wet_content_sh = "wet_content_sh";
 		$this->wet_topic_content = "wet_topic_content";
     }
 
