@@ -43,7 +43,7 @@ class PagesModel extends Model {
 		$akToken   = $_SERVER['HTTP_AK_TOKEN'];
 		$isAkToken = $this->DisposeModel-> checkAddress($akToken);
 		if ($isAkToken) $opt['userLogin'] = $akToken;
-		$opt['substr']	  = 160; //限制输出
+		$opt['substr'] = 160; //限制输出
 
 		if ( $opt['type'] == 'contentList' )
 		{//最新主贴列表

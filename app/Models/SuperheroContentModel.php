@@ -64,6 +64,7 @@ class SuperheroContentModel extends ComModel
 			$data['image']   		= $row->image ? "{$shApiUrl}{$row->image}" : $row->media;
 			$data['media']   		= $row->media ?? "";
 			$data['url']			= $row->url ?? "";
+			$data['simpleUrl']		= mb_strlen($row->url,'UTF8') >= 36 ? mb_substr($row->url, 0, 36).'...' : $row->url;
 			$data['language']		= $row->language ?? "";
 			$data['utcTime']		= (int) $row-> utctime;
 			$data['commentNumber']  = (int) $row-> comment_sum;
