@@ -19,7 +19,7 @@ class TopicModel extends ComModel
 
 	public function isTopic($content)
 	{//内容搜索话题
-		$topicTag  = preg_match_all("/#[x80-xff\u4e00-\u9fa5\w ,，.。!！-？·\?]{1,25}#/u", $content, $keywords);
+		$topicTag  = preg_match_all("/#[x80-xff\u4e00-\u9fa5\w ,，.。!！-？·\?æÆ]{1,25}#/u", $content, $keywords);
 		return $topicTag ? $keywords[0] : false;
 	}
 
