@@ -314,7 +314,7 @@ class DisposeModel extends Model {
 
     public function delete_xss($string)
     {//xss删除函数
-        $string = strip_tags($string);
+        $string = strip_tags($string,["<>","<br>"]);
         $string = htmlspecialchars($string, ENT_QUOTES);
         $string = str_replace("\n\n\n","\n\n",$string);
         $string = str_replace("\n \n","\n",$string);
