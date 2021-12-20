@@ -85,7 +85,16 @@ class HashReadModel extends Model {
 			 * 服务器21-23小时=中国时间10--14点执行
 			 */
 			$currentHour = date('H');
-			if (($currentHour>=9 && $currentHour<=11) || ($currentHour>=21 && $currentHour<=1)) {
+			if (
+				   $currentHour == 2
+				|| $currentHour == 5
+				|| $currentHour == 8
+				|| $currentHour == 11
+				|| $currentHour == 14
+				|| $currentHour == 17
+				|| $currentHour == 20
+				|| $currentHour == 23
+				) {
 				$this->SuperheroModel-> getContent(1);
 			}
 		}
