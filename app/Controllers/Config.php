@@ -7,12 +7,8 @@ class Config extends BaseController {
 
 	public function info()
 	{//获取前端配置
-		
-		$address = $this->request->getPost('address');
-		$userAddress = $this->request->getPost('userAddress');
-		$reqAddress  =  $address ?? $userAddress;
-		$aktAddress  = $_SERVER['HTTP_AK_TOKEN'];
-		$config  = (new ConfigModel())-> frontConfig($aktAddress ?? $reqAddress);
+		$userAddress  = $_SERVER['HTTP_AK_TOKEN'];
+		$config  = (new ConfigModel())-> frontConfig($userAddress);
 		if($config){
 			$code = 200;
 			$msg  = 'success';
