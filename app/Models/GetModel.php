@@ -102,6 +102,61 @@ class GetModel extends Model {
 		return $json['tx']['sender_id'];
 	}
 
+	public function getChainHeight($hash="null")
+	{//获取链上高度
+		$bsConfig  = $this->ConfigModel-> backendConfig();
+        $url  = $bsConfig['backendServiceNode'].'/v3/key-blocks/current/height';
+		@$get = file_get_contents($url);
+		$json = (array) json_decode($get, true);
+		$num  = 0;
+		while ( !$json && $num < 20) {
+			@$get   = file_get_contents($url);
+			$json = (array) json_decode($get, true);
+			$num++;
+			sleep(6);
+		}
+
+		if (empty($json)) {
+			$logMsg = "获取链上高度失败--HASH:{$hash}\r\n\r\n";
+			$this->DisposeModel->wetFwriteLog($logMsg);
+			return;
+        }
+		return (int)$json['height'];
+	}
+
+	public function getAddressByNamePoint($names)
+	{//AENS获取AE指向地址
+		$bsConfig  = $this->ConfigModel-> backendConfig();
+        $url   = $bsConfig['backendServiceNode'].'/v3/names/'.$names;
+		@$get  = file_get_contents($url);
+		$json  = (array) json_decode($get, true);
+		$owner = $json['owner'];
+		$num   = 0;
+		while ( !$owner && $num < 5) {
+			@$get  = file_get_contents($url);
+			$json  = (array) json_decode($get, true);
+			$owner = $json['owner'];
+			$num++;
+			sleep(6);
+		}
+		if (empty($owner)) {
+			$logMsg = "获取链上AENS失败--AENS:{$names}\r\n";
+			$this->DisposeModel->wetFwriteLog($logMsg);
+			return;
+        }
+		$pointers = $json['pointers'];
+		$address  = "";
+		foreach ($pointers as $row) {
+			if ($row['key'] == "account_pubkey") {
+				$address = $row['id'];
+			}
+		}
+		if (!$address) { //没有指向则指向持有人
+			$address = $owner;
+		}
+		return $address;
+	}
+
 	public function getAeknowContractTx($hash)
 	{//获取Aeknow API AEX9合约Token信息
         $url  = 'https://www.aeknow.org/api/contracttx/'.$hash;
@@ -118,36 +173,12 @@ class GetModel extends Model {
 		}
 
 		if (empty($s_id)) {
-			$logMsg = "获取AEKnow-API错误：{$hash}\r\n\r\n";
+			$logMsg = "获取AEKnow-API错误:{$hash}\r\n\r\n";
 			$this->DisposeModel->wetFwriteLog($logMsg);
 			return;
         }
 		return $json;
 	}
-
-	public function getChainHeight($hash="null")
-	{//获取链上高度
-		$bsConfig  = $this->ConfigModel-> backendConfig();
-        $url  = $bsConfig['backendServiceNode'].'/v3/key-blocks/current/height';
-		@$get = file_get_contents($url);
-		$json = (array) json_decode($get, true);
-		$num  = 0;
-		while ( !$json && $num < 20) {
-			@$get   = file_get_contents($url);
-			$json = (array) json_decode($get, true);
-			$num++;
-			sleep(6);
-		}
-
-		if (empty($json)) {
-			$logMsg = "获取链上高度失败--hash：{$hash}\r\n\r\n";
-			$this->DisposeModel->wetFwriteLog($logMsg);
-			return;
-        }
-		return (int)$json['height'];
-	}
-
-	
 
 }
 

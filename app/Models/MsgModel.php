@@ -24,7 +24,6 @@ class MsgModel extends ComModel
 
     public function getMsgList($page, $size, $offset)
 	{//获取消息列表
-
 		$page   = max(1, (int)$page);
 		$size   = max(1, (int)$size);
 		$offset = max(0, (int)$offset);
@@ -39,14 +38,15 @@ class MsgModel extends ComModel
 						state, 
 						utctime 
 					FROM $this->wet_message 
-					WHERE recipient_id = '$akToken'
-					ORDER BY utctime DESC, state DESC 
+						WHERE recipient_id = '$akToken' 
+						ORDER BY utctime DESC, state DESC 
 					LIMIT $size OFFSET ".(($page-1) * $size + $offset);
 		$returnData = $this->cycle($page, $size, $countSql, $limitSql);
 
 		$upHashSql = "SELECT hash FROM $this->wet_message 
 						WHERE recipient_id = '$akToken'
 						AND state = 1
+						AND type <> 'reward' 
 					LIMIT $size OFFSET ".(($page-1) * $size + $offset);
 		$upStateSql = "UPDATE $this->wet_message 
 						SET state = CASE state
@@ -72,17 +72,18 @@ class MsgModel extends ComModel
 				$utctime = (int) $row->utctime;
 				$opt['substr'] = 45; //限制Payload长度
 				$opt = ['imgTx'=>true];
-				if ($type  == 'comment') {
+				if ($type  == 'comment' || $type  == 'mentions') {
 					$isData['state']   = $state;
 					$isData['type']    = $type;
 					$isData['utctime'] = $utctime;
 					$isData['topic']   = $this->ContentModel-> simpleContent($toHash, $opt=[]);
 					$isShTipid = $this->DisposeModel-> checkSuperheroTipid($toHash);
 					if ($isShTipid) $isData['topic'] = $this->SuperheroContentModel-> simpleContent($toHash, $opt=[]);
-					$isData['comment'] = $this->CommentModel-> simpleComment($hash, $opt);
+					$comment = $this->CommentModel-> simpleComment($hash, $opt);
+					$isData['comment'] = $comment ? $comment : [];
 					$isData['reply']   = [];
 					$isData['reward']  = [];
-					if ($isData['topic'] && $isData['comment']) {
+					if ($isData['topic'] || $isData['comment']) {
 						$detaila[] = $isData;
 					}
 				}
@@ -114,7 +115,6 @@ class MsgModel extends ComModel
 						$detaila[] = $isData;
 					}
 				}
-
 				$data['data'] = $detaila;
 			}
 		}
@@ -123,20 +123,18 @@ class MsgModel extends ComModel
 
 	public function addMsg($data=[])
 	{/*添加消息
-		[
-			hash => hash,
-			to_hash => hash,
-			type 	 	 => comment\reply, 
+		[	
+			type 	 	 => comment\reply\shTipid\mentions, 
+			hash 		 => hash,
+			to_hash 	 => hash,
 			sender_id 	 => address, 发送人地址 
 			recipient_id => address, 
 			state 		 => 0\1, 状态[默认 1]
 			utctime 	 => timestamp ,时间戳
-		]*/
+		] */
 
 		if (!$data && !$data['hash']) {
             return $this->DisposeModel-> wetRt(406, '数据不能为空');
-        } elseif (!$data['to_hash']) {
-            return $this->DisposeModel-> wetRt(406, 'to_hash不能为空');
         } elseif (!$data['type']) {
             return $this->DisposeModel-> wetRt(406, 'type不能为空');
         } elseif (!$data['sender_id']) {

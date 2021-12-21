@@ -188,7 +188,6 @@ class TopicModel extends ComModel
 		topic = [
 			hash	  => hash
 			content   => 内容
-			keywords  => 话题关键词
 			sender_id => 发送人
 			utctime   => 时间戳
 		]

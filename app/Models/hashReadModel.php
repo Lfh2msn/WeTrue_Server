@@ -9,6 +9,7 @@ use App\Models\TopicModel;
 use App\Models\ValidModel;
 use App\Models\MsgModel;
 use App\Models\GetModel;
+use App\Models\MentionsModel;
 use App\Models\SuperheroModel;
 
 class HashReadModel extends Model {
@@ -24,6 +25,7 @@ class HashReadModel extends Model {
 		$this->ValidModel	 = new ValidModel();
 		$this->MsgModel	 	 = new MsgModel();
 		$this->GetModel	 	 = new GetModel();
+		$this->MentionsModel = new MentionsModel();
 		$this->SuperheroModel = new SuperheroModel();
 		$this->wet_temp 	 = "wet_temp";
 		$this->wet_behavior  = "wet_behavior";
@@ -87,13 +89,11 @@ class HashReadModel extends Model {
 			$currentHour = date('H');
 			if (
 				   $currentHour == 2
-				|| $currentHour == 5
-				|| $currentHour == 8
-				|| $currentHour == 11
+				|| $currentHour == 6
+				|| $currentHour == 10
 				|| $currentHour == 14
-				|| $currentHour == 17
-				|| $currentHour == 20
-				|| $currentHour == 23
+				|| $currentHour == 18
+				|| $currentHour == 22
 				) {
 				$this->SuperheroModel-> getContent(1);
 			}
@@ -196,7 +196,7 @@ class HashReadModel extends Model {
 							];
 				$this->db->table($this->wet_content)->insert($insertData);
 				$active = $bsConfig['topicActive'];
-
+				//是否话题
 				$isTopic = $this->TopicModel-> isTopic($data['content']);
 				if($isTopic) {
 					$topic = [
@@ -205,7 +205,20 @@ class HashReadModel extends Model {
 						'sender_id' => $data['sender'],
 						'utctime'   => $data['mbTime']
 						];
-					$isTopic = $this->TopicModel-> insertTopic($topic);
+					$this->TopicModel-> insertTopic($topic);
+				}
+				//是否“@”
+				$isMentions = $this->MentionsModel-> isMentions($data['content']);
+				if($isMentions) {
+					$mentions = [
+						'type'		=> 'topic',
+						'hash'		=> '',
+						'toHash'	=> $data['hash'],
+						'content'   => $data['content'],
+						'sender_id' => $data['sender'],
+						'utctime'   => $data['mbTime']
+					];
+					$this->MentionsModel-> messageMentions($mentions);
 				}
 			}
 
