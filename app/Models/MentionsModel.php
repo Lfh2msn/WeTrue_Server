@@ -3,34 +3,39 @@ namespace App\Models;
 
 use App\Models\GetModel;
 use App\Models\MsgModel;
+use App\Models\ValidModel;
+use App\Models\AensModel;
 
 class MentionsModel extends ComModel
 {//@模块 Model
 
 	public function __construct(){
         parent::__construct();
-		$this->GetModel = new GetModel();
-		$this->MsgModel = new MsgModel();
+		$this->GetModel   = new GetModel();
+		$this->MsgModel   = new MsgModel();
+		$this->ValidModel = new ValidModel();
+		$this->AensModel  = new AensModel();
     }
 
 	public function isMentions($content)
 	{//内容搜索“@”
-		$topicTag  = preg_match_all("/@[\p{L}\d]+.chain/u", $content, $keywords);
+		$topicTag = preg_match_all("/@[\p{L}\d]+.chain/u", $content, $keywords);
 		return $topicTag ? $keywords[0] : false;
 		
 	}
 
-	public function getAddressByAensPoint($names)
+	public function getAddressByAensPoint($aens)
 	{//AENS获取AE地址
-		$names   = str_replace("@", "" ,$names);
-		$address = $this->GetModel->getAddressByNamePoint($names);
+		$aens    = str_replace("@", "" ,$aens);
+		$address = $this->GetModel->getAddressByNamePoint($aens);
+		$this->AensModel-> insertUserAens($address, $aens);
 		return $address;
 	}
 
 	public function messageMentions($data=[])
 	{/*@ 消息通知入库
 		$data = [
-			'type'		=> topic\comment,
+			'type'		=> topic\comment\reply,
 			'hash'		=> hash,
 			'toHash'	=> toHash,
 			'content'   => 内容,

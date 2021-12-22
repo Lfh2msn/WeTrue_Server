@@ -22,6 +22,7 @@ class UserModel extends ComModel
 	{//获取用户昵称、头像、活跃、等级
 		$sql="SELECT 
 					nickname,
+					default_aens,
 					sex,
 					uactive,
 					portrait,
@@ -35,7 +36,9 @@ class UserModel extends ComModel
 			$data['userAddress'] = $address;
 			$nickname = $this->DisposeModel-> delete_xss($row->nickname);
 			$nickname = mb_substr($nickname, 0, 15);
+			$defaultAens  = $row->default_aens;
 			$data['nickname']   = $nickname ?? "";
+			$data['defaultAens']= $defaultAens ?? "";
 			$data['sex'] 	    = (int)$row->sex;
 			$userActive 	    = (int)$row->uactive;
 			$userReward   		= $row->reward_sum;
@@ -60,6 +63,7 @@ class UserModel extends ComModel
 		];*/
 		$sql="SELECT 
 					nickname,
+					default_aens,
 					sex,
 					uactive,
 					portrait,
@@ -93,8 +97,10 @@ class UserModel extends ComModel
 		$portraitHash = $row->portrait_hash;
 		$nickname     = $this->DisposeModel-> delete_xss($row->nickname);
 		$nickname 	  = mb_substr($nickname, 0, 15);
+		$defaultAens  = $row->default_aens;
 		$data['userAddress']  = $address;
 		$data['nickname']     = $nickname ?? "";
+		$data['defaultAens']  = $defaultAens ?? "";
 		$data['sex'] 	      = (int)$row->sex;
 		$data['active'] 	  = $userActive;
 		$data['reward'] 	  = $userReward;
@@ -197,7 +203,7 @@ class UserModel extends ComModel
 		$selectSql = "SELECT address FROM $this->tablename WHERE address = '$address' LIMIT 1";
 		$query	   = $this->db->query($selectSql);
 		$row	   = $query-> getRow();
-		if ( !$row ) {
+		if (!$row) {
 			$insertSql = "INSERT INTO $this->tablename(address) VALUES ('$address')";
 			$this->db->query($insertSql);
 			$autoFans1 = 'ak_2kxt6D65giv4yNt4oa44SjW4jEXfoHMviPFvAreSEXvz25Q3QQ';

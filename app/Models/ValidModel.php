@@ -51,6 +51,33 @@ class ValidModel extends Model {
 		return $row ? true : false;
 	}
 
+	public function isUserAens($address)
+	{//address是否存在AENS
+		$sql   = "SELECT default_aens FROM wet_users WHERE address = '$address' LIMIT 1";
+		$query = $this->db->query($sql);
+		$row   = $query->getRow();
+		return $row->default_aens ? true : false;
+	}
+
+	public function isAddressSameAens($address, $aens)
+	{//Address是否和Aens匹配，且结果只有1个
+		$sql   = "SELECT default_aens, address FROM wet_users WHERE default_aens ilike '$aens'";
+		$query = $this->db->query($sql);
+		$row   = $query->getRow();
+		$count = $row->count;//数量
+		$result = false;
+		if ( ($count == 1) && ($address == $row->address) ) $result = true;
+		return $result;
+	}
+
+	public function isAddressAens($aens)
+	{//AENS是否存在
+		$sql   = "SELECT default_aens FROM wet_users WHERE default_aens ilike '$aens'";
+		$query = $this->db->query($sql);
+		$row   = $query->getRow();
+		return $row->default_aens ? true : false;
+	}
+
 	public function isUser($address)
 	{//用户ID是否存在
 		$sql   = "SELECT address FROM wet_users WHERE address = '$address' LIMIT 1";

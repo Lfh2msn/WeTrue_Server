@@ -72,7 +72,7 @@ class MsgModel extends ComModel
 				$utctime = (int) $row->utctime;
 				$opt['substr'] = 45; //限制Payload长度
 				$opt = ['imgTx'=>true];
-				if ($type  == 'comment' || $type  == 'mentions') {
+				if ($type  == 'comment' || ($type == 'mentions' && !$hash) ) {
 					$isData['state']   = $state;
 					$isData['type']    = $type;
 					$isData['utctime'] = $utctime;
@@ -88,7 +88,7 @@ class MsgModel extends ComModel
 					}
 				}
 
-				if ($type  == 'reply') {
+				if ( $type  == 'reply' || ($type == 'mentions' && $hash) ) {
 					$isData['state']   = $state;
 					$isData['type']    = $type;
 					$isData['utctime'] = $utctime;

@@ -211,7 +211,7 @@ class HashReadModel extends Model {
 				$isMentions = $this->MentionsModel-> isMentions($data['content']);
 				if($isMentions) {
 					$mentions = [
-						'type'		=> 'topic',
+						'type'		=> $data['type'],
 						'hash'		=> '',
 						'toHash'	=> $data['hash'],
 						'content'   => $data['content'],
@@ -271,6 +271,19 @@ class HashReadModel extends Model {
 						'utctime' 	   => $data['mbTime']
 					];
 					$this->MsgModel-> addMsg($msgData);
+				}
+				//是否“@”
+				$isMentions = $this->MentionsModel-> isMentions($data['content']);
+				if($isMentions) {
+					$mentions = [
+						'type'		=> 'comment',
+						'hash'		=> $data['hash'],
+						'toHash'	=> $data['toHash'],
+						'content'   => $data['content'],
+						'sender_id' => $data['sender'],
+						'utctime'   => $data['mbTime']
+					];
+					$this->MentionsModel-> messageMentions($mentions);
 				}
 			}
 
@@ -339,6 +352,19 @@ class HashReadModel extends Model {
 						'utctime' 	   => $data['mbTime']
 					];
 					$this->MsgModel-> addMsg($msgData);
+				}
+				//是否“@”
+				$isMentions = $this->MentionsModel-> isMentions($data['content']);
+				if($isMentions) {
+					$mentions = [
+						'type'		=> $data['type'],
+						'hash'		=> $data['hash'],
+						'toHash'	=> $data['toHash'],
+						'content'   => $data['content'],
+						'sender_id' => $data['sender'],
+						'utctime'   => $data['mbTime']
+					];
+					$this->MentionsModel-> messageMentions($mentions);
 				}
 			}
 
