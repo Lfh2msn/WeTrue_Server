@@ -18,7 +18,7 @@ class AensModel extends Model {
 	public function insertUserAens($address, $aens)
 	{//写入AENS
 		$this->UserModel-> userPut($address);
-		$exist = $this->ValidModel-> isAddressAens($aens)；
+		$exist = $this->ValidModel-> isAddressAens($aens);
 		if ($exist) {
 			$verify = $this->ValidModel-> isAddressSameAens($address, $aens);
 			if ($verify) return;
