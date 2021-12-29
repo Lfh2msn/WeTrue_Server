@@ -21,7 +21,7 @@ class Config extends BaseController {
     }
 
 	public function nodes()
-	{//获取节点列表
+	{//获取AE节点列表
 		$config  = (new ConfigModel())-> nodesConfig();
 		$data['data'] = [];
 		if($config){
@@ -38,6 +38,21 @@ class Config extends BaseController {
 	public function compiler()
 	{//获取编译器列表
 		$config  = (new ConfigModel())-> compilerConfig();
+		$data['data'] = [];
+		if($config){
+			$code = 200;
+			$msg  = 'success';
+			$data = $config;
+		}else{
+			$code = 406;
+			$msg  = 'error';
+		}
+		echo $this->DisposeModel-> wetJsonRt($code, $msg, $data);
+    }
+
+	public function ipfsnodes()
+	{//获取ipfs节点列表
+		$config  = (new ConfigModel())-> ipfsNodeUrlConfig();
 		$data['data'] = [];
 		if($config){
 			$code = 200;
