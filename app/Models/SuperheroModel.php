@@ -4,6 +4,7 @@ use App\Models\ComModel;
 use App\Models\DisposeModel;
 use App\Models\UserModel;
 use App\Models\ConfigModel;
+use App\Models\BloomModel;
 
 class SuperheroModel extends ComModel {
 //抓取Superhero内容入库Model
@@ -13,6 +14,7 @@ class SuperheroModel extends ComModel {
 		$this->DisposeModel   = new DisposeModel();
 		$this->UserModel      = new UserModel();
 		$this->ConfigModel    = new ConfigModel();
+		$this->BloomModel     = new BloomModel();
 		$this->wet_content_sh = "wet_content_sh";
 		$this->wet_users 	  = "wet_users";
     }
@@ -88,24 +90,27 @@ class SuperheroModel extends ComModel {
 
 		foreach ($lastResult as $key => $value) {
 			if ($value == $json[$key]['id']) {
-				$insertData = [
-					'tip_id'	  => $json[$key]['id'],
-					'sender_id'	  => $json[$key]['sender'],
-					'contract_id' => $json[$key]['contractId'],
-					'source'	  => 'Superhero',
-					'type'	   	  => $json[$key]['type'],
-					'language' 	  => $json[$key]['language'],
-					'payload' 	  => $json[$key]['title'],
-					'image' 	  => $json[$key]['linkPreview']['image'],
-					'media' 	  => $json[$key]['media'] ? $json[$key]['media'][0] : "",
-					'url' 	   	  => $json[$key]['url'],
-					'utctime' 	  => strtotime($json[$key]['timestamp']) * 1000
-				];
-				
-				$this->db->table($this->wet_content_sh)->insert($insertData);
-				$this->UserModel-> userActive($json[$key]['sender'], $active, $e = true);
-				$upSql = "UPDATE $this->wet_users SET topic_sum = topic_sum + 1 WHERE address = '$json[$key][sender]'";
-				$this->db->query($upSql);
+				$bloomAddress = $this->BloomModel ->addressBloom($json[$key]['sender']);
+				if (!$bloomAddress) { //地址过滤
+					$insertData = [
+						'tip_id'	  => $json[$key]['id'],
+						'sender_id'	  => $json[$key]['sender'],
+						'contract_id' => $json[$key]['contractId'],
+						'source'	  => 'Superhero',
+						'type'	   	  => $json[$key]['type'],
+						'language' 	  => $json[$key]['language'],
+						'payload' 	  => $json[$key]['title'],
+						'image' 	  => $json[$key]['linkPreview']['image'],
+						'media' 	  => $json[$key]['media'] ? $json[$key]['media'][0] : "",
+						'url' 	   	  => $json[$key]['url'],
+						'utctime' 	  => strtotime($json[$key]['timestamp']) * 1000
+					];
+					
+					$this->db->table($this->wet_content_sh)->insert($insertData);
+					$this->UserModel-> userActive($json[$key]['sender'], $active, $e = true);
+					$upSql = "UPDATE $this->wet_users SET topic_sum = topic_sum + 1 WHERE address = '$json[$key][sender]'";
+					$this->db->query($upSql);
+				}
 			}
 		}
 		return $this->DisposeModel-> wetJsonRt(200);
