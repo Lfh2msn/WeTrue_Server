@@ -120,7 +120,7 @@ class ValidModel extends Model {
 		$sql   = "SELECT tp_hash FROM wet_temp WHERE tp_hash = '$hash' ORDER BY tp_time DESC LIMIT 1";
         $query = $this->db->query($sql);
 		$row   = $query->getRow();
-		return $row ? true : false;
+		return $row->tp_hash ? true : false;
 	}
 
 	public function isStar($hash, $address)

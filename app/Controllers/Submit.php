@@ -32,47 +32,15 @@ class Submit extends BaseController {
         } else {
 			echo $this->DisposeModel-> wetJsonRt(406, 'error');
 		}
-		
     }
-
-    public function focus()
-	{//关注
-		$userAddress   = $this->request->getPost('userAddress');
-        $isUserAddress = $this->DisposeModel-> checkAddress($userAddress);
-		if ($isUserAddress) {
-            $data = $this->FocusModel-> focus($userAddress);
-		    echo $data;
-        } else {
-			echo $this->DisposeModel-> wetJsonRt(406, 'error');
-		}
-	}
-
-    public function contentStar()
-	{//收藏
-		$getHash   = $this->request->getPost('hash');
-		$isHash    = $this->DisposeModel-> checkAddress($getHash);
-		$isShTipid = $this->DisposeModel-> checkSuperheroTipid($getHash);
-		$isCheck   = $isShTipid ? $isShTipid : $isHash;
-
-		$select = 'contentStar';
-		if ($isShTipid) {
-			$select = "shTipidStar";
-		}
-
-		if ($isCheck) {
-            $data = (new StarModel())-> star($getHash, $select);
-			echo $data;
-        } else {
-            echo $this->DisposeModel-> wetJsonRt(406, 'error_hash');
-		}
-	}
 
 	public function hash()
 	{//发布hash
 		$hash  = $this->request->getPost('hash');
+		$await = $this->request->getPost('await');
 		$isHash = $this->DisposeModel-> checkAddress($hash);
 		if ($isHash) {
-            $data = (new HashReadModel())-> split($hash);
+            $data = (new HashReadModel())-> split($hash, $await);
 			echo $data;
         } elseif (!$hash) {
 			echo $this->DisposeModel-> wetJsonRt(406, 'error_type');

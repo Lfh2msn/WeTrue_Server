@@ -17,14 +17,8 @@ class StarModel extends Model {
 		$this->wet_behavior = "wet_behavior";
 	}
 
-	public function star($hash, $select)
+	public function star($address, $hash, $select)
 	{//收藏
-		$akToken   = $_SERVER['HTTP_AK_TOKEN'];
-		$isAkToken = $this->DisposeModel-> checkAddress($akToken);
-		if (!$isAkToken) {
-			return $this->DisposeModel-> wetJsonRt(401,'error_login',[]);
-		}
-
 		$this->tablename = 'wet_content';
 		$whereHash = 'hash';
 
@@ -34,28 +28,21 @@ class StarModel extends Model {
 		}
 
 		$data = [];
-		$verify = $this->ValidModel-> isStar($hash, $akToken);
+		$verify = $this->ValidModel-> isStar($hash, $address);
 		if (!$verify) {
-			$starSql    = "INSERT INTO $this->wet_star(hash, sender_id) VALUES ('$hash', '$akToken')";
+			$starSql    = "INSERT INTO $this->wet_star(hash, sender_id) VALUES ('$hash', '$address')";
 			$upContent  = "UPDATE $this->tablename SET star_sum = star_sum + 1 WHERE $whereHash = '$hash'";
-			$upUsers    = "UPDATE $this->wet_users SET star_sum = star_sum + 1 WHERE address = '$akToken'";
+			$upUsers    = "UPDATE $this->wet_users SET star_sum = star_sum + 1 WHERE address = '$address'";
 			$isStar	    = true;
 		} else {
-			$starSql    = "DELETE FROM $this->wet_star WHERE hash = '$hash' AND sender_id = '$akToken'";
+			$starSql    = "DELETE FROM $this->wet_star WHERE hash = '$hash' AND sender_id = '$address'";
 			$upContent  = "UPDATE $this->tablename SET star_sum = star_sum - 1 WHERE $whereHash = '$hash'";
-			$upUsers    = "UPDATE $this->wet_users SET star_sum = star_sum - 1 WHERE address = '$akToken'";
+			$upUsers    = "UPDATE $this->wet_users SET star_sum = star_sum - 1 WHERE address = '$address'";
 			$isStar	    = false;
 		}
 		$this->db-> query($starSql);
 		$this->db-> query($upContent);
 		$this->db-> query($upUsers);
-		//入库行为记录
-		$insetrBehaviorDate = [
-			'address' => $akToken,
-			'hash'    => $hash,
-			'thing'   => 'isStar'
-		];
-		$this->db->table($this->wet_behavior)->insert($insetrBehaviorDate);
 		$getStarSql = "SELECT star_sum FROM $this->tablename WHERE $whereHash = '$hash' LIMIT 1";
 		$query 		= $this->db-> query($getStarSql);
 		$row		= $query-> getRow();

@@ -30,7 +30,7 @@ class ContentModel extends ComModel
 
 		$sql = "SELECT sender_id,
 						$payload,
-						img_tx,
+						media_list,
 						utctime,
 						comment_sum,
 						praise,
@@ -50,7 +50,8 @@ class ContentModel extends ComModel
 			$isStrCount				= $strCount ? $operation : $row->payload;
 			$deleteXss				= $this->DisposeModel-> delete_xss($isStrCount);
 			$data['payload']		= $this->DisposeModel-> sensitive($deleteXss);
-			$data['imgTx']			= $row->img_tx ? "https://api.wetrue.io/Image/toimg/".$hash : "";
+			//$data['imgTx']			= $row->img_tx ? "https://api.wetrue.io/Image/toimg/".$hash : "";
+			$data['mediaList']		= json_decode($row->media_list, true) ?? [];
 			$data['utcTime']		= (int) $row-> utctime;
 			$data['commentNumber']  = (int) $row-> comment_sum;
 			$data['praise']			= (int) $row-> praise;
@@ -86,7 +87,7 @@ class ContentModel extends ComModel
 			$payload  = "substring(payload for '$opt[substr]') as payload";
 			$strCount = true;
 		} else {
-			$payload  = "payload";
+			$payload = "payload";
 		}
 
 		$sql = "SELECT sender_id,
@@ -98,13 +99,14 @@ class ContentModel extends ComModel
         $query = $this-> db-> query($sql);
 		$row   = $query-> getRow();
         if ($row) {
-			$data['hash'] 	 = $hash;
-			$sender_id	  	 = $row-> sender_id;
-			$operation		 = mb_strlen($row->payload,'UTF8') >= $opt['substr'] ? $row->payload.'...' : $row->payload;
-			$isStrCount		 = $strCount ? $operation : $row->payload;
-			$deleteXss		 = $this->DisposeModel-> delete_xss($isStrCount);
-			$data['payload'] = $this->DisposeModel-> sensitive($deleteXss);
-			$data['imgTx']   = $row->img_tx ? "https://api.wetrue.io/Image/toimg/".$hash : $this->UserModel-> getPortraitUrl($sender_id);
+			$data['hash'] = $hash;
+			$sender_id  = $row-> sender_id;
+			$operation  = mb_strlen($row->payload,'UTF8') >= $opt['substr'] ? $row->payload.'...' : $row->payload;
+			$isStrCount = $strCount ? $operation : $row->payload;
+			$deleteXss  = $this->DisposeModel-> delete_xss($isStrCount);
+			$data['payload']   = $this->DisposeModel-> sensitive($deleteXss);
+			//$data['imgTx']   = $row->img_tx ? "https://api.wetrue.io/Image/toimg/".$hash : $this->UserModel-> getPortraitUrl($sender_id);
+			$data['mediaList'] = json_decode($row->media_list, true) ?? [];
 			$data['users']['nickname'] = $this->UserModel-> getName($sender_id);
 			$data['users']['userAddress'] = $sender_id;	
         }

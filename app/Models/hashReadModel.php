@@ -9,6 +9,8 @@ use App\Models\TopicModel;
 use App\Models\ValidModel;
 use App\Models\MsgModel;
 use App\Models\GetModel;
+use App\Models\FocusModel;
+use App\Models\StarModel;
 use App\Models\MentionsModel;
 use App\Models\SuperheroModel;
 
@@ -25,6 +27,8 @@ class HashReadModel extends Model {
 		$this->ValidModel	 = new ValidModel();
 		$this->MsgModel	 	 = new MsgModel();
 		$this->GetModel	 	 = new GetModel();
+		$this->FocusModel 	 = new FocusModel();
+		$this->StarModel 	 = new StarModel();
 		$this->MentionsModel = new MentionsModel();
 		$this->SuperheroModel = new SuperheroModel();
 		$this->wet_temp 	 = "wet_temp";
@@ -38,7 +42,7 @@ class HashReadModel extends Model {
 		$this->wet_topic_content = "wet_topic_content";
     }
 
-	public function split($hash)
+	public function split($hash, $await=false)
 	{//上链内容入库
 		$tp_type    = "common";
 		$isTempHash = $this->ValidModel-> isTempHash($hash);
@@ -46,12 +50,12 @@ class HashReadModel extends Model {
 		if (!$isTempHash) {  //写入临时缓存
 			$insertTempSql = "INSERT INTO $this->wet_temp(tp_hash, tp_type) VALUES ('$hash', '$tp_type')";
 			$this->db->query($insertTempSql);
-			echo $this->DisposeModel-> wetJsonRt(200);
+			if (!$await) echo $this->DisposeModel-> wetJsonRt(200);
 		} else {
 			log_message('error_repeat_'.$hash, 4);
-			echo $this->DisposeModel-> wetJsonRt(406,'error_repeat');
+			if (!$await) echo $this->DisposeModel-> wetJsonRt(406,'error_repeat');
 		}
-		
+
 		$delTempSql = "DELETE FROM $this->wet_temp WHERE tp_time <= now()-interval '1 D' AND tp_type = '$tp_type'";
 		$this->db->query($delTempSql);
 
@@ -62,7 +66,6 @@ class HashReadModel extends Model {
 			$tp_hash  = $row-> tp_hash;
 			$json 	  = $this->GetModel->getTransactions($tp_hash);
 			$bloomAddress = $this->BloomModel ->addressBloom( $json['tx']['sender_id'] );
-
 			if ( !$json || $bloomAddress) {
 				$logMsg = "被bloom过滤账户:{$tp_hash}\r\n";
 				$this->DisposeModel->wetFwriteLog($logMsg);
@@ -132,7 +135,7 @@ class HashReadModel extends Model {
 		$data['WeTrue']  = $WeTrue;
 		$isSource		 = $payload['source'];// ?? 'WeTrue';
 		$sourceDelXSS 	 = $this->DisposeModel-> delete_xss($isSource);
-		$sourceSubstr	 = substr($sourceDelXSS, 0, 10);
+		$sourceSubstr	 = substr($sourceDelXSS, 0, 12);
 		$data['source']  = $sourceSubstr;
 		$data['type']    = $this->DisposeModel-> delete_xss($payload['type']);
 		$data['hash']    = $hash;
@@ -181,8 +184,7 @@ class HashReadModel extends Model {
 						return $this->DisposeModel-> wetJsonRt(406,'hold_aettos_low');
 					}
 				}
-
-				$data['imgList'] = trim($payload['img_list']);
+				$data['mediaList'] = json_encode($payload['media']);
 				$insertData = [
 								'hash'		   => $data['hash'],
 								'sender_id'	   => $data['sender'],
@@ -191,7 +193,7 @@ class HashReadModel extends Model {
 								'amount'	   => $data['amount'],
 								'type' 		   => $data['type'],
 								'payload' 	   => $data['content'],
-								'img_tx' 	   => $data['imgList'],
+								'media_list'   => $data['mediaList'],
 								'source' 	   => $data['source']
 							];
 				$this->db->table($this->wet_content)->insert($insertData);
@@ -398,7 +400,7 @@ class HashReadModel extends Model {
 			{//性别
 				$data['content'] = (int)trim($payload['content']);
 				if (!is_numeric($data['content']) || $data['content'] >= 3){
-					$logMsg = "性别hash_err_sex:{$data['hash']}\r\n";
+					$logMsg = "hash_err_sex:{$data['hash']}\r\n";
 					$this->DisposeModel->wetFwriteLog($logMsg);
 					$this->deleteTemp($hash);
 					return $this->DisposeModel-> wetJsonRt(406,'error');
@@ -409,6 +411,42 @@ class HashReadModel extends Model {
 				$upData = [ 'sex' => $data['content'] ];
 				$this->db->table($this->wet_users)->where('address', $data['sender'])->update($upData);
 				$active = $bsConfig['sexActive'];
+			}
+
+			elseif ( $data['type'] == 'focus' )
+			{//关注
+				$data['content'] = $this->DisposeModel-> delete_xss($payload['content']);
+				$isUser = $this->ValidModel-> isUser($data['content']);
+				if (!$isUser){
+					$logMsg = "hash_err_focus:{$data['hash']}\r\n";
+					$this->DisposeModel->wetFwriteLog($logMsg);
+					$this->deleteTemp($hash);
+					return $this->DisposeModel-> wetJsonRt(406,'error');
+				}
+				echo $this->FocusModel-> focus($data['content'], $data['sender']);
+				$this->deleteTemp($hash);
+				return;
+			}
+
+			elseif ( $data['type'] == 'star' )
+			{//收藏
+				$data['content'] = $this->DisposeModel-> delete_xss($payload['content']);
+				$isHash = $this->DisposeModel-> checkAddress($data['content']);
+				$isShTipid = $this->DisposeModel-> checkSuperheroTipid($data['content']);
+				$isCheck   = $isShTipid ? $isShTipid : $isHash;
+				$select = 'contentStar';
+				if ($isShTipid) {
+					$select = "shTipidStar";
+				}
+				if (!$isCheck){
+					$logMsg = "hash_err_star:{$data['hash']}\r\n";
+					$this->DisposeModel->wetFwriteLog($logMsg);
+					$this->deleteTemp($hash);
+					return $this->DisposeModel-> wetJsonRt(406,'error');
+				}
+				echo $this->StarModel-> star($data['sender'], $data['content'], $select);
+				$this->deleteTemp($hash);
+				return;
 			}
 
 			elseif ( $data['type'] == 'portrait' )

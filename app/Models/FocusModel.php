@@ -79,32 +79,22 @@ class FocusModel extends Model {
 	}
 
 
-	public function focus($userAddress)
+	public function focus($focus, $fans)
 	{//关注
-		$akToken = $_SERVER['HTTP_AK_TOKEN'];
-		$isAkToken = $this->DisposeModel-> checkAddress($akToken);
-		if (!$isAkToken) {
-			return $this->DisposeModel-> wetJsonRt(401, 'error_login');
-		}
+		$verify = $this->ValidModel-> isUser($fans);
+		if (!$verify) $this->UserModel-> userPut($fans);
 
-		$verify = $this->ValidModel-> isFocus($userAddress, $akToken);
-		if (!$verify) {
-			$focusSql = "INSERT INTO $this->tablename(focus, fans) VALUES ('$userAddress', '$akToken')";
+		$isFocus = $this->ValidModel-> isFocus($focus, $fans);
+		if (!$isFocus) {
+			$focusSql = "INSERT INTO $this->tablename(focus, fans) VALUES ('$focus', '$fans')";
 			$e = true;
 		} else {
-			$focusSql = "DELETE FROM $this->tablename WHERE focus = '$userAddress' AND fans = '$akToken'";
+			$focusSql = "DELETE FROM $this->tablename WHERE focus = '$focus' AND fans = '$fans'";
 			$e = false;
 		}
 		$this->db-> query($focusSql);
-		$this->UserModel-> userFocus($userAddress, $akToken, $e);
-		//入库行为记录
-		$insetrBehaviorDate = [
-			'address'   => $akToken,
-			'thing'     => 'isFocus',
-			'toaddress' => $userAddress
-		];
-		$this->db->table($this->wet_behavior)->insert($insetrBehaviorDate);
-		$isFocus = $this->ValidModel-> isFocus($userAddress, $akToken);
+		$this->UserModel-> userFocus($focus, $fans, $e);
+		$isFocus = $this->ValidModel-> isFocus($focus, $fans);
 		$data['isFocus'] = $isFocus;
 		return $this->DisposeModel-> wetJsonRt(200, 'success',$data);
 	}
