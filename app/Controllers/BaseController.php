@@ -20,6 +20,7 @@ use App\Models\FocusModel;
 use App\Models\DisposeModel;
 use App\Models\UserModel;
 use CodeIgniter\HTTP\RequestInterface;
+use CodeIgniter\HTTP\ResponseInterface;
 
 class BaseController extends Controller {
 

@@ -6,7 +6,6 @@ use App\Models\DisposeModel;
 
 class GetModel extends Model {
 //获取Model
-
 	public function __construct(){
 		$this->db = \Config\Database::connect('default');
 		$this->ConfigModel  = new ConfigModel();
@@ -64,6 +63,44 @@ class GetModel extends Model {
         $json = (array) json_decode($get, true);
 		return $json;
 	}
+	
+	public function getLatestTenTxSender($recipient)
+	{//获取最新十条tx发送人
+		$bsConfig = $this->ConfigModel-> backendConfig();
+		$url = $bsConfig['backendServiceMdw'].'/txs/backward?account='.$recipient.'&limit=10&page=1';
+		@$get = file_get_contents($url);
+		$json = (array) json_decode($get, true);
+		$tx   = $json['data'][0]['tx'];
+		$num  = 0;
+
+		while (!$tx && $num < 5) {
+			@$get   = file_get_contents($url);
+			$json = (array) json_decode($get, true);
+			$tx = $json['data'][0]['tx'];
+			$num++;
+			sleep(5);
+		}
+
+        if (empty($tx)) {
+			$logMsg = "MDW获取发送人失败--:{$recipient}\r\n\r\n";
+			$this->DisposeModel->wetFwriteLog($logMsg);
+			return;
+        }
+
+		$data = $json['data'];
+		$sender = [];
+		foreach ($data as $row){
+			if ($row["tx"]['type'] == "SpendTx") {
+				if ($row["tx"]['recipient_id'] == $recipient) {
+					$sender[] = $row['tx']['sender_id'];
+				}
+			}
+		}
+		$sender = array_unique($sender);
+		$sender = array_values($sender);
+		return $sender;
+	}
+	
 
 	public function getAccountsBalance($address)
 	{//获取账户AE金额
@@ -71,7 +108,7 @@ class GetModel extends Model {
 		$url  = $bsConfig['backendServiceNode'].'/v3/accounts/'.$address;
 		@$get = file_get_contents($url);
 		$num  = 0;
-		while ( !$get && $num < 20 ) {
+		while (!$get && $num < 20) {
 			@$get = file_get_contents($url);
 			$num++;
 			$logMsg = "读取accounts失败:{$url}\r\n";
@@ -132,7 +169,7 @@ class GetModel extends Model {
 		$json  = (array) json_decode($get, true);
 		$owner = $json['owner'];
 		$num   = 0;
-		while ( !$owner && $num < 5) {
+		while (!$owner && $num < 5) {
 			@$get  = file_get_contents($url);
 			$json  = (array) json_decode($get, true);
 			$owner = $json['owner'];
@@ -164,7 +201,7 @@ class GetModel extends Model {
 		$json = (array) json_decode($get, true);
 		$s_id = $json['sender_id'];
 		$num  = 0;
-		while ( !$s_id && $num < 20) {
+		while (!$s_id && $num < 20) {
 			@$get = file_get_contents($url);
 			$json = (array) json_decode($get, true);
 			$s_id = $json['sender_id'];

@@ -4,6 +4,7 @@ namespace App\Models;
 use App\Models\ComModel;
 use App\Models\AecliModel;
 use App\Models\ValidModel;
+use App\Models\DisposeModel;
 
 class AirdropModel extends ComModel
 {//空投Model
@@ -26,9 +27,9 @@ class AirdropModel extends ComModel
 		$amount    = $bsConfig['airdropAeAmount'];
 		$NewUser   = $this->session-> get('NewUser');
 		$getIP	   = $this->DisposeModel-> getRealIP();
-		$ipBloom   = (new BloomModel())-> ipBloom($getIP);
+		$isBloomIp   = $this->ValidModel-> isBloomIp($getIP);
 
-		if ($ipBloom || $NewUser == 'Repeat' || !$isAirdrop) {
+		if ($isBloomIp || $NewUser == 'Repeat' || !$isAirdrop) {
 			if ($isAirdrop) {
 				$this->session-> set("NewUser","Repeat");
 			}
@@ -98,15 +99,15 @@ class AirdropModel extends ComModel
 				$uactive    = $row->uactive;
 				$lastActive = $row->last_active;
 				$address    = $row->address;
-				$userBloom  = (new BloomModel())-> addressBloom($address);
 				$uaValue	= $uactive - $lastActive;
-				if( $address != "" && !$userBloom && $uactive >= $lastActive) {
+				$isBloomAddress = $this->ValidModel-> isBloomAddress($address);
+				if( $address != "" && !$isBloomAddress && $uactive >= $lastActive) {
 					$logMsg = $address.":".($uaValue * $bsConfig['airdropWTTRatio'])."\r\n";
 					$logPath = "airdrop/WTT/".date("Y-m-d").".txt"
 					$this->DisposeModel->wetFwriteLog($logMsg, $logPath);
 				}
 
-				if($uactive >= $lastActive && !$userBloom) {
+				if($uactive >= $lastActive && !$isBloomAddress) {
 					$upSql = "UPDATE $this->wet_users SET last_active = uactive WHERE address = '$address'";
 					$this->db->query($upSql);
 				}

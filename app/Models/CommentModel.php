@@ -1,7 +1,6 @@
 <?php namespace App\Models;
 
 use CodeIgniter\Model;
-use App\Models\BloomModel;
 use App\Models\UserModel;
 use App\Models\ReplyModel;
 use App\Models\ValidModel;
@@ -14,7 +13,6 @@ class CommentModel extends Model {
 	{
         //parent::__construct();
 		$this->db 			= \Config\Database::connect('default');
-		$this->BloomModel	= new BloomModel();
 		$this->UserModel	= new UserModel();
 		$this->ReplyModel	= new ReplyModel();
 		$this->ValidModel	= new ValidModel();
@@ -54,8 +52,8 @@ class CommentModel extends Model {
 				$query    = $this-> db-> query($replySql);
 				foreach ($query-> getResult() as $row) {
 					$hash  = $row -> hash;
-					$txBloom = $this->BloomModel-> txBloom($hash);
-					if (!$txBloom) {
+					$isBloomHash = $this->ValidModel-> isBloomHash($hash);
+					if (!$isBloomHash) {
 						$opt['substr'] = 140; //限制输出
 						$list[] = $this->ReplyModel-> txReply($hash, $opt);
 					}

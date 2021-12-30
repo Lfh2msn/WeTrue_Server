@@ -3,6 +3,9 @@
 use App\Models\ComModel;
 use App\Models\ValidModel;
 use App\Models\RewardModel;
+use App\Models\DisposeModel;
+use App\Models\UserModel;
+use App\Models\ConfigModel;
 
 class SuperheroContentModel extends ComModel
 {//主贴Model

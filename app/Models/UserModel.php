@@ -5,6 +5,8 @@ use App\Models\ComModel;
 use App\Models\AirdropModel;
 use App\Models\FocusModel;
 use App\Models\ValidModel;
+use App\Models\DisposeModel;
+use App\Models\ConfigModel;
 
 class UserModel extends ComModel
 {//用户Model
@@ -49,9 +51,7 @@ class UserModel extends ComModel
 			$portrait 			= $row->portrait;
 			$data['portrait']   = $portrait ? "https://api.wetrue.io/User/portrait/".$address : "https://api.wetrue.io/images/default_head.png";
 			$data['isAuth']  	= $row->is_auth ? true : false;
-        } else {
-			die("error getUser");
-		}
+        }
 		return $data;
 	}
 
@@ -81,12 +81,7 @@ class UserModel extends ComModel
 		$row = $query->getRow();
 		$bsConfig = $this->ConfigModel-> backendConfig();
 		if (!$row && $opt['type'] == 'login') {
-			$this-> userPut($address);
-			$insetrBehaviorDate = [
-				'address' => $address,
-				'thing'   => 'newUserLogin'
-			];
-			$this->db->table($this->wet_behavior)->insert($insetrBehaviorDate);
+			//$this-> userPut($address);
 			if ($bsConfig['airdropAE']) {
 				(new AirdropModel())-> airdropAE($address);
 			}
@@ -210,6 +205,12 @@ class UserModel extends ComModel
 			//$autoFans2 = 'ak_AiYsw9sJVdfBCXbAAys4LiMDnXBd1BTTSi13fzpryQcXjSpsS';
 			(new FocusModel())-> autoFocus($autoFans1 ,$address);
 		}
+	}
+
+	public function userDelete($address)
+	{//用户删除
+		$sql = "DELETE FROM $this->tablename WHERE address = '$address'";
+		$query = $this->db->query($sql);
 	}
 
 }

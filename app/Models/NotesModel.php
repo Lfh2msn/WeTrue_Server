@@ -6,10 +6,10 @@ use App\Models\AecliModel;
 use App\Models\ValidModel;
 use App\Models\ConfigModel;
 use App\Models\GetModel;
+use App\Models\DisposeModel;
 
 class MiningModel extends ComModel
 {//挖矿Model
-
 	public function __construct()
 	{
 		parent::__construct();

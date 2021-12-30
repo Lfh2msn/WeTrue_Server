@@ -4,7 +4,7 @@ use App\Models\ComModel;
 use App\Models\DisposeModel;
 use App\Models\UserModel;
 use App\Models\ConfigModel;
-use App\Models\BloomModel;
+use App\Models\ValidModel;
 
 class SuperheroModel extends ComModel {
 //抓取Superhero内容入库Model
@@ -14,7 +14,7 @@ class SuperheroModel extends ComModel {
 		$this->DisposeModel   = new DisposeModel();
 		$this->UserModel      = new UserModel();
 		$this->ConfigModel    = new ConfigModel();
-		$this->BloomModel     = new BloomModel();
+		$this->ValidModel     = new ValidModel();
 		$this->wet_content_sh = "wet_content_sh";
 		$this->wet_users 	  = "wet_users";
     }
@@ -90,8 +90,8 @@ class SuperheroModel extends ComModel {
 
 		foreach ($lastResult as $key => $value) {
 			if ($value == $json[$key]['id']) {
-				$bloomAddress = $this->BloomModel ->addressBloom($json[$key]['sender']);
-				if (!$bloomAddress) { //地址过滤
+				$isBloomAddress = $this->ValidModel ->isBloomAddress($json[$key]['sender']);
+				if (!$isBloomAddress) { //地址过滤
 					$insertData = [
 						'tip_id'	  => $json[$key]['id'],
 						'sender_id'	  => $json[$key]['sender'],

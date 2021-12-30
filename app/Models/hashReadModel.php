@@ -1,34 +1,38 @@
 <?php namespace App\Models;
 
 use CodeIgniter\Model;
-use App\Models\ConfigModel;
-use App\Models\DisposeModel;
+
+use App\Models\MsgModel;
+use App\Models\GetModel;
 use App\Models\UserModel;
+use App\Models\StarModel;
 use App\Models\BloomModel;
 use App\Models\TopicModel;
 use App\Models\ValidModel;
-use App\Models\MsgModel;
-use App\Models\GetModel;
 use App\Models\FocusModel;
-use App\Models\StarModel;
+use App\Models\DeleteModel;
+use App\Models\ConfigModel;
+use App\Models\DisposeModel;
 use App\Models\MentionsModel;
 use App\Models\SuperheroModel;
+
 
 class HashReadModel extends Model {
 //链上hash入库Model
 
 	public function __construct(){
 		$this->db = \Config\Database::connect('default');
-		$this->ConfigModel   = new ConfigModel();
-		$this->DisposeModel  = new DisposeModel();
-		$this->UserModel	 = new UserModel();
-		$this->BloomModel	 = new BloomModel();
-		$this->TopicModel	 = new TopicModel();
-		$this->ValidModel	 = new ValidModel();
-		$this->MsgModel	 	 = new MsgModel();
-		$this->GetModel	 	 = new GetModel();
-		$this->FocusModel 	 = new FocusModel();
-		$this->StarModel 	 = new StarModel();
+		$this->MsgModel   = new MsgModel();
+		$this->GetModel   = new GetModel();
+		$this->UserModel  = new UserModel();
+		$this->StarModel  = new StarModel();
+		$this->TopicModel = new TopicModel();
+		$this->BloomModel = new BloomModel();
+		$this->ValidModel = new ValidModel();
+		$this->FocusModel = new FocusModel();
+		$this->DeleteModel = new DeleteModel();
+		$this->ConfigModel = new ConfigModel();
+		$this->DisposeModel = new DisposeModel();
 		$this->MentionsModel = new MentionsModel();
 		$this->SuperheroModel = new SuperheroModel();
 		$this->wet_temp 	 = "wet_temp";
@@ -65,10 +69,20 @@ class HashReadModel extends Model {
 		foreach ($result as $row) {
 			$tp_hash  = $row-> tp_hash;
 			$json 	  = $this->GetModel->getTransactions($tp_hash);
-			$bloomAddress = $this->BloomModel ->addressBloom( $json['tx']['sender_id'] );
-			if ( !$json || $bloomAddress) {
+			if (!$json) {
+				$logMsg = "链上未获取到数据:{$tp_hash}\r\n";
+				$this->DisposeModel->wetFwriteLog($logMsg);
+				continue;
+			}
+			$sender = $json['tx']['sender_id'];
+			$isContinue = $this->BloomModel-> userCheck($sender); //黑名单账户检查
+			if (!$isContinue) continue;
+			$isBloomAddress = $this->ValidModel ->isBloomAddress($sender);
+			if ($isBloomAddress) {
 				$logMsg = "被bloom过滤账户:{$tp_hash}\r\n";
 				$this->DisposeModel->wetFwriteLog($logMsg);
+				$this->deleteTemp($hash);  //删除临时缓存
+				$this->DeleteModel-> deleteAll($sender); //删除账户
 				continue;
 			}
 

@@ -79,7 +79,7 @@ class ValidModel extends Model {
 	}
 
 	public function isUser($address)
-	{//用户ID是否存在
+	{//用户地址是否存在
 		$sql   = "SELECT address FROM wet_users WHERE address = '$address' LIMIT 1";
         $query = $this->db->query($sql);
 		$row   = $query->getRow();
@@ -185,6 +185,38 @@ class ValidModel extends Model {
         $query = $this->db->query($sql);
 		$row   = $query->getRow();
 		return $row->state ? true : false;
+	}
+
+	public function isBloomHash($hash)
+    {//过滤Hash是否存在
+        $sql   = "SELECT bf_hash FROM wet_bloom WHERE bf_hash = '$hash' LIMIT 1";
+        $query = $this->db->query($sql);
+        $row   = $query->getRow();
+        return $row ? true : false;
+    }
+
+	public function isBloomAddress($address)
+    {//过滤address是否存在
+        $sql   = "SELECT bf_address FROM wet_bloom WHERE bf_address = '$address' LIMIT 1";
+        $query = $this->db->query($sql);
+        $row   = $query->getRow();
+        return $row ? true : false;
+    }
+
+	public function isBloomIp($ip)
+	{//过滤IP是否存在
+		$sql   = "SELECT bf_ip FROM wet_bloom WHERE bf_ip = '$ip' LIMIT 1";
+		$query = $this->db->query($sql);
+		$row   = $query->getRow();
+		return $row ? true : false;
+	}
+
+	public function isAmountVip($address)
+	{//费率vip用户是否存在
+		$sql   = "SELECT address FROM wet_amount WHERE address = '$address' LIMIT 1";
+		$query = $this->db->query($sql);
+		$row   = $query->getRow();
+		return $row ? true : false;
 	}
 
 }

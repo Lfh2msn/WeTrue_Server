@@ -192,7 +192,7 @@ class DisposeModel extends Model {
         return json_encode($rt);
     }
 
-    public function wetFwriteLog($msg, $path)
+    public function wetFwriteLog($msg, $path = null)
     {//写入Log
         if(!$path){
             $path = "log/chain_read/".date('Y-m-d').".txt";

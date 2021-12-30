@@ -7,6 +7,7 @@ use App\Models\CommentModel;
 use App\Models\ReplyModel;
 use App\Models\RewardModel;
 use App\Models\ValidModel;
+use App\Models\DisposeModel;
 
 class MsgModel extends ComModel
 {//消息Model

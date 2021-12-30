@@ -2,6 +2,7 @@
 namespace App\Models;
 
 use App\Models\ComModel;
+use App\Models\ConfigModel;
 
 class AecliModel extends ComModel
 {//AE cli 调用 Model

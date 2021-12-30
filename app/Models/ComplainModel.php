@@ -6,7 +6,6 @@ use App\Models\HashReadModel;
 use App\Models\ContentModel;
 use App\Models\CommentModel;
 use App\Models\ReplyModel;
-use App\Models\BloomModel;
 use App\Models\ValidModel;
 use App\Models\GetModel;
 
@@ -21,11 +20,9 @@ class ComplainModel extends Model {
 		$this->ContentModel  = new ContentModel();
 		$this->CommentModel  = new CommentModel();
 		$this->ReplyModel 	 = new ReplyModel();
-		$this->BloomModel 	 = new BloomModel();
 		$this->ValidModel 	 = new ValidModel();
 		$this->GetModel 	 = new GetModel();
 		$this->wet_complain  = "wet_complain";
-		$this->wet_bloom     = "wet_bloom";
 		$this->wet_behavior  = "wet_behavior";
 	}
 
@@ -54,8 +51,8 @@ class ComplainModel extends Model {
 			return json_encode($data);
 		}
 
-		$txBloom = $this->BloomModel-> txBloom($hash);
-		if ($txBloom) {
+		$isBloomHash = $this->ValidModel-> isBloomHash($hash);
+		if ($isBloomHash) {
 			$this->deleteComplain($hash);
 			$data['msg'] = 'error_repeat';
 			return json_encode($data);

@@ -1,8 +1,9 @@
 <?php namespace App\Models;
 
 use CodeIgniter\Model;
-use App\Models\BloomModel;
 use App\Models\DisposeModel;
+use App\Models\ValidModel;
+
 
 class DriftModel extends Model {
 //Drift模型
@@ -10,8 +11,8 @@ class DriftModel extends Model {
 	public function __construct(){
         //parent::__construct();
 		$this->db = \Config\Database::connect('default');
-		$this->BloomModel	   = new BloomModel();
 		$this->DisposeModel	   = new DisposeModel();
+		$this->ValidModel	   = new ValidModel();
 		$this->wet_drift_topic = "wet_drift_topic";
 		$this->wet_drift_reply = "wet_drift_reply";
 		
@@ -47,8 +48,8 @@ class DriftModel extends Model {
 		$data['data']['data'] = [];
 		foreach ($query-> getResult() as $row){
 			$hash    = $row -> hash;
-			$txBloom = $this->BloomModel-> txBloom($hash);
-			if (!$txBloom) {
+			$isBloomHash = $this->ValidModel-> isBloomHash($hash);
+			if (!$isBloomHash) {
 				if ($opt['select']  == 'content') {
 					$detaila[] = $this->content-> txContent($hash, $opt);
 				}

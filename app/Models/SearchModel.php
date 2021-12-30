@@ -1,7 +1,6 @@
 <?php namespace App\Models;
 
 use CodeIgniter\Model;
-use App\Models\BloomModel;
 use App\Models\ContentModel;
 use App\Models\DisposeModel;
 use App\Models\UserModel;
@@ -14,7 +13,6 @@ class SearchModel extends Model {
 	public function __construct(){
 		//parent::__construct();
 		$this->db = \Config\Database::connect('default');
-		$this->BloomModel   = new BloomModel();
 		$this->ContentModel = new ContentModel();
 		$this->DisposeModel = new DisposeModel();
 		$this->UserModel	= new UserModel();
@@ -85,18 +83,18 @@ class SearchModel extends Model {
 			$address  = $row->address;
 			$keywords = $row->keywords;
 			if ($hash) {
-				$txBloom = $this->BloomModel-> txBloom($hash);
+				$isBloomHash = $this->ValidModel-> isBloomHash($hash);
 			}
 
 			if ($address) {
-				$idBloom = $this->BloomModel-> addressBloom($address);
+				$isBloomAddress = $this->ValidModel-> isBloomAddress($address);
 			}
 
 			if ($keywords){
 				$isTopicState = $this->ValidModel-> isTopicState($keywords);
 			}
 
-			if($txBloom || !$idBloom || $isTopicState)
+			if($isBloomHash || !$isBloomAddress || $isTopicState)
 			{
 				if($opt['type']  == 'topic') {
 					$isData = $this->ContentModel-> txContent($hash, $opt);

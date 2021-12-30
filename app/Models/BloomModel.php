@@ -1,15 +1,16 @@
 <?php namespace App\Models;
 
-//use CodeIgniter\Model;
 use App\Models\ComModel;
-use App\Models\DisposeModel;
+use App\Models\GetModel;
 use App\Models\UserModel;
+use App\Models\ReplyModel;
+use App\Models\ValidModel;
+use App\Models\AmountModel;
 use App\Models\ConfigModel;
+use App\Models\DisposeModel;
 use App\Models\ContentModel;
 use App\Models\CommentModel;
 use App\Models\ComplainModel;
-use App\Models\ReplyModel;
-use App\Models\ValidModel;
 
 class BloomModel extends ComModel {
 //过滤Model
@@ -17,45 +18,47 @@ class BloomModel extends ComModel {
 	public function __construct()
 	{
 		parent::__construct();
-		//$this->db = \Config\Database::connect('default');
-		$this->DisposeModel  = new DisposeModel();
-		$this->UserModel	 = new UserModel();
-        $this->ConfigModel	 = new ConfigModel();
-		$this->ValidModel	 = new ValidModel();
-		$this->wet_bloom     = "wet_bloom";
-		$this->wet_complain  = "wet_complain";
-        $this->wet_content   = "wet_content";
-        $this->wet_comment   = "wet_comment";
-        $this->wet_reply     = "wet_reply";
-        $this->wet_behavior  = "wet_behavior";
-        
+		$this->GetModel		= new GetModel();
+		$this->UserModel	= new UserModel();
+		$this->ValidModel	= new ValidModel();
+		$this->AmountModel	= new AmountModel();
+		$this->ConfigModel	= new ConfigModel();
+		$this->DisposeModel = new DisposeModel();
+		$this->wet_reply    = "wet_reply";
+		$this->wet_bloom    = "wet_bloom";
+        $this->wet_content  = "wet_content";
+        $this->wet_comment  = "wet_comment";
+        $this->wet_behavior = "wet_behavior";
 	}
-    
-   public function ipBloom($ip)
-   {//过滤IP，存在返回true
-        $sql   = "SELECT bf_ip FROM $this->wet_bloom WHERE bf_ip = '$ip' LIMIT 1";
-        $query = $this->db->query($sql);
-        $row   = $query->getRow();
-        return $row ? true : false;
-    }
-	
-	public function txBloom($hash)
-    {//过滤TX，存在返回true
-        $sql   = "SELECT bf_hash FROM $this->wet_bloom WHERE bf_hash = '$hash' LIMIT 1";
-        $query = $this->db->query($sql);
-        $row   = $query->getRow();
-        return $row ? true : false;
-    }
 
-    public function addressBloom($address)
-    {//过滤address，存在返回true
-        $sql   = "SELECT bf_address FROM $this->wet_bloom WHERE bf_address = '$address' LIMIT 1";
-        $query = $this->db->query($sql);
-        $row   = $query->getRow();
-        return $row ? true : false;
-    }
+	public function userCheck($address)
+	{//账户检查
+		$isUser = $this->ValidModel-> isUser($address);
+		if ($isUser) return true;
+		$senderList = $this->GetModel-> getLatestTenTxSender($address);
+		if (!$senderList) return false;
+		foreach ($senderList as $sender) {
+			$isBloomAddress = $this->ValidModel-> isBloomAddress($sender);
+			$isAmountVip = $this->ValidModel-> isAmountVip($sender);
+			if ($isBloomAddress || $isAmountVip) {
+				$balance = $this->GetModel-> getAccountsBalance($address);
+				if (!$balance) return false;
+				$bloomAE = $this->DisposeModel-> bigNumber("div", $balance);
+				$bloomAE = floor($bloomAE);
+				$amount = $this->DisposeModel-> bigNumber("mul", $bloomAE);
+				if ($bloomAE >= 10) $amount = 99999e14;
+				if ($bloomAE < 10) $amount = $balance;
+				$this->AmountModel-> insertAmountUser($address, $amount);
+				$logMsg  = date('Y-m-d')."抓到一枚VIP,地址:{$address},收费:{$amount}\r\n";
+				$logPath = "log/auto_amount_vip/".date('Y-m').".txt";
+				$this->DisposeModel->wetFwriteLog($logMsg, $logPath);
+				continue;
+			}
+		}
+		return true;
+	}
 
-    public function deleteBloom($hash)
+    public function deleteBloomHash($hash)
 	{//删除过滤
 		$deleteSql = "DELETE FROM $this->wet_bloom WHERE bf_hash = '$hash'";
 		$this->db-> query($deleteSql);
@@ -75,8 +78,8 @@ class BloomModel extends ComModel {
 			return $this->DisposeModel-> wetJsonRt(401, 'error_no_complain');
         }
 
-        $txBloom = $this->txBloom($hash);
-        if ($txBloom) {
+        $isBloomHash = $this->ValidModel-> isBloomHash($hash);
+        if ($isBloomHash) {
 			return $this->DisposeModel-> wetJsonRt(200, 'error_repeat');
         }
 
@@ -112,7 +115,7 @@ class BloomModel extends ComModel {
 		}
 
         (new ComplainModel())-> deleteComplain($hash);
-        $this-> deleteBloom($hash);
+        $this-> deleteBloomHash($hash);
         return $this->DisposeModel-> wetJsonRt(200, 'success');
     }
 

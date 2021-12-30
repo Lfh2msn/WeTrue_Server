@@ -3,6 +3,8 @@
 use App\Models\ComModel;
 use App\Models\ValidModel;
 use App\Models\RewardModel;
+use App\Models\DisposeModel;
+use App\Models\UserModel;
 
 class ContentModel extends ComModel
 {//主贴Model

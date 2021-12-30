@@ -1,7 +1,7 @@
 <?php namespace App\Models;
 
 use CodeIgniter\Model;
-use App\Models\BloomModel;
+use App\Models\ValidModel;
 use App\Models\ContentModel;
 use App\Models\CommentModel;
 use App\Models\ReplyModel;
@@ -17,7 +17,7 @@ class PagesModel extends Model {
 	public function __construct(){
         //parent::__construct();
 		$this->db = \Config\Database::connect('default');
-		$this->BloomModel   = new BloomModel();
+		$this->ValidModel   = new ValidModel();
 		$this->ContentModel = new ContentModel();
 		$this->CommentModel = new CommentModel();
 		$this->ReplyModel 	= new ReplyModel();
@@ -234,8 +234,8 @@ class PagesModel extends Model {
 			}
 
 			foreach ($arrList as $hash) {
-				$txBloom = $this->BloomModel-> txBloom($hash);
-				if (!$txBloom) {
+				$isBloomHash = $this->ValidModel-> isBloomHash($hash);
+				if (!$isBloomHash) {
 					if ($opt['select']  == 'content') {
 						$isData = $this->ContentModel-> txContent($hash, $opt);
 						if(isset($isData)) $detaila[] = $isData;
