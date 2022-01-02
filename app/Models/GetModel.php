@@ -1,13 +1,14 @@
 <?php namespace App\Models;
 
-use CodeIgniter\Model;
+use App\Models\ComModel;
 use App\Models\ConfigModel;
 use App\Models\DisposeModel;
 
-class GetModel extends Model {
+class GetModel extends ComModel {
 //获取Model
 	public function __construct(){
-		$this->db = \Config\Database::connect('default');
+		parent::__construct();
+		//$this->db = \Config\Database::connect('default');
 		$this->ConfigModel  = new ConfigModel();
 		$this->DisposeModel = new DisposeModel();
     }
@@ -64,36 +65,35 @@ class GetModel extends Model {
 		return $json;
 	}
 	
-	public function getLatestTenTxSender($recipient)
+	public function getSenderByLatestTx($address)
 	{//获取最新十条tx发送人
-		$bsConfig = $this->ConfigModel-> backendConfig();
-		$url = $bsConfig['backendServiceMdw'].'/txs/backward?account='.$recipient.'&limit=10&page=1';
+		//$bsConfig = $this->ConfigModel-> backendConfig();
+		//$url = $bsConfig['backendServiceMdw'].'/txs/backward?account='.$recipient.'&limit=10&page=1';
+		$url = "https://aeknow.org/api/spendtx/".$address;
 		@$get = file_get_contents($url);
 		$json = (array) json_decode($get, true);
-		$tx   = $json['data'][0]['tx'];
+		$tx   = $json['txs'][0]['sender_id'];
 		$num  = 0;
 
 		while (!$tx && $num < 5) {
-			@$get   = file_get_contents($url);
+			@$get = file_get_contents($url);
 			$json = (array) json_decode($get, true);
-			$tx = $json['data'][0]['tx'];
+			$tx = $json['txs'][0]['sender_id'];
 			$num++;
 			sleep(5);
 		}
 
         if (empty($tx)) {
-			$logMsg = "MDW获取发送人失败--:{$recipient}\r\n\r\n";
+			$logMsg = "获取最新N条发送人失败--:{$address}\r\n\r\n";
 			$this->DisposeModel->wetFwriteLog($logMsg);
 			return;
         }
 
-		$data = $json['data'];
+		$data = $json['txs'];
 		$sender = [];
 		foreach ($data as $row){
-			if ($row["tx"]['type'] == "SpendTx") {
-				if ($row["tx"]['recipient_id'] == $recipient) {
-					$sender[] = $row['tx']['sender_id'];
-				}
+			if ($row['recipient_id'] == $address) {
+				$sender[] = $row['tx']['sender_id'];
 			}
 		}
 		$sender = array_unique($sender);

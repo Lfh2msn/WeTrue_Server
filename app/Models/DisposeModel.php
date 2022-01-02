@@ -102,7 +102,7 @@ class DisposeModel extends Model {
     }
 
 
-    public function bigNumber($x, string $m, string $n = "1000000000000000000")
+    public function bigNumber($x, string $m, string $n = "100000000000000000")
     {/**大数计算--注意必须为string
         * 使用方法:
         * $x = out 原数输出

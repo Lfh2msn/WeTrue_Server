@@ -12,15 +12,15 @@ class DeleteModel extends ComModel
 
 	public function deleteAll($address)
 	{//删除用户全部信息
-		$this->deleteUser($address);
-		$this->deleteContent($address);
-		$this->deleteComment($address);
-		$this->deleteReply($address);
+		$this->deleteReward($address);
 		$this->deleteMsg($address);
 		$this->deleteFocus($address);
 		$this->deleteStar($address);
 		$this->deletePraise($address);
-		$this->deleteReward($address);
+		$this->deleteReply($address);
+		$this->deleteComment($address);
+		$this->deleteContent($address);
+		$this->deleteUser($address);
 		$logMsg  = date('Y-m-d')."用户被自动删除,地址:{$address}\r\n";
 		$logPath = "log/auto_delete_user/".date('Y-m').".txt";
 		$this->DisposeModel->wetFwriteLog($logMsg, $logPath);

@@ -33,9 +33,9 @@ class BloomModel extends ComModel {
 
 	public function userCheck($address)
 	{//账户检查
-		$isUser = $this->ValidModel-> isUser($address);
-		if ($isUser) return true;
-		$senderList = $this->GetModel-> getLatestTenTxSender($address);
+		$isUser = $this->ValidModel-> isNewUser($address);
+		if (!$isUser) return true;
+		$senderList = $this->GetModel-> getSenderByLatestTx($address);
 		if (!$senderList) return false;
 		foreach ($senderList as $sender) {
 			$isBloomAddress = $this->ValidModel-> isBloomAddress($sender);
