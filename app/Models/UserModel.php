@@ -81,13 +81,13 @@ class UserModel extends ComModel
 		$row = $query->getRow();
 		$bsConfig = $this->ConfigModel-> backendConfig();
 		if (!$row && $opt['type'] == 'login') {
-			//$this-> userPut($address);
+			$this-> userPut($address);
 			if ($bsConfig['airdropAE']) {
 				(new AirdropModel())-> airdropAE($address);
 			}
 		}
-		$userActive   = (int)$row->uactive;
-		$userReward   = $row->reward_sum;
+		$userActive   = (int)$row->uactive ?? 0;
+		$userReward   = $row->reward_sum ?? 0;
 		$portrait 	  = $row->portrait;
 		$portraitHash = $row->portrait_hash;
 		$nickname     = $this->DisposeModel-> delete_xss($row->nickname);

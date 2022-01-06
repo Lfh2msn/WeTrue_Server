@@ -88,10 +88,12 @@ class ValidModel extends Model {
 
 	public function isNewUser($address)
 	{//用户是否新账户
-		$sql   = "SELECT address FROM wet_users WHERE address = '$address' AND uactive < 50 LIMIT 1";
+		$sql   = "SELECT uactive FROM wet_users WHERE address = '$address' LIMIT 1";
         $query = $this->db->query($sql);
 		$row   = $query->getRow();
-		return $row ? true : false;
+		$ac	   = $row->uactive;
+		if ($ac < 50) return true;
+		return false;
 	}
 
 	public function isAuthUser($address)

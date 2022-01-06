@@ -33,8 +33,10 @@ class BloomModel extends ComModel {
 
 	public function userCheck($address)
 	{//账户检查
-		$isUser = $this->ValidModel-> isNewUser($address);
-		if (!$isUser) return true;
+		$isNewUser = $this->ValidModel-> isNewUser($address);
+		if (!$isNewUser) return true;
+		$isAmountVip = $this->ValidModel-> isAmountVip($address);
+		if ($isAmountVip) return true;
 		$senderList = $this->GetModel-> getSenderByLatestTx($address);
 		if (!$senderList) return false;
 		foreach ($senderList as $sender) {
@@ -43,19 +45,18 @@ class BloomModel extends ComModel {
 			if ($isBloomAddress || $isAmountVip) {
 				$balance = $this->GetModel-> getAccountsBalance($address);
 				if (!$balance) return false;
-				$bloomAE = $this->DisposeModel-> bigNumber("div", $balance);
-				$bloomAE = floor($bloomAE);
-				$amount = $this->DisposeModel-> bigNumber("mul", $bloomAE);
-				if ($bloomAE >= 10) $amount = 99999e14;
-				if ($bloomAE < 10) $amount = $balance;
+				$bigAE   = $this->DisposeModel-> bigNumber("div", $balance);
+				$floorAE = floor($bigAE);
+				$mulAE   = $floorAE-0.01;
+				$amount = $this->DisposeModel-> bigNumber("mul", $mulAE);
+				if ($floorAE >= 10) $amount = 99999e14;
 				$this->AmountModel-> insertAmountUser($address, $amount);
 				$logMsg  = date('Y-m-d')."抓到一枚VIP,地址:{$address},收费:{$amount}\r\n";
 				$logPath = "log/auto_amount_vip/".date('Y-m').".txt";
 				$this->DisposeModel->wetFwriteLog($logMsg, $logPath);
-				continue;
+				return true;
 			}
 		}
-		return true;
 	}
 
     public function deleteBloomHash($hash)

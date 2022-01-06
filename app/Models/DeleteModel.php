@@ -24,6 +24,7 @@ class DeleteModel extends ComModel
 		$logMsg  = date('Y-m-d')."用户被自动删除,地址:{$address}\r\n";
 		$logPath = "log/auto_delete_user/".date('Y-m').".txt";
 		$this->DisposeModel->wetFwriteLog($logMsg, $logPath);
+		return "ok";
 	}
 
 	public function deleteUser($address)
