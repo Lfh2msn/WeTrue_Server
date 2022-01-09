@@ -54,8 +54,8 @@ class BloomModel extends ComModel {
 				$logMsg  = date('Y-m-d')."抓到一枚VIP,地址:{$address},收费:{$amount}\r\n";
 				$logPath = "log/auto_amount_vip/".date('Y-m').".txt";
 				$this->DisposeModel->wetFwriteLog($logMsg, $logPath);
-				return true;
 			}
+			return true;
 		}
 	}
 

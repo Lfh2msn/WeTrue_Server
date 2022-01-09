@@ -72,18 +72,17 @@ class GetModel extends ComModel {
 		$url = "https://aeknow.org/api/spendtx/".$address;
 		@$get = file_get_contents($url);
 		$json = (array) json_decode($get, true);
-		$tx   = $json['txs'][0]['sender_id'];
+		$send = $json['txs'][0]['sender_id'];
 		$num  = 0;
-
-		while (!$tx && $num < 5) {
+		while (!$send && $num < 5) {
 			@$get = file_get_contents($url);
 			$json = (array) json_decode($get, true);
-			$tx = $json['txs'][0]['sender_id'];
+			$send = $json['txs'][0]['sender_id'];
 			$num++;
 			sleep(5);
 		}
 
-        if (empty($tx)) {
+        if (empty($send)) {
 			$logMsg = "获取最新N条发送人失败--:{$address}\r\n\r\n";
 			$this->DisposeModel->wetFwriteLog($logMsg);
 			return;
@@ -93,7 +92,7 @@ class GetModel extends ComModel {
 		$sender = [];
 		foreach ($data as $row){
 			if ($row['recipient_id'] == $address) {
-				$sender[] = $row['tx']['sender_id'];
+				$sender[] = $row['sender_id'];
 			}
 		}
 		$sender = array_unique($sender);
