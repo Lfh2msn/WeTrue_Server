@@ -20,6 +20,7 @@ class DeleteModel extends ComModel
 		$this->deleteReply($address);
 		$this->deleteComment($address);
 		$this->deleteContent($address);
+		$this->deleteShContent($address);
 		$this->deleteUser($address);
 		$logMsg  = date('Y-m-d')."用户被自动删除,地址:{$address}\r\n";
 		$logPath = "log/auto_delete_user/".date('Y-m').".txt";
@@ -36,6 +37,12 @@ class DeleteModel extends ComModel
 	public function deleteContent($address)
 	{//删除主贴
 		$sql = "DELETE FROM wet_content WHERE sender_id = '$address'";
+		$query = $this->db->query($sql);
+	}
+
+	public function deleteShContent($address)
+	{//删除SH主贴
+		$sql = "DELETE FROM wet_content_sh WHERE sender_id = '$address'";
 		$query = $this->db->query($sql);
 	}
 

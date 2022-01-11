@@ -91,7 +91,8 @@ class SuperheroModel extends ComModel {
 		foreach ($lastResult as $key => $value) {
 			if ($value == $json[$key]['id']) {
 				$isBloomAddress = $this->ValidModel ->isBloomAddress($json[$key]['sender']);
-				if (!$isBloomAddress) { //地址过滤
+				$isAmountVip = $this->ValidModel-> isAmountVip($json[$key]['sender']);
+				if (!$isBloomAddress && !$isAmountVip) { //地址过滤
 					$insertData = [
 						'tip_id'	  => $json[$key]['id'],
 						'sender_id'	  => $json[$key]['sender'],
