@@ -230,7 +230,7 @@ class DisposeModel extends Model {
 
     public function rewardGrade($number)
 	{//打赏金额等级划分
-        if (!$number) $number = 0;
+        if (!$number) return 0;
 		$number = $this->bigNumber('div', $number);
         if ($number >= 10000000) {
             $Grade = 6;

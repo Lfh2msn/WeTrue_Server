@@ -12,7 +12,7 @@ class AecliModel extends ComModel
     }
 
 	public function spendAE($address, $amount)
-	{	
+	{
 		$bsConfig = (new ConfigModel())-> backendConfig();
 		$nodeUrl  = $bsConfig['backendServiceNode'];
 		$wallet   = $bsConfig['walletPath_1'];
@@ -27,7 +27,6 @@ class AecliModel extends ComModel
 		fwrite($textFile, $appendText);
 		fclose($textFile);
 		return $hash;
-
 		/*
 		Array(
 			[0] => 

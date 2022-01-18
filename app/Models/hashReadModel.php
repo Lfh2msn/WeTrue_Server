@@ -56,11 +56,10 @@ class HashReadModel extends Model {
 			$this->db->query($insertTempSql);
 			if (!$await) echo $this->DisposeModel-> wetJsonRt(200);
 		} else {
-			log_message('error_repeat_'.$hash, 4);
 			if (!$await) echo $this->DisposeModel-> wetJsonRt(406,'error_repeat');
 		}
 
-		$delTempSql = "DELETE FROM $this->wet_temp WHERE tp_time <= now()-interval '1 D' AND tp_type = '$tp_type'";
+		$delTempSql = "DELETE FROM $this->wet_temp WHERE tp_time <= now()-interval '3 D' AND tp_type = '$tp_type'";
 		$this->db->query($delTempSql);
 
 		$tpSql   = "SELECT tp_hash FROM $this->wet_temp WHERE tp_type = '$tp_type' ORDER BY tp_time DESC LIMIT 30";
@@ -112,7 +111,7 @@ class HashReadModel extends Model {
 				|| $currentHour == 18
 				|| $currentHour == 22
 				) {
-				$this->SuperheroModel-> getContent(1);
+				//$this->SuperheroModel-> getContent(1);
 			}
 		}
 	}

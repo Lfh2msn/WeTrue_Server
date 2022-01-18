@@ -38,6 +38,11 @@ class Submit extends BaseController {
 	{//发布hash
 		$hash  = $this->request->getPost('hash');
 		$await = $this->request->getPost('await');
+		if ($await){
+			$await = true;
+		} else {
+			$await = false;
+		}
 		$isHash = $this->DisposeModel-> checkAddress($hash);
 		if ($isHash) {
             $data = (new HashReadModel())-> split($hash, $await);
