@@ -112,12 +112,9 @@ class UserModel extends ComModel
 		$data['is_map']  	  = $is_map;
 		$data['isMapping']    = $is_map;
 		$data['isAuth']  	  = $row->is_auth ? true : false;
-		if ($opt['type'] == 'login')
-		{
-			$isAdmin = $this->ValidModel-> isAdmin($address);
-			if ($isAdmin) {
-				$data['isAdmin']  = $isAdmin;
-			}
+		$isAdmin = $this->ValidModel-> isAdmin($address);
+		if ($isAdmin) {
+			$data['isAdmin']  = $isAdmin;
 		}
 		return $data;
 	}
