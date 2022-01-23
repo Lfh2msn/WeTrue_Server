@@ -12,10 +12,10 @@ use App\Models\ValidModel;
 use App\Models\FocusModel;
 use App\Models\DeleteModel;
 use App\Models\ConfigModel;
+use App\Models\WttMdwModel;
 use App\Models\DisposeModel;
 use App\Models\MentionsModel;
 use App\Models\SuperheroModel;
-
 
 class HashReadModel extends Model {
 //链上hash入库Model
@@ -32,6 +32,7 @@ class HashReadModel extends Model {
 		$this->FocusModel = new FocusModel();
 		$this->DeleteModel = new DeleteModel();
 		$this->ConfigModel = new ConfigModel();
+		$this->WttMdwModel = new WttMdwModel();
 		$this->DisposeModel = new DisposeModel();
 		$this->MentionsModel = new MentionsModel();
 		$this->SuperheroModel = new SuperheroModel();
@@ -59,7 +60,7 @@ class HashReadModel extends Model {
 			if (!$await) echo $this->DisposeModel-> wetJsonRt(406,'error_repeat');
 		}
 
-		$delTempSql = "DELETE FROM $this->wet_temp WHERE tp_time <= now()-interval '3 D' AND tp_type = '$tp_type'";
+		$delTempSql = "DELETE FROM $this->wet_temp WHERE tp_time <= now()-interval '1 D' AND tp_type = '$tp_type'";
 		$this->db->query($delTempSql);
 
 		$tpSql   = "SELECT tp_hash FROM $this->wet_temp WHERE tp_type = '$tp_type' ORDER BY tp_time DESC LIMIT 30";
@@ -111,7 +112,7 @@ class HashReadModel extends Model {
 				|| $currentHour == 18
 				|| $currentHour == 22
 				) {
-				//$this->SuperheroModel-> getContent(1);
+				$this->SuperheroModel-> getContent(1);
 			}
 		}
 	}
@@ -517,8 +518,8 @@ class HashReadModel extends Model {
 				$upSql = "UPDATE $this->wet_users SET topic_sum = topic_sum + 1 WHERE address = '$data[sender]'";
 				$this->db->query($upSql);
 			}
-				
 			$this->deleteTemp($hash);
+			if( $data['type'] == 'topic' ) $this->WttMdwModel ->getNewContentList(); //通知中间件提示新内容
 			return json_encode($this->DisposeModel-> wetRt(200,'success'));
 		} catch (Exception $err) {
 			$this->deleteTemp($hash);
