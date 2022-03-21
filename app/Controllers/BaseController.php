@@ -56,8 +56,8 @@ class BaseController extends Controller {
 		$this->FocusModel   = new FocusModel();
 		$this->DisposeModel = new DisposeModel();
 		$this->UserModel	= new UserModel();
-		$this->response->setHeader('Access-Control-Allow-Origin', '*');
-		$this->response->setHeader('Access-Control-Allow-Headers', 'ak-token');
+		$this->response->setHeader('Access-Control-Allow-Origin', "*");
+		$this->response->setHeader('Access-Control-Allow-Headers', "ak-token, chain-id, key");
 		//$this->response->setHeader('Content-Type', 'application/json; charset=utf-8');
 	}
 

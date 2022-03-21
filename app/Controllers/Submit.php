@@ -36,8 +36,9 @@ class Submit extends BaseController {
 
 	public function hash()
 	{//发布hash
-		$hash  = $this->request->getPost('hash');
-		$await = $this->request->getPost('await');
+		$hash    = $this->request->getPost('hash');
+		$await   = $this->request->getPost('await');
+		$chainId = $_SERVER['HTTP_CHAIN_ID'] ?? 457;
 		if ($await){
 			$await = true;
 		} else {
@@ -45,7 +46,7 @@ class Submit extends BaseController {
 		}
 		$isHash = $this->DisposeModel-> checkAddress($hash);
 		if ($isHash) {
-            $data = (new HashReadModel())-> split($hash, $await);
+            $data = (new HashReadModel())-> split($hash, $await, $chainId);
 			echo $data;
         } elseif (!$hash) {
 			echo $this->DisposeModel-> wetJsonRt(406, 'error_type');

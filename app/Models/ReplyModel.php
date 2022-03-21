@@ -34,7 +34,8 @@ class ReplyModel extends Model {
 							sender_id,
 							to_address,
 							utctime,
-							praise
+							praise,
+							chain_id
 				FROM $this->tablename WHERE hash='$hash' LIMIT 1";
 
         $query = $this->db->query($sql);
@@ -53,6 +54,7 @@ class ReplyModel extends Model {
 			$data['utcTime']	  = (int) $row-> utctime;
 			$data['praise']		  = (int) $row-> praise;
 			$data['isPraise']	  = $opt['userLogin'] ? $this->ValidModel-> isPraise($hash, $opt['userLogin']) : false;
+			$data['chainId']	  = $row->chain_id ? (int) $row->chain_id : 457;
 			$data['users']		  = $this->UserModel-> getUser($sender_id);
         }
 

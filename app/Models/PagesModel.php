@@ -40,7 +40,7 @@ class PagesModel extends Model {
 		$page   = max(1, (int)$page);
 		$size   = max(1, (int)$size);
 		$offset = max(0, (int)$offset);
-		$akToken   = $_SERVER['HTTP_AK_TOKEN'];
+		$akToken   = $_SERVER['HTTP_AK_TOKEN'] ?? $_SERVER['HTTP_KEY'];
 		$isAkToken = $this->DisposeModel-> checkAddress($akToken);
 		if ($isAkToken) $opt['userLogin'] = $akToken;
 		$opt['substr'] = 160; //限制输出
@@ -182,7 +182,7 @@ class PagesModel extends Model {
 
 	public function alone($hash, $opt=[])
 	{//内容单页
-		$akToken   = $_SERVER['HTTP_AK_TOKEN'];
+		$akToken   = $_SERVER['HTTP_AK_TOKEN'] ?? $_SERVER['HTTP_KEY'];
 		$isAkToken = $this->DisposeModel-> checkAddress($akToken);
 		if($isAkToken) {
 			$opt['userLogin'] = $akToken;

@@ -21,7 +21,7 @@ class PraiseModel extends Model {
 	
 	public function praise($hash, $type)
 	{//点赞
-		$akToken = $_SERVER['HTTP_AK_TOKEN'];
+		$akToken = $_SERVER['HTTP_AK_TOKEN'] ?? $_SERVER['HTTP_KEY'];
 		$isAkToken = $this->DisposeModel-> checkAddress($akToken);
 		if ( !$isAkToken ) {
 			return $this->DisposeModel-> wetJsonRt(401, 'error_login');

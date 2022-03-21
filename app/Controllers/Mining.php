@@ -10,7 +10,7 @@ class Mining extends BaseController {
 	{//开通映射
         $hash 		   = $this->request->getPost('hash');
 		$reqAddress    = $this->request->getPost('userAddress');
-		$aktAddress    = $_SERVER['HTTP_AK_TOKEN'];
+		$aktAddress    = $_SERVER['HTTP_AK_TOKEN'] ?? $_SERVER['HTTP_KEY'];
 		$userAddress   = $aktAddress ?? $reqAddress;
 		$isHash 	   = $this->DisposeModel-> checkAddress($hash);
 		$isUserAddress = $this->DisposeModel-> checkAddress($userAddress);
@@ -24,7 +24,7 @@ class Mining extends BaseController {
 	public function submitState()
 	{//开通映射提交状态
         $reqAddress  = $this->request->getPost('userAddress');
-		$aktAddress  = $_SERVER['HTTP_AK_TOKEN'];
+		$aktAddress  = $_SERVER['HTTP_AK_TOKEN'] ?? $_SERVER['HTTP_KEY'];
 		$userAddress = $aktAddress ?? $reqAddress;
 		$isAddress   = $this->DisposeModel-> checkAddress($userAddress);
 		if ($isAddress) {
@@ -45,7 +45,7 @@ class Mining extends BaseController {
 	{//映射挖矿
 		(int)$amount   = $this->request->getPost('amount');
 		$reqAddress    = $this->request->getPost('userAddress');
-		$aktAddress    = $_SERVER['HTTP_AK_TOKEN'];
+		$aktAddress    = $_SERVER['HTTP_AK_TOKEN'] ?? $_SERVER['HTTP_KEY'];
 		$userAddress   = $aktAddress ?? $reqAddress;
 		$isUserAddress = $this->DisposeModel-> checkAddress($userAddress);
 		$isMapAccount  = (new ValidModel())-> isMapAccount($userAddress);
@@ -60,7 +60,7 @@ class Mining extends BaseController {
 	public function earning()
 	{//领取收益
 		$reqAddress    = $this->request->getPost('userAddress');
-		$aktAddress    = $_SERVER['HTTP_AK_TOKEN'];
+		$aktAddress    = $_SERVER['HTTP_AK_TOKEN'] ?? $_SERVER['HTTP_KEY'];
 		$userAddress   = $aktAddress ?? $reqAddress;
 		$isUserAddress = $this->DisposeModel-> checkAddress($userAddress);
 		$isMapAccount  = (new ValidModel())-> isMapAccount($userAddress);
@@ -75,7 +75,7 @@ class Mining extends BaseController {
 	public function unMapping()
 	{//解除映射
 		$reqAddress    = $this->request->getPost('userAddress');
-		$aktAddress    = $_SERVER['HTTP_AK_TOKEN'];
+		$aktAddress    = $_SERVER['HTTP_AK_TOKEN'] ?? $_SERVER['HTTP_KEY'];
 		$userAddress   = $aktAddress ?? $reqAddress;
 		$isUserAddress = $this->DisposeModel-> checkAddress($userAddress);
 		$isMapAccount  = (new ValidModel())-> isMapAccount($userAddress);
@@ -90,7 +90,7 @@ class Mining extends BaseController {
 	public function mapInfo()
 	{//获取用户映射挖矿信息
         $reqAddress    = $this->request->getPost('userAddress');
-		$aktAddress    = $_SERVER['HTTP_AK_TOKEN'];
+		$aktAddress    = $_SERVER['HTTP_AK_TOKEN'] ?? $_SERVER['HTTP_KEY'];
 		$userAddress   = $aktAddress ?? $reqAddress;
 		$isUserAddress = $this->DisposeModel-> checkAddress($userAddress);
 		$isMapAccount  = (new ValidModel())-> isMapAccount($userAddress);

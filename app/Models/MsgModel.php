@@ -28,7 +28,7 @@ class MsgModel extends ComModel
 		$page   = max(1, (int)$page);
 		$size   = max(1, (int)$size);
 		$offset = max(0, (int)$offset);
-		$akToken   = $_SERVER['HTTP_AK_TOKEN'];
+		$akToken   = $_SERVER['HTTP_AK_TOKEN'] ?? $_SERVER['HTTP_KEY'];
 		$isAkToken = $this->DisposeModel-> checkAddress($akToken);
 		if (!$isAkToken) return $this->DisposeModel-> wetJsonRt(401,'error_address');
 
@@ -181,7 +181,7 @@ class MsgModel extends ComModel
 
 	public function getStateSize()
 	{//获取未读消息数
-		$akToken   = $_SERVER['HTTP_AK_TOKEN'];
+		$akToken   = $_SERVER['HTTP_AK_TOKEN'] ?? $_SERVER['HTTP_KEY'];
 		$isAkToken = $this->DisposeModel-> checkAddress($akToken);
 		if (!$isAkToken) return 'error_address';
 		$sql = "SELECT count(hash) FROM $this->wet_message WHERE recipient_id = '$akToken' AND state = '1'";

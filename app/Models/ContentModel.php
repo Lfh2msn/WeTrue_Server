@@ -39,7 +39,8 @@ class ContentModel extends ComModel
 						star_sum,
 						read_sum,
 						reward_sum,
-						source
+						source,
+						chain_id
 				FROM $this->tablename 
 				WHERE hash = '$hash' LIMIT 1";
 
@@ -73,6 +74,7 @@ class ContentModel extends ComModel
 				$data['isFocus']	= false;
 			}
 			$data['source']			= $row->source ? $row->source : "WeTrue";
+			$data['chainId']		= $row->chain_id ? (int) $row->chain_id : 457;
 			$data['users']			= $this->UserModel-> getUser($sender_id);
 			if ($opt['read']) {
 				$upReadSql = "UPDATE $this->tablename SET read_sum = read_sum + 1 WHERE hash = '$hash'";

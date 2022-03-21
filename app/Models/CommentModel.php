@@ -29,7 +29,8 @@ class CommentModel extends Model {
 					payload,
 					utctime,
 					comment_sum,
-					praise
+					praise,
+					chain_id
 				FROM $this->wet_comment 
 				WHERE hash='$hash' LIMIT 1";
         $query = $this->db->query($sql);
@@ -43,6 +44,7 @@ class CommentModel extends Model {
 			$data['replyNumber'] = (int) $row-> comment_sum;
 			$data['praise']		 = (int) $row-> praise;
 			$data['isPraise']	 = $opt['userLogin'] ? $this->ValidModel-> isPraise($hash, $opt['userLogin']) : false;
+			$data['chainId']	 = $row->chain_id ? (int) $row->chain_id : 457;
 			$data['users'] = $this->UserModel-> getUser($sender_id);
 			if ( (int)$opt['replyLimit'] ) {
 				$data['commentList'] = [];

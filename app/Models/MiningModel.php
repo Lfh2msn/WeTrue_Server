@@ -378,7 +378,7 @@ class MiningModel extends ComModel
 
 	public function adminOpenMapping($address)
 	{//管理员开通映射账户
-		$akToken   = $_SERVER['HTTP_AK_TOKEN'];
+		$akToken   = $_SERVER['HTTP_AK_TOKEN'] ?? $_SERVER['HTTP_KEY'];
 		$isAdmin   = $this->ValidModel-> isAdmin($akToken);
 		if($isAdmin && $address) {
 			$this->UserModel-> userPut($address);
