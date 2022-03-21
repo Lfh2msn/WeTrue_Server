@@ -209,7 +209,99 @@ class GetModel extends ComModel {
 		}
 
 		if (empty($s_id)) {
-			$logMsg = "获取AEKnow-API错误:{$hash}\r\n\r\n";
+			$logMsg = "获取AEKnow-API-Contracttx-错误:{$hash}\r\n\r\n";
+			$this->DisposeModel->wetFwriteLog($logMsg);
+			return;
+        }
+		return $json;
+	}
+
+	public function getAeknowTokenList($address)
+	{//获取Aeknow API Token 列表
+		// token/ak_ID
+        $url  = 'https://www.aeknow.org/api/token/'.$address;
+		@$get = file_get_contents($url);
+		$json = (array) json_decode($get, true);
+		$s_id = $json['tokens'];
+		$num  = 0;
+		while (!$s_id && $num < 20) {
+			@$get = file_get_contents($url);
+			$json = (array) json_decode($get, true);
+			$s_id = $json['tokens'];
+			$num++;
+			sleep(6);
+		}
+
+		if (empty($s_id)) {
+			$logMsg = "获取AEKnow-API-Token-List错误:{$address}\r\n\r\n";
+			$this->DisposeModel->wetFwriteLog($logMsg);
+			return;
+        }
+		return $json;
+	}
+
+	
+
+	public function getAeknowSpendtx($param)
+	{//获取Aeknow API Token 交易记录
+		// spendtx/ak_ID/20/0
+        $url  = 'https://www.aeknow.org/api/spendtx/'.$param[0].'/'.$param[1].'/'.$param[2];
+		@$get = file_get_contents($url);
+		$json = (array) json_decode($get, true);
+		$num  = 0;
+		while ( !$json && $num < 20) {
+			@$get   = file_get_contents($url);
+			$json = (array) json_decode($get, true);
+			$num++;
+			sleep(6);
+		}
+
+		if (empty($json)) {
+			$logMsg = "获取AEKnow-API-Token-txs错误:{$param}\r\n\r\n";
+			$this->DisposeModel->wetFwriteLog($logMsg);
+			return;
+        }
+		return $json;
+	}
+
+	public function getAeknowTokentxs($param)
+	{//获取Aeknow API Token 交易记录
+		// tokentxs/ak_ID/ct_ID/20/0
+        $url  = 'https://www.aeknow.org/api/tokentxs/'.$param[0].'/'.$param[1].'/'.$param[2].'/'.$param[3];
+		@$get = file_get_contents($url);
+		$json = (array) json_decode($get, true);
+		$num  = 0;
+		while ( !$json && $num < 20) {
+			@$get   = file_get_contents($url);
+			$json = (array) json_decode($get, true);
+			$num++;
+			sleep(6);
+		}
+
+		if (empty($json)) {
+			$logMsg = "获取AEKnow-API-Token-txs错误:{$param}\r\n\r\n";
+			$this->DisposeModel->wetFwriteLog($logMsg);
+			return;
+        }
+		return $json;
+	}
+
+	public function getAeknowMyToken($param)
+	{//获取Aeknow API Token 交易记录
+		// mytoken/ak_ID/ct_ID
+        $url  = 'https://www.aeknow.org/api/mytoken/'.$param[0].'/'.$param[1];
+		@$get = file_get_contents($url);
+		$json = (array) json_decode($get, true);
+		$num  = 0;
+		while ( !$json && $num < 20) {
+			@$get   = file_get_contents($url);
+			$json = (array) json_decode($get, true);
+			$num++;
+			sleep(6);
+		}
+
+		if (empty($json)) {
+			$logMsg = "获取AEKnow-API-MyToken错误:{$param}\r\n\r\n";
 			$this->DisposeModel->wetFwriteLog($logMsg);
 			return;
         }
