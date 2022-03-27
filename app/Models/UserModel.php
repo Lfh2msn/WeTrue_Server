@@ -49,7 +49,7 @@ class UserModel extends ComModel
 			$data['reward'] 	= $userReward;
 			$data['userReward'] = $this->DisposeModel-> rewardGrade($userReward);
 			$portrait 			= $row->portrait;
-			$data['portrait']   = $portrait ? "https://api.wetrue.io/User/portrait/".$address : "https://api.wetrue.io/images/default_head.png";
+			$data['portrait']   = $portrait ? "/User/portrait/".$address : "/images/default_head.png";
 			$data['isAuth']  	= $row->is_auth ? true : false;
         }
 		return $data;
@@ -102,7 +102,7 @@ class UserModel extends ComModel
 		$data['userActive']   = $this->DisposeModel-> activeGrade($userActive);
 		$data['userReward']   = $this->DisposeModel-> rewardGrade($userReward);
 		$data['lastActive']   = ($userActive - $row->last_active) * $bsConfig['airdropWttRatio'];
-		$data['portrait']	  = $portrait ? "https://api.wetrue.io/User/portrait/".$address : "https://api.wetrue.io/images/default_head.png";
+		$data['portrait']	  = $portrait ? "/User/portrait/".$address : "/images/default_head.png";
 		$data['portraitHash'] = $portraitHash ?? "";
 		$data['topic'] 		  = (int)$row->topic_sum;
 		$data['star'] 		  = (int)$row->star_sum;
@@ -140,7 +140,7 @@ class UserModel extends ComModel
         $query    = $this->db->query($sql);
 		$row      = $query->getRow();
 		$portrait = $row->portrait;
-		$data = $portrait ? "https://api.wetrue.io/User/portrait/".$address : "https://api.wetrue.io/images/default_head.png";
+		$data = $portrait ? "/User/portrait/".$address : "/images/default_head.png";
 		return $data;
 	}
 
