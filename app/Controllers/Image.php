@@ -31,7 +31,7 @@ class Image extends BaseController
 
 		//过滤无效hash
         if(empty($json_data)){
-			echo 'Node报错，无Hash记录';
+			echo 'Node报错,无Hash记录';
 			return;
         }
 

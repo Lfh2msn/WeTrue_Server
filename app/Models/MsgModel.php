@@ -184,7 +184,7 @@ class MsgModel extends ComModel
 		$akToken   = $_SERVER['HTTP_AK_TOKEN'] ?? $_SERVER['HTTP_KEY'];
 		$isAkToken = $this->DisposeModel-> checkAddress($akToken);
 		if (!$isAkToken) return 'error_address';
-		$sql = "SELECT count(hash) FROM $this->wet_message WHERE recipient_id = '$akToken' AND state = '1'";
+		$sql = "SELECT count(hash) FROM $this->wet_message WHERE recipient_id = '$akToken' AND state = '1' AND type <> 'reward' ";
 		$query = $this->db-> query($sql);
 		$row   = $query-> getRow();
 		return $row ? (int)$row->count : 0;
