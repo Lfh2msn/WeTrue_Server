@@ -37,7 +37,18 @@ class WecomModel extends Model {
 			$data->agentid = $wecom_aid;
 			$data->msgtype = "text";
 			$data->text = ["content"=> $text];
+			$data->safe = 0;
 			$data->duplicate_check_interval = 600;
+			/*
+			$data = new \stdClass();
+			$data->touser = $wecom_touid;
+			$data->agentid = $wecom_aid;
+			$data->msgtype = "textcard";
+			$data->textcard = ["title"=> $title];
+			$data->textcard = ["description"=> $text];
+			$data->textcard = ["url"=> $url];
+			$data->textcard = ["btntxt"=> '更多'];			
+			*/
 
 			$data_json = json_encode($data);
 			$ch = curl_init();
@@ -57,7 +68,7 @@ class WecomModel extends Model {
 		}
 
 		$err = new \stdClass();
-		$err->errcode = 0;
+		$err->errcode = 1;
 		$err->errmsg  = "error";
 		$err->msgid   = "";
 		return json_encode($err);
