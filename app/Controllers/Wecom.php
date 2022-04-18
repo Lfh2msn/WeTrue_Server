@@ -12,7 +12,40 @@ class Wecom extends BaseController {
 			die('bad params');
 		}
 		header("Content-Type: application/json; charset=UTF-8");
-		echo (new WecomModel())->sendToWecom($text, $sendkey, $wecom_touid);
+		print(new WecomModel())->sendToWecom($text, $sendkey, $wecom_touid);
     }
+
+	public function receive()
+	{
+		//header("Content-Type: application/json; charset=UTF-8");
+		$method = $this->request->getMethod(true);
+		if ($method == "GET") {
+			$this->VerifyURL();
+		} elseif ($method == "POST") {
+			$this-> receivePost();
+		}
+	}
+
+	public function receivePost()
+	{
+
+		$sReqMsgSig = $this->request->getGet('msg_signature');
+		$sReqTimeStamp = $this->request->getGet('timestamp');
+		$sReqNonce  = $this->request->getGet('nonce');
+		$sReqData   = file_get_contents("php://input");
+		print(new WecomModel())->receFromWecom($sReqMsgSig, $sReqTimeStamp, $sReqNonce, $sReqData);
+
+	}
+
+	public function VerifyURL()
+	{	
+		$sVerifyMsgSig    = $this->request->getGet('msg_signature');
+		$sVerifyTimeStamp = $this->request->getGet('timestamp');
+		$sVerifyNonce     = $this->request->getGet('nonce');
+		$sVerifyEchoStr   = $this->request->getGet('echostr');
+
+		print(new WecomModel())->verifyURLWecom($sVerifyMsgSig, $sVerifyTimeStamp, $sVerifyNonce, $sVerifyEchoStr);
+
+	}
 
 }
