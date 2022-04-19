@@ -1,21 +1,17 @@
 <?php namespace App\Models\Get;
 
 use App\Models\ComModel;
-use App\Models\ConfigModel;
 use App\Models\DisposeModel;
 
 class GetPriceModel extends ComModel {
 //获取Model
 	public function __construct(){
-		parent::__construct();
-		//$this->db = \Config\Database::connect('default');
-		$this->ConfigModel  = new ConfigModel();
 		$this->DisposeModel = new DisposeModel();
     }
 
-	public function aePrice(){
+	public function aePrice($coin = "AE"){
 		//AE价格获取
-			@$json = file_get_contents('https://data.gateapi.io/api2/1/ticker/ae_usdt');
+			@$json = file_get_contents("https://data.gateapi.io/api2/1/ticker/{$coin}_usdt");
 			if(empty($json)){
 				return '远端报错，无没有读取到价格';
 			}
@@ -26,10 +22,11 @@ class GetPriceModel extends ComModel {
 			$high24hr    = $arr['high24hr'] ?? 0;
 			$low24hr	 = $arr['low24hr'] ?? 0;
 			$percentChange = $arr['percentChange'] ?? 0;
-			
+			$newQuote	 = $this->DisposeModel-> numberFormat($quoteVolume);
 			$content = "
+			{$coin} Gateio Price
 			当前价格: {$last}
-			成交数量: {$quoteVolume}
+			24H成交: {$newQuote}
 			24H最高: {$high24hr}
 			24H最低: {$low24hr}
 			24H涨跌: {$percentChange}%

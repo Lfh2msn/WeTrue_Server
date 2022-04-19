@@ -414,7 +414,7 @@ class DisposeModel extends Model {
 		return  implode(",", $result) ; //格式化
 	}
     
-    function convert_scientific_number_to_normal($number) {
+    public function convert_scientific_number_to_normal($number) {
     //将科学计数法的数字转换为正常的数字
         if(stripos($number, 'e') === false) {  //判断是否为科学计数法
             return $number;
@@ -482,5 +482,25 @@ class DisposeModel extends Model {
         }
         return trim($data, ".");
     }
+
+    public function numberFormat($number, $declen = 2)
+    {//将一个数字转为带单位数字
+		$number = number_format($number, $declen, '.', '');
+		$integerStr = substr($number, 0, -1-$declen);// 整数部分数字
+		$decimalStr = substr($number, -$declen);// 小数部分数字
+		$length = strlen($integerStr);  //数字长度
+
+		if($length > 8){ //亿单位
+			$str = substr_replace($integerStr,'.', -8, 0)."亿";
+			$str = number_format($str, $declen, '.', '')."亿";
+		}elseif($length >4){ //万单位
+			//截取前俩为
+			$str = substr_replace($integerStr,'.', -4, 0);
+			$str = number_format($str, $declen, '.', '')."万";
+		}else{
+			return "{$integerStr}.{$decimalStr}";
+		}
+		return $str;
+	}
 
 }
