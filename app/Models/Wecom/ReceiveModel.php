@@ -57,10 +57,13 @@ class ReceiveModel {
 				}else {
 					$mycontent = "格式错误[请勿带回车等],示例：\n绑定ak_11111111111111111111111111111111273Yts";
 				}
-				
 			} elseif (strtoupper($reqContent) == "USERID") {
 				$mycontent = $reqFromUserName;
+			} elseif (strtoupper($reqContent) == "USERCOUNT") {
+				$countUser = $this->CorpUserModel-> getCountUser();
+				$mycontent = "当前总绑定：{$countUser}";
 			}
+			
 
 			$sRespData = 
 			"<xml>
