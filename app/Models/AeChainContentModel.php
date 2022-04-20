@@ -2,20 +2,37 @@
 
 use CodeIgniter\Model;
 
-use App\Models\MsgModel;
-use App\Models\GetModel;
-use App\Models\UserModel;
-use App\Models\StarModel;
-use App\Models\TopicModel;
-use App\Models\ValidModel;
-use App\Models\FocusModel;
-use App\Models\ConfigModel;
-use App\Models\WttMdwModel;
-use App\Models\DisposeModel;
-use App\Models\MentionsModel;
+use App\Models\{
+	MsgModel,
+	GetModel,
+	UserModel,
+	StarModel,
+	TopicModel,
+	ValidModel,
+	FocusModel,
+	ConfigModel,
+	WttMdwModel,
+	DisposeModel,
+	MentionsModel
+};
 
 class AeChainContentModel extends Model {
 //Ae链上hash入库Model
+	private $MsgModel;
+	private $GetModel;
+	private $UserModel;
+	private $StarModel;
+	private $TopicModel;
+	private $ValidModel;
+	private $FocusModel;
+	private $ConfigModel;
+	private $WttMdwModel;
+	private $DisposeModel;
+	private $MentionsModel;
+	private $wet_content;
+	private $wet_comment;
+	private $wet_reply;
+	private $wet_users;
 
 	public function __construct(){
 		$this->db = \Config\Database::connect('default');

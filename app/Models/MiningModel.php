@@ -88,8 +88,21 @@ class MiningModel extends ComModel
 			$poorHeight   <= 480 &&
 			$return_type  == "ok"
 		) {
-			$this->UserModel-> userPut($sender_id);
-			$this->db->table($this->wet_users)->where('address', $sender_id)->update( ['is_map' => '1'] );
+			$isVipAddress = $this->ValidModel-> isVipAccount($address);
+			if($isVipAddress) {
+				$this->db->table('wet_users_vip')->where('address', $address)->update( ['is_vip' => 1] );
+			} else {
+				$insertData = [
+					'address' => $address,
+					'is_vip'  => 1
+				];
+				$this->db->table('wet_users_vip')->insert($insertData);
+			}
+
+
+			$insertSql = "INSERT INTO wet_users_vip(address, is_vip) VALUES ('$address', 1)";
+			$this->db->query($insertSql);
+
 			$ymdhTime = date("Y-m-d h:i:s");
 			$wtt_ttos = $this->DisposeModel->bigNumber("div", $amount);
 			$logMsg   = "开通映射--账户:{$sender_id}\r\n花费WTT:{$wtt_ttos}\r\n高度:{$block_height}\r\n时间:{$ymdhTime}\r\nHash:{$hash}\r\n\r\n";
@@ -108,8 +121,8 @@ class MiningModel extends ComModel
 		}
 
 		$isAddress    = $this->DisposeModel-> checkAddress($address);
-		$isMapAccount = $this->ValidModel-> isMapAccount($address);
-		if (!$isAddress && !$isMapAccount) {
+		$isVipAddress = $this->ValidModel-> isVipAddress($address);
+		if (!$isAddress && !$isVipAddress) {
 			return $this->DisposeModel-> wetJsonRt(406, 'did_not_open_mapping');
 		}
 
@@ -304,7 +317,7 @@ class MiningModel extends ComModel
 					'amount'  	   => 0
 				];
 				$this->db->table($this->wet_mapping)->where('address', $address)->update($upMapData);
-				$this->db->table($this->wet_users)->where('address', $address)->update( ['is_map' => 0] );
+				$this->db->table('wet_users_vip')->where('address', $address)->update( ['is_vip' => 0] );
 				$blackHouse = true;
 				$mapInfo    = $this->getUserMapInfo($address, $blackHouse);
 				return $mapInfo;
@@ -382,7 +395,7 @@ class MiningModel extends ComModel
 		$isAdmin   = $this->ValidModel-> isAdmin($akToken);
 		if($isAdmin && $address) {
 			$this->UserModel-> userPut($address);
-			$this->db->table($this->wet_users)->where('address', $address)->update( ['is_map' => '1'] );
+			$this->db->table('wet_users_vip')->where('address', $address)->update( ['is_vip' => '1'] );
 			$logMsg  = "开通映射--{$akToken}--Admin\r\n";
 			$logPath = "log/mining/open-mapping-".date('Y-m-d').".txt";
 			$this->DisposeModel->wetFwriteLog($logMsg, $logPath);

@@ -9,9 +9,13 @@ use App\Models\{
 	RewardModel,
 	ValidModel,
 	DisposeModel,
-	SuperheroContentModel
+	SuperheroContentModel,
+	ConfigModel
 };
-
+use App\Models\Wecom\{
+	SendModel,
+	CorpUserModel
+};
 
 class MsgModel extends ComModel
 {//消息Model
@@ -25,6 +29,9 @@ class MsgModel extends ComModel
 		$this->RewardModel	= new RewardModel();
 		$this->ValidModel	= new ValidModel();
 		$this->SuperheroContentModel = new SuperheroContentModel();
+		$this->SendModel   = new SendModel();
+		$this->ConfigModel = new ConfigModel();
+		$this->CorpUserModel = new CorpUserModel();
 		$this->wet_message  = "wet_message";
     }
 
@@ -161,6 +168,8 @@ class MsgModel extends ComModel
 			'utctime' 	   => isset($data['utctime']) 	   ? $data['utctime'] 	   : (time() * 1000),
 		];
 		$this->db->table($this->wet_message)->insert($insertData);
+		$isWecomAddress = $this->ValidModel-> isWecomAddress($data['recipient_id']);
+		if ($isWecomAddress) $this->pushWecom($data);
 	}
 
 	public function toHashSendID($hash, $opt=[])
@@ -182,6 +191,30 @@ class MsgModel extends ComModel
 		$row   = $query->getRow();
 		$send  = $row->sender_id;
 		return $send;
+	}
+
+	public function pushWecom($data)
+	{//推送到企业微信
+		$toHash = $data['to_hash'];
+		$reqId  = $data['recipient_id'];
+		$type   = $data['type'];
+		if ($type == 'comment') {
+			$toHash = $data['to_hash'];
+		} elseif ($type == 'reply') {
+			$opt['substr'] = 45; //限制Payload长度
+			$opt = ['imgTx'=>true];
+			$comHash = $this->CommentModel-> simpleComment($toHash, $opt);
+			$toHash	 = $comHash['toHash'];
+		} else {
+			return;
+		}
+		$content = "你收到一条评论，打开查看:\nhttps://wetrue.cc/#/pages/index/detail?hash={$toHash}";
+		$weConfig    = $this->ConfigModel-> wecomConfig();
+		$wetrueKey   = $weConfig['WECOM_KEY'];
+		$touser		 = $this->CorpUserModel-> getUserId($reqId);
+		if ($touser){
+			$this->SendModel-> sendToWecom($content, $wetrueKey, $touser);
+		}
 	}
 
 	public function getStateSize()

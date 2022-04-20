@@ -1,8 +1,12 @@
 <?php namespace App\Models\Wecom;
 
-use App\Models\ConfigModel;
+use App\Models\{
+	ConfigModel,
+	DisposeModel
+};
 use App\Models\Wecom\Callback\WXBizMsgCrypt;
 use App\Models\Get\GetPriceModel;
+use App\Models\Wecom\CorpUserModel;
 
 class ReceiveModel {
 //企业微信 Model
@@ -16,6 +20,8 @@ class ReceiveModel {
 		$wetrueKey     = $weConfig['WECOM_KEY'];
 		$this->WXBizMsgCrypt = new WXBizMsgCrypt($wecomToken_1, $wecomAesKey_1, $wecomCid);
 		$this->GetPriceModel = new GetPriceModel();
+		$this->DisposeModel  = new DisposeModel();
+		$this->CorpUserModel = new CorpUserModel();
     }
 
 	public function recFromWecom($sReqMsgSig, $sReqTimeStamp, $sReqNonce, $sReqData)
@@ -44,7 +50,14 @@ class ReceiveModel {
 			} elseif ( in_array($reqContentUpper, $coinList) ) {
 				$mycontent = $this->GetPriceModel-> gateioPrice($reqContentUpper);
 			} elseif (substr($reqContent, 0, 6) == "绑定") {
-				$mycontent = substr($reqContent, 6);
+				$aeAddress = substr($reqContent, 6);
+				$isAddress = $this->DisposeModel-> checkAddress($aeAddress);
+				if ($isAddress) {
+					$mycontent = $this->CorpUserModel-> bindUser($aeAddress, $reqToUserName, $reqFromUserName);
+				}else {
+					$mycontent = "格式错误[请勿带回车等],示例：\n绑定ak_11111111111111111111111111111111273Yts";
+				}
+				
 			} elseif (strtoupper($reqContent) == "USERID") {
 				$mycontent = $reqFromUserName;
 			}

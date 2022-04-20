@@ -173,12 +173,20 @@ class ValidModel extends Model {
 		return $row ? true : false;
 	}
 
-	public function isMapAccount($address)
-	{//映射挖矿是否开通
-		$sql   = "SELECT is_map FROM wet_users WHERE address = '$address' LIMIT 1";
+	public function isVipAddress($address)
+	{//是否开通VIP
+		$sql   = "SELECT is_vip FROM wet_users_vip WHERE address = '$address' LIMIT 1";
         $query = $this->db->query($sql);
 		$row   = $query->getRow();
-		return $row->is_map ? true : false;
+		return $row->is_vip ? true : false;
+	}
+
+	public function isVipAccount($address)
+	{//是否存在VIP账户
+		$sql   = "SELECT address FROM wet_users_vip WHERE address = '$address' LIMIT 1";
+        $query = $this->db->query($sql);
+		$row   = $query->getRow();
+		return $row ? true : false;
 	}
 
 	public function isMapAddress($address)
@@ -224,6 +232,22 @@ class ValidModel extends Model {
 	public function isAmountVip($address)
 	{//费率vip用户是否存在
 		$sql   = "SELECT address FROM wet_amount WHERE address = '$address' LIMIT 1";
+		$query = $this->db->query($sql);
+		$row   = $query->getRow();
+		return $row ? true : false;
+	}
+
+	public function isWecomUserId($user_id)
+	{//企业微信ID是否存在
+		$sql   = "SELECT address FROM wet_wecom_users WHERE wecom_user_id = '$user_id' LIMIT 1";
+		$query = $this->db->query($sql);
+		$row   = $query->getRow();
+		return $row->address ? true : false;
+	}
+
+	public function isWecomAddress($address)
+	{//企业微信Adderss是否存在
+		$sql   = "SELECT wecom_user_id FROM wet_wecom_users WHERE address = '$address' LIMIT 1";
 		$query = $this->db->query($sql);
 		$row   = $query->getRow();
 		return $row ? true : false;

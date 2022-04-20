@@ -7,13 +7,13 @@ class SendModel {
 
 	public function __construct() {
 		$this->db = \Config\Database::connect('default');
-		$this->$ConfigModel = new ConfigModel();
-		$this->wecom_token  = "wet_wecom_token";
+		$this->ConfigModel = new ConfigModel();
+		$this->wecom_token = "wet_wecom_token";
     }
 
 	public function sendToWecom($text, $sendKey, $touser)
 	{
-		$weConfig    = $this->$ConfigModel-> wecomConfig();
+		$weConfig    = $this->ConfigModel-> wecomConfig();
 		$wecomCid    = $weConfig['WECOM_CID'];
 		$wecomSecret = $weConfig['WECOM_SECRET'];
 		$wecomAid_1  = $weConfig['WECOM_AID_1'];

@@ -107,8 +107,8 @@ class MiningModel extends ComModel
 		}
 
 		$isAddress    = $this->DisposeModel-> checkAddress($address);
-		$isMapAccount = $this->ValidModel-> isMapAccount($address);
-		if (!$isAddress && !$isMapAccount) {
+		$isVipAddress = $this->ValidModel-> isVipAddress($address);
+		if (!$isAddress && !$isVipAddress) {
 			return $this->DisposeModel-> wetJsonRt(406, 'did_not_open_mapping');
 		}
 

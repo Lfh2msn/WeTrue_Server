@@ -74,7 +74,6 @@ class UserModel extends ComModel
 					focus_sum,
 					fans_sum,
 					star_sum,
-					is_map,
 					is_auth
 				FROM $this->tablename WHERE address = '$address' LIMIT 1";
         $query = $this->db->query($sql);
@@ -108,9 +107,9 @@ class UserModel extends ComModel
 		$data['star'] 		  = (int)$row->star_sum;
 		$data['focus'] 		  = (int)$row->focus_sum;
 		$data['fans']  		  = (int)$row->fans_sum;
-		$is_map = $row->is_map ? true : false;
-		$data['is_map']  	  = $is_map;
-		$data['isMapping']    = $is_map;
+		$is_vip = $this->ValidModel-> isVipAddress($address);
+		$data['isVip']  	  = $is_vip;
+		$data['isMapping']    = $is_vip;
 		$data['isAuth']  	  = $row->is_auth ? true : false;
 		$isAdmin = $this->ValidModel-> isAdmin($address);
 		if ($isAdmin) {
