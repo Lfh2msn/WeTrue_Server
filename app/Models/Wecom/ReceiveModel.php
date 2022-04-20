@@ -34,19 +34,15 @@ class ReceiveModel {
 			$reqMsgId   = $xml->getElementsByTagName('MsgId')->item(0)->nodeValue;
 			$reqAgentID = $xml->getElementsByTagName('AgentID')->item(0)->nodeValue;
 			$mycontent  = "";
+
+			$coinFile = file_get_contents("gateioCoinList.txt"); //读取gate币种A列表
+        	$coinList = explode("\n" ,$coinFile); //转数组
+			$reqContentUpper = strtoupper($reqContent); //转大写
+
 			if ($reqContent == "刘少") {
 				$mycontent = "别装了，我知道你不是！";
-			} elseif (
-					strtoupper($reqContent) == "AE"  || strtoupper($reqContent) == "BTC" ||
-					strtoupper($reqContent) == "ETH" || strtoupper($reqContent) == "ZIL" ||
-					strtoupper($reqContent) == "ETC" || strtoupper($reqContent) == "LTC" ||
-					strtoupper($reqContent) == "EOS" || strtoupper($reqContent) == "XRP" ||
-					strtoupper($reqContent) == "SOL" || strtoupper($reqContent) == "ADA" ||
-					strtoupper($reqContent) == "FIL" || strtoupper($reqContent) == "BNB" ||
-					strtoupper($reqContent) == "DOGE"|| strtoupper($reqContent) == "GRIN"||
-					strtoupper($reqContent) == "PEOPLE"
-				) {
-				$mycontent = $this->GetPriceModel-> aePrice(strtoupper($reqContent));
+			} elseif ( in_array($reqContentUpper, $coinList) ) {
+				$mycontent = $this->GetPriceModel-> gateioPrice($reqContentUpper);
 			} elseif (substr($reqContent, 0, 6) == "绑定") {
 				$mycontent = substr($reqContent, 6);
 			} elseif (strtoupper($reqContent) == "USERID") {

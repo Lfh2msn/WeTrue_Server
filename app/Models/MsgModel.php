@@ -1,13 +1,17 @@
 <?php 
 namespace App\Models;
 
-use App\Models\ComModel;
-use App\Models\ContentModel;
-use App\Models\CommentModel;
-use App\Models\ReplyModel;
-use App\Models\RewardModel;
-use App\Models\ValidModel;
-use App\Models\DisposeModel;
+use App\Models\{
+	ComModel,
+	ContentModel,
+	CommentModel,
+	ReplyModel,
+	RewardModel,
+	ValidModel,
+	DisposeModel,
+	SuperheroContentModel
+};
+
 
 class MsgModel extends ComModel
 {//消息Model
@@ -20,6 +24,7 @@ class MsgModel extends ComModel
 		$this->ReplyModel 	= new ReplyModel();
 		$this->RewardModel	= new RewardModel();
 		$this->ValidModel	= new ValidModel();
+		$this->SuperheroContentModel = new SuperheroContentModel();
 		$this->wet_message  = "wet_message";
     }
 
@@ -28,7 +33,7 @@ class MsgModel extends ComModel
 		$page   = max(1, (int)$page);
 		$size   = max(1, (int)$size);
 		$offset = max(0, (int)$offset);
-		$akToken   = $_SERVER['HTTP_AK_TOKEN'] ?? $_SERVER['HTTP_KEY'];
+		$akToken   = $_SERVER['HTTP_KEY'];
 		$isAkToken = $this->DisposeModel-> checkAddress($akToken);
 		if (!$isAkToken) return $this->DisposeModel-> wetJsonRt(401,'error_address');
 
@@ -181,7 +186,7 @@ class MsgModel extends ComModel
 
 	public function getStateSize()
 	{//获取未读消息数
-		$akToken   = $_SERVER['HTTP_AK_TOKEN'] ?? $_SERVER['HTTP_KEY'];
+		$akToken   = $_SERVER['HTTP_KEY'];
 		$isAkToken = $this->DisposeModel-> checkAddress($akToken);
 		if (!$isAkToken) return 'error_address';
 		$sql = "SELECT count(hash) FROM $this->wet_message WHERE recipient_id = '$akToken' AND state = '1' AND type <> 'reward' ";

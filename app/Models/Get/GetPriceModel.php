@@ -9,9 +9,10 @@ class GetPriceModel extends ComModel {
 		$this->DisposeModel = new DisposeModel();
     }
 
-	public function aePrice($coin = "AE"){
+	public function gateioPrice($coin = "AE", $trading = "usdt"){
 		//AE价格获取
-			@$json = file_get_contents("https://data.gateapi.io/api2/1/ticker/{$coin}_usdt");
+			// https://data.gateapi.io/api2/1/pairs 所有交易对
+			@$json = file_get_contents("https://data.gateapi.io/api2/1/ticker/{$coin}_{$trading}");
 			if(empty($json)){
 				return '远端报错，无没有读取到价格';
 			}

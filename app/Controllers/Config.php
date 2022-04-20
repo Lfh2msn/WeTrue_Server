@@ -7,7 +7,7 @@ class Config extends BaseController {
 
 	public function info()
 	{//获取前端配置
-		$userAddress  = $_SERVER['HTTP_AK_TOKEN'] ?? $_SERVER['HTTP_KEY'];
+		$userAddress  = $_SERVER['HTTP_KEY'];
 		$config  = (new ConfigModel())-> frontConfig($userAddress);
 		if($config){
 			$code = 200;

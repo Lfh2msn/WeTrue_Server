@@ -43,7 +43,7 @@ class ComplainModel extends Model {
 	public function txHash($hash)
 	{//投诉hash入库
 		$data['code'] = 200;
-		$akToken   = $_SERVER['HTTP_AK_TOKEN'] ?? $_SERVER['HTTP_KEY'];
+		$akToken   = $_SERVER['HTTP_KEY'];
 		$isAkToken = $this->DisposeModel-> checkAddress($akToken);
 		if (!$isAkToken) {
 			$data['code'] = 401;
@@ -98,7 +98,7 @@ class ComplainModel extends Model {
 		$page   = max(1, (int)$page);
 		$size   = max(1, (int)$size);
 		$offset = max(0, (int)$offset);
-		$akToken   = $_SERVER['HTTP_AK_TOKEN'] ?? $_SERVER['HTTP_KEY'];
+		$akToken   = $_SERVER['HTTP_KEY'];
 		$isAkToken = $this->DisposeModel-> checkAddress($akToken);
 		$isAdmin   = $this->ValidModel-> isAdmin($akToken);
 		$data['data'] = [];

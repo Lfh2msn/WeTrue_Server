@@ -72,7 +72,7 @@ class AirdropModel extends ComModel
 
 	public function airdropWTT($opt = [])
 	{//空投WTT写入txt
-		$akToken   = $_SERVER['HTTP_AK_TOKEN'] ?? $_SERVER['HTTP_KEY'];
+		$akToken   = $_SERVER['HTTP_KEY'];
 		$isAkToken = $this->DisposeModel-> checkAddress($akToken);
 		$isAdmin   = $this->ValidModel-> isAdmin($akToken);
 		$data['code'] = 200;

@@ -67,7 +67,7 @@ class TopicModel extends ComModel
 		$page   = max(1, (int)$page);
 		$size   = max(1, (int)$size);
 		$offset = max(0, (int)$offset);
-		$akToken   = $_SERVER['HTTP_AK_TOKEN'] ?? $_SERVER['HTTP_KEY'];
+		$akToken   = $_SERVER['HTTP_KEY'];
 		$isAkToken = $this->DisposeModel-> checkAddress($akToken);
 		if ($isAkToken) $opt['userLogin'] = $akToken;
 		$opt['substr']	  = 160; //限制输出

@@ -67,7 +67,7 @@ class BloomModel extends ComModel {
 
     public function bloomHash($hash)
     {//过滤TX入库bloom
-        $akToken   = $_SERVER['HTTP_AK_TOKEN'] ?? $_SERVER['HTTP_KEY'];
+        $akToken   = $_SERVER['HTTP_KEY'];
 		$isAkToken = $this->DisposeModel-> checkAddress($akToken);
 		$isAdmin   = $this->ValidModel-> isAdmin($akToken);
 		if (!$isAkToken || !$isAdmin) {
@@ -108,7 +108,7 @@ class BloomModel extends ComModel {
 
     public function unBloom($hash)
     {//撤销过滤
-        $akToken   = $_SERVER['HTTP_AK_TOKEN'] ?? $_SERVER['HTTP_KEY'];
+        $akToken   = $_SERVER['HTTP_KEY'];
 		$isAkToken = $this->DisposeModel-> checkAddress($akToken);
 		$isAdmin   = $this->ValidModel-> isAdmin($akToken);
 		if (!$isAkToken || !$isAdmin) {
@@ -125,7 +125,7 @@ class BloomModel extends ComModel {
 		$page   = max(1, (int)$page);
 		$size   = max(1, (int)$size);
 		$offset = max(0, (int)$offset);
-		$akToken   = $_SERVER['HTTP_AK_TOKEN'] ?? $_SERVER['HTTP_KEY'];
+		$akToken   = $_SERVER['HTTP_KEY'];
 		$isAkToken = $this->DisposeModel-> checkAddress($akToken);
 		$isAdmin   = $this->ValidModel-> isAdmin($akToken);
 		if ( !$isAkToken || !$isAdmin ) {
