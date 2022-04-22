@@ -252,6 +252,13 @@ class ValidModel extends Model {
 		$row   = $query->getRow();
 		return $row ? true : false;
 	}
+	public function isWecomMnemonic($user_id)
+	{//企业微信 Adderss 创建钱包是否存在
+		$sql   = "SELECT wecom_mnemonic FROM wet_wecom_users WHERE wecom_user_id = '$user_id' LIMIT 1";
+		$query = $this->db->query($sql);
+		$row   = $query->getRow();
+		return $row->wecom_mnemonic ? true : false;
+	}
 
 }
 

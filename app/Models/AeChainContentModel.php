@@ -11,10 +11,10 @@ use App\Models\{
 	ValidModel,
 	FocusModel,
 	ConfigModel,
-	WttMdwModel,
 	DisposeModel,
 	MentionsModel
 };
+use App\Models\ServerMdw\WetModel;
 
 class AeChainContentModel extends Model {
 //Ae链上hash入库Model
@@ -26,7 +26,7 @@ class AeChainContentModel extends Model {
 	private $ValidModel;
 	private $FocusModel;
 	private $ConfigModel;
-	private $WttMdwModel;
+	private $WetModel;
 	private $DisposeModel;
 	private $MentionsModel;
 	private $wet_content;
@@ -36,6 +36,7 @@ class AeChainContentModel extends Model {
 
 	public function __construct(){
 		$this->db = \Config\Database::connect('default');
+		$this->WetModel   = new WetModel();
 		$this->MsgModel   = new MsgModel();
 		$this->GetModel   = new GetModel();
 		$this->UserModel  = new UserModel();
@@ -43,9 +44,8 @@ class AeChainContentModel extends Model {
 		$this->TopicModel = new TopicModel();
 		$this->ValidModel = new ValidModel();
 		$this->FocusModel = new FocusModel();
-		$this->ConfigModel = new ConfigModel();
-		$this->WttMdwModel = new WttMdwModel();
-		$this->DisposeModel = new DisposeModel();
+		$this->ConfigModel   = new ConfigModel();
+		$this->DisposeModel  = new DisposeModel();
 		$this->MentionsModel = new MentionsModel();
 		$this->wet_temp 	 = "wet_temp";
 		$this->wet_behavior  = "wet_behavior";
@@ -464,7 +464,7 @@ class AeChainContentModel extends Model {
 				$this->db->query($upSql);
 			}
 			$this->deleteTemp($hash);
-			if( $data['type'] == 'topic' ) $this->WttMdwModel ->getNewContentList(); //通知中间件提示新内容
+			if( $data['type'] == 'topic' ) $this->WetModel ->getNewContentList(); //通知中间件提示新内容
 			return json_encode($this->DisposeModel-> wetRt(200,'success'));
 		} catch (Exception $err) {
 			$this->deleteTemp($hash);

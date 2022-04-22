@@ -11,23 +11,23 @@ class SendModel {
 		$this->wecom_token = "wet_wecom_token";
     }
 
-	public function sendToWecom($text, $sendKey, $touser)
+	public function sendToWecom($payload, $sendKey, $touser)
 	{
-		$weConfig    = $this->ConfigModel-> wecomConfig();
-		$wecomCid    = $weConfig['WECOM_CID'];
-		$wecomSecret = $weConfig['WECOM_SECRET'];
-		$wecomAid_1  = $weConfig['WECOM_AID_1'];
-		$wetrueKey   = $weConfig['WECOM_KEY'];
+		$weConfig      = $this->ConfigModel-> wecomConfig();
+		$wecomCid_1    = $weConfig['WECOM_CID_1'];
+		$wecomSecret_1 = $weConfig['WECOM_SECRET_1'];
+		$wecomAid_1    = $weConfig['WECOM_AID_1'];
+		$wetrueKey_1   = $weConfig['WETRUE_KEY_1'];
 
-		if($wetrueKey != $sendKey) die('bad params');
+		if($wetrueKey_1 != $sendKey) die('bad params');
 
 		$sql   = "SELECT access_token FROM $this->wecom_token WHERE token_time >= now()-interval '110 M' LIMIT 1";
-        $query = $this->db->query($sql);
+		$query = $this->db->query($sql);
 		$row   = $query->getRow();
 		$accessToken = $row->access_token ?? false;
 
 		if (!$accessToken) {
-			$url = "https://qyapi.weixin.qq.com/cgi-bin/gettoken?corpid=".urlencode($wecomCid)."&corpsecret=".urlencode($wecomSecret);
+			$url = "https://qyapi.weixin.qq.com/cgi-bin/gettoken?corpid=".urlencode($wecomCid_1)."&corpsecret=".urlencode($wecomSecret_1);
 			$info = @json_decode(file_get_contents($url), true);
 			if ($info && isset($info['access_token']) && strlen($info['access_token']) > 0) {
 				$accessToken = $info['access_token'];
@@ -41,20 +41,22 @@ class SendModel {
 			$data = new \stdClass();
 			$data->touser = $touser;
 			$data->agentid = $wecomAid_1;
-			$data->msgtype = "text";
-			$data->text = ["content"=> $text];
-			$data->safe = 0;
-			$data->duplicate_check_interval = 600;
-			
-			//$data = new \stdClass();
-			//$data->touser = $touser;
-			//$data->agentid = $wecomAid_1;
-			//$data->msgtype = "textcard";
-			//$data->textcard = ["title"=> $title];
-			//$data->textcard = ["description"=> $text];
-			//$data->textcard = ["url"=> $url];
-			//$data->textcard = ["btntxt"=> '更多'];			
+			$data->msgtype = $payload['msgtype'];
 
+			if ($payload['msgtype'] == "text"){
+				$data->text = ["content" => $payload['content']];
+				$data->safe = 0;
+				$data->duplicate_check_interval = 600;
+
+			} elseif ($payload['msgtype'] == "textcard") {
+				$data->textcard = 
+					[
+						"title" 	  => $payload['title'],
+						"description" => $payload['description'],
+						"url" 		  => $payload['url'],
+						"btntxt" 	  => $payload['btntxt'] ?? '更多'
+					];
+			}
 			$data_json = json_encode($data);
 			$ch = curl_init();
 			curl_setopt($ch, CURLOPT_HTTPHEADER, ['Content-Type: application/json']);

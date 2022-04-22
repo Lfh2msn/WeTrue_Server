@@ -29,8 +29,8 @@ class Mining extends BaseController {
 		$isAddress   = $this->DisposeModel-> checkAddress($userAddress);
 		if ($isAddress) {
 			$submitState  = (new ValidModel())-> isSubmitOpenState($userAddress);
-			$isMapAccount = (new ValidModel())-> isMapAccount($userAddress);
-			if ($submitState || $isMapAccount) {
+			$isVipAccount = (new ValidModel())-> isVipAccount($userAddress);
+			if ($submitState || $isVipAccount) {
 				$data = $this->DisposeModel-> wetJsonRt(200,'error_repeat',true);
 			} else {
 				$data = $this->DisposeModel-> wetJsonRt(200,'success',false);
@@ -48,8 +48,8 @@ class Mining extends BaseController {
 		$aktAddress    = $_SERVER['HTTP_KEY'];
 		$userAddress   = $aktAddress ?? $reqAddress;
 		$isUserAddress = $this->DisposeModel-> checkAddress($userAddress);
-		$isMapAccount  = (new ValidModel())-> isMapAccount($userAddress);
-		if ($isMapAccount && is_numeric($amount) && $isUserAddress) {
+		$isVipAccount  = (new ValidModel())-> isVipAccount($userAddress);
+		if ($isVipAccount && is_numeric($amount) && $isUserAddress) {
 			$data = (new MiningModel())-> inMapping($userAddress, $amount);
 		} else {
 			$data = $this->DisposeModel-> wetJsonRt(406,'error_amount');
@@ -63,8 +63,8 @@ class Mining extends BaseController {
 		$aktAddress    = $_SERVER['HTTP_KEY'];
 		$userAddress   = $aktAddress ?? $reqAddress;
 		$isUserAddress = $this->DisposeModel-> checkAddress($userAddress);
-		$isMapAccount  = (new ValidModel())-> isMapAccount($userAddress);
-		if ($isUserAddress && $isMapAccount) {
+		$isVipAccount  = (new ValidModel())-> isVipAccount($userAddress);
+		if ($isUserAddress && $isVipAccount) {
 			$data = (new MiningModel())-> getEarning($userAddress);
 		} else {
 			$data = $this->DisposeModel-> wetJsonRt(406,'error_address');
@@ -78,8 +78,8 @@ class Mining extends BaseController {
 		$aktAddress    = $_SERVER['HTTP_KEY'];
 		$userAddress   = $aktAddress ?? $reqAddress;
 		$isUserAddress = $this->DisposeModel-> checkAddress($userAddress);
-		$isMapAccount  = (new ValidModel())-> isMapAccount($userAddress);
-		if ($isMapAccount && $isUserAddress) {
+		$isVipAccount  = (new ValidModel())-> isVipAccount($userAddress);
+		if ($isVipAccount && $isUserAddress) {
 			$data = (new MiningModel())-> unMapping($userAddress);
 		} else {
 			$data = $this->DisposeModel-> wetJsonRt(406,'error_amount');
@@ -93,8 +93,8 @@ class Mining extends BaseController {
 		$aktAddress    = $_SERVER['HTTP_KEY'];
 		$userAddress   = $aktAddress ?? $reqAddress;
 		$isUserAddress = $this->DisposeModel-> checkAddress($userAddress);
-		$isMapAccount  = (new ValidModel())-> isMapAccount($userAddress);
-		if ($isUserAddress && $isMapAccount) {
+		$isVipAccount  = (new ValidModel())-> isVipAccount($userAddress);
+		if ($isUserAddress && $isVipAccount) {
 			$userMiningInfo = (new MiningModel())-> checkMapping($userAddress);
 			if ($userMiningInfo) {
 				$data = $this->DisposeModel-> wetJsonRt(200, 'success', $userMiningInfo);

@@ -6,14 +6,18 @@ use App\Models\Wecom\ReceiveModel;
 
 class Wecom extends BaseController {
 
-	public function send($text, $sendKey, $touser = '@all')
+	public function send($content, $sendKey, $touser = '@all')
 	{ //推送到微信企业应用
 		// Wecom/send/要发送到内容/sendkey/Liu|LiuShao
 		header("Content-Type: application/json; charset=UTF-8");
-		if (strlen(@$sendKey) < 1 || strlen(@$text) < 1) {
+		if (strlen(@$sendKey) < 1 || strlen(@$content) < 1) {
 			die('bad params');
 		}
-		$req = (new SendModel())-> sendToWecom($text, $sendKey, $touser);
+		$payload = [
+			'msgtype' => 'text',
+			'content' => $content
+		];
+		$req = (new SendModel())-> sendToWecom($payload, $sendKey, $touser);
 		echo $req;
     }
 

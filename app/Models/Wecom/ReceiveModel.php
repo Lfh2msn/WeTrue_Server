@@ -1,27 +1,21 @@
 <?php namespace App\Models\Wecom;
 
-use App\Models\{
-	ConfigModel,
-	DisposeModel
-};
+use App\Models\ConfigModel;
 use App\Models\Wecom\Callback\WXBizMsgCrypt;
-use App\Models\Get\GetPriceModel;
-use App\Models\Wecom\CorpUserModel;
+use App\Models\Wecom\ReceiveMsgTypeModel;
 
 class ReceiveModel {
-//企业微信 Model
+//企业微信被动回复 Model
 
 	public function __construct(){
 		$this->$ConfigModel  = new ConfigModel();
 		$weConfig      = $this->$ConfigModel-> wecomConfig();
-		$wecomCid      = $weConfig['WECOM_CID'];
+		$wecomCid_1      = $weConfig['WECOM_CID_1'];
 		$wecomToken_1  = $weConfig['WECOM_TOKEN_1'];
 		$wecomAesKey_1 = $weConfig['WECOM_AESKEY_1'];
-		$wetrueKey     = $weConfig['WECOM_KEY'];
-		$this->WXBizMsgCrypt = new WXBizMsgCrypt($wecomToken_1, $wecomAesKey_1, $wecomCid);
-		$this->GetPriceModel = new GetPriceModel();
-		$this->DisposeModel  = new DisposeModel();
-		$this->CorpUserModel = new CorpUserModel();
+
+		$this->WXBizMsgCrypt   = new WXBizMsgCrypt($wecomToken_1, $wecomAesKey_1, $wecomCid_1);
+		$this->RecMsgTypeModel = new ReceiveMsgTypeModel();
     }
 
 	public function recFromWecom($sReqMsgSig, $sReqTimeStamp, $sReqNonce, $sReqData)
@@ -32,47 +26,15 @@ class ReceiveModel {
 		if ($errCode == 0) { 
 			$xml = new \DOMDocument();
 			$xml->loadXML($sMsg); 
-			$reqToUserName   = $xml->getElementsByTagName('ToUserName')->item(0)->nodeValue;
-			$reqFromUserName = $xml->getElementsByTagName('FromUserName')->item(0)->nodeValue;
-			$reqCreateTime   = $xml->getElementsByTagName('CreateTime')->item(0)->nodeValue;
 			$reqMsgType = $xml->getElementsByTagName('MsgType')->item(0)->nodeValue;
-			$reqContent = $xml->getElementsByTagName('Content')->item(0)->nodeValue;
-			$reqMsgId   = $xml->getElementsByTagName('MsgId')->item(0)->nodeValue;
-			$reqAgentID = $xml->getElementsByTagName('AgentID')->item(0)->nodeValue;
-			$mycontent  = "";
 
-			$coinFile = file_get_contents("gateioCoinList.txt"); //读取gate币种A列表
-        	$coinList = explode("\n" ,$coinFile); //转数组
-			$reqContentUpper = strtoupper($reqContent); //转大写
-
-			if ($reqContent == "刘少") {
-				$mycontent = "别装了，我知道你不是！";
-			} elseif ( in_array($reqContentUpper, $coinList) ) {
-				$mycontent = $this->GetPriceModel-> gateioPrice($reqContentUpper);
-			} elseif (substr($reqContent, 0, 6) == "绑定") {
-				$aeAddress = substr($reqContent, 6);
-				$isAddress = $this->DisposeModel-> checkAddress($aeAddress);
-				if ($isAddress) {
-					$mycontent = $this->CorpUserModel-> bindUser($aeAddress, $reqToUserName, $reqFromUserName);
-				}else {
-					$mycontent = "格式错误[请勿带回车等],示例：\n绑定ak_11111111111111111111111111111111273Yts";
-				}
-			} elseif (strtoupper($reqContent) == "USERID") {
-				$mycontent = $reqFromUserName;
-			} elseif (strtoupper($reqContent) == "USERCOUNT") {
-				$countUser = $this->CorpUserModel-> getCountUser();
-				$mycontent = "当前总绑定：{$countUser}";
+			$sRespData = "<xml></xml>";
+			if ($reqMsgType == "text") {
+				$sRespData = $this->RecMsgTypeModel-> recTypeText($sMsg);
+			} elseif ($reqMsgType == "event") {
+				$sRespData = $this->RecMsgTypeModel-> recTypeEvent($sMsg);
 			}
-			
 
-			$sRespData = 
-			"<xml>
-			<ToUserName><![CDATA[".$reqFromUserName."]]></ToUserName>
-			<FromUserName><![CDATA[".$corpId."]]></FromUserName>
-			<CreateTime>".$sReqTimeStamp."</CreateTime>
-			<MsgType><![CDATA[text]]></MsgType>
-			<Content><![CDATA[".$mycontent."]]></Content>
-			</xml>";
 			$sEncryptMsg = ""; //xml格式的密文
 			$errCode = $this->WXBizMsgCrypt-> EncryptMsg($sRespData, $sReqTimeStamp, $sReqNonce, $sEncryptMsg); //对返回信息加密
 			if ($errCode == 0) {
