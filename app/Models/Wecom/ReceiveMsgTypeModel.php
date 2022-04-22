@@ -2,7 +2,8 @@
 
 use App\Models\{
 	DisposeModel,
-	ValidModel
+	ValidModel,
+	GetModel
 };
 use App\Models\Get\GetPriceModel;
 use App\Models\Wecom\CorpUserModel;
@@ -17,6 +18,7 @@ class ReceiveMsgTypeModel {
 		$this->CorpUserModel = new CorpUserModel();
 		$this->AeWallet 	 = new AeWallet();
 		$this->ValidModel 	 = new ValidModel();
+		$this->GetModel 	 = new GetModel();
     }
 
 	public function recTypeText($sMsg)
@@ -114,7 +116,7 @@ class ReceiveMsgTypeModel {
 					$mycontent = "创建失败,已存在一个AE钱包";
 				} else {
 					$publicKey = $this->CorpUserModel-> saveCreateWallet($newCreateWallet, $reqFromUserName);
-					$mycontent = "创建成功,请注意保管助记词,\n注意:您创建为托管钱包,助记词或密钥经过网络传输可能存在安全隐患，因此并不适合大额存储,请注意资金安全。您的钱包地址:\n\n{$publicKey}";
+					$mycontent = "创建成功\n\n请注意保管助记词,\n注意:您创建为托管钱包,助记词或密钥经过网络传输可能存在安全隐患,并不适合大额存储,请注意资金安全。您的AE钱包地址:\n\n{$publicKey}";
 				}
 			} else {
 				$mycontent = "钱包创建失败,请稍后重试";
@@ -125,7 +127,7 @@ class ReceiveMsgTypeModel {
 			if ($WecomWalletAddress) {
 				$mycontent = $WecomWalletAddress;
 			} else {
-				$mycontent = "读取失败,你可能还未创建钱包?";
+				$mycontent = "读取失败,还未创建钱包?";
 			}
 
 		} elseif ($reqContent == "V1_Get_Wallet_Mnemonic") {
@@ -133,12 +135,22 @@ class ReceiveMsgTypeModel {
 			if ($WecomWalletMnemonic) {
 				$mycontent = "请注意保管助记词,\n同时请及时删除本条信息,\n助记词泄露将导致您资产的丢失,\nWeTrue不会为您的资产损失负责.\n您的助记词:\n\n".$WecomWalletMnemonic;
 			} else {
-				$mycontent = "读取失败,你可能还未创建钱包?";
+				$mycontent = "读取失败,还未创建钱包?";
 			}
 
 		} elseif ($reqContent == "V1_Bind_WeTrue_Wallet") {
 			$mycontent = "发送如下格式[绑定+钱包地址]\n示例:\n绑定ak_XxXxX1273Yts";
 
+		} elseif ($reqContent == "V1_Get_Wallet_Balance") {
+			$WecomWalletAddress = $this->CorpUserModel-> getWecomAddress($reqFromUserName);
+			if ($WecomWalletAddress) {
+				$balance = $this->GetModel->getAccountsBalance($WecomWalletAddress);  //查询链上金额
+				$upperAE = $balance / 1e18;
+				$substrAddress = mb_substr($WecomWalletAddress, -4);
+				$mycontent = "ak_****{$substrAddress} 余额:\n\n{$upperAE} AE";
+			} else {
+				$mycontent = "查询失败,还未创建钱包?";
+			}
 		}
 		
 		$sReqTimeStamp = time();

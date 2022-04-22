@@ -1,0 +1,37 @@
+{
+	"button": [{
+		"type": "view",
+		"name": "WeTrue",
+		"url": "https://wetrue.cc/"
+	  },
+	  {
+		"name": "功能",
+		"sub_button": [{
+		"type": "click",
+			"name": "钱包地址",
+			"key": "V1_Get_Wallet_Address"
+		  },
+		  {
+			"type": "click",
+			"name": "钱包余额",
+			"key": "V1_Get_Wallet_Balance"
+		  },
+		  {
+			"type": "click",
+			"name": "钱包助记词",
+			"key": "V1_Get_Wallet_Mnemonic"
+		  },
+		  {
+			"type": "click",
+			"name": "创建钱包",
+			"key": "V1_Create_Wallet"
+		  },
+		  {
+			"type": "click",
+			"name": "绑定WeTrue",
+			"key": "V1_Bind_WeTrue_Wallet"
+		  }
+		]
+	  }
+	]
+  }

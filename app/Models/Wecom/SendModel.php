@@ -43,14 +43,13 @@ class SendModel {
 			$data->agentid = $wecomAid_1;
 			$data->msgtype = $payload['msgtype'];
 
-			if ($payload['msgtype'] == "text"){
+			if ($data->msgtype == "text"){
 				$data->text = ["content" => $payload['content']];
 				$data->safe = 0;
 				$data->duplicate_check_interval = 600;
 
-			} elseif ($payload['msgtype'] == "textcard") {
-				$data->textcard = 
-					[
+			} elseif ($data->msgtype == "textcard") {
+				$data->textcard = [
 						"title" 	  => $payload['title'],
 						"description" => $payload['description'],
 						"url" 		  => $payload['url'],

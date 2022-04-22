@@ -220,9 +220,10 @@ class MsgModel extends ComModel
 		if ($touser){
 			$payload = [
 				'msgtype' 	  => 'textcard',
-				'title'   	  => 'WeTrue 消息',
+				'title'   	  => '收到一条 WeTrue 消息',
 				'description' => $description,
-				'url' 		  => $url
+				'url' 		  => $url,
+				'btntxt'	  => '详情'
 			];
 			$this->SendModel-> sendToWecom($payload, $wetrueKey, $touser);
 		}

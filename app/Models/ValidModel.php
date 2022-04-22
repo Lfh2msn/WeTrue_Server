@@ -247,7 +247,7 @@ class ValidModel extends Model {
 
 	public function isWecomAddress($address)
 	{//企业微信Adderss是否存在
-		$sql   = "SELECT wecom_user_id FROM wet_wecom_users WHERE address = '$address' LIMIT 1";
+		$sql   = "SELECT wecom_user_id FROM wet_wecom_users WHERE address = '$address' OR wecom_address = '$address' LIMIT 1";
 		$query = $this->db->query($sql);
 		$row   = $query->getRow();
 		return $row ? true : false;

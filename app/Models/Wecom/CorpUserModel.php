@@ -56,7 +56,7 @@ class CorpUserModel {
 
 	public function getUserId($address)
 	{// 获取企业id
-		$sql   = "SELECT wecom_user_id FROM $this->wet_wecom_users WHERE address = '$address' LIMIT 1";
+		$sql   = "SELECT wecom_user_id FROM $this->wet_wecom_users WHERE address = '$address' OR wecom_address = '$address' LIMIT 1";
 		$query = $this->db->query($sql);
 		$row   = $query->getRow();
 		return $row ? $row->wecom_user_id : false;
