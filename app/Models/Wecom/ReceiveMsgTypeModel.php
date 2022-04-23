@@ -90,17 +90,17 @@ class ReceiveMsgTypeModel {
 							"recipientId" => $toAddress,
 							"secretKey"   => $wecomPrivate,
 							"amount" 	  => $amount,
-							"payload" 	  => 'For WeTrue WeCom'
+							"payload" 	  => 'From WeTrue WeCom'
 						];
 						$response = $this->AeWallet-> spendAE($data); //发送AE
 						$json_arr = (array) json_decode($response, true);
+						$hash = $json_arr['hash'];
 						$mycontent = "发送失败";
-						if ($response && $json_arr) {
-							$hash =  $json_arr['hash'];
-							$mycontent = "发送{$amount}{$coinToken}到{$subToAddress}\n具体以链上为准\nHash:\n\n<a href='https://www.aeknow.org/block/transaction/{$hash}'>{$hash}</a>";	
+						if ($response && $hash) {
+							$mycontent = "已发送{$amount}{$coinToken}->{$subToAddress}\n具体以链上为准,Hash:\n\n<a href='https://www.aeknow.org/block/transaction/{$hash}'>{$hash}</a>";	
 						}
 					} else {
-						$mycontent = "正在从 {$subAddress} 发送 {$amount} {$coinToken} 到 {$subToAddress}\n\n提示:\n这只是个测试数据,不会真实发送";
+						$mycontent = "正从{$subAddress}发送{$amount}{$coinToken}到{$subToAddress}\n\n提示:\n这只是个测试数据,不会真实发送";
 					}
 				} else {
 					$mycontent = "格式错误,示例:\n发送+空格+金额及Token+空格+地址\n\n如:\n发送 0.1ae ak_xxooCoin";
