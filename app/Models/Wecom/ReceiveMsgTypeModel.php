@@ -63,7 +63,7 @@ class ReceiveMsgTypeModel {
 			$mycontent = "当前总账户:{$countUser}";
 
 		} elseif (substr($reqContent, 0, 6) == "发送") {
-			$coinKey   = "ae|wtt|abc|aeg";
+			$coinKey   = "ae|wtt|abc|aeg|wet";
 			$upperKey  = strtoupper($coinKey); //转大写
 			$matchList = $coinKey."|".$upperKey; //合并
 			$wallet  = "ak_[1-9A-HJ-NP-Za-km-z]{48,50}"; //钱包匹配规则
@@ -93,12 +93,11 @@ class ReceiveMsgTypeModel {
 							"payload" 	  => 'For WeTrue WeCom'
 						];
 						$response = $this->AeWallet-> spendAE($data); //发送AE
-						if ($response) {
-							$json = (array) json_decode($response, true);
-							$hash =  $json['hash'];
-							$mycontent = "发送{$amount}{$coinToken}到{$subToAddress}\n具体以链上为准\nHash:\n\n<a href='https://www.aeknow.org/block/transaction/{$hash}'>{$hash}</a>";
-						} else {
-							$mycontent = "发送失败";
+						$json_arr = (array) json_decode($response, true);
+						$mycontent = "发送失败";
+						if ($response && $json_arr) {
+							$hash =  $json_arr['hash'];
+							$mycontent = "发送{$amount}{$coinToken}到{$subToAddress}\n具体以链上为准\nHash:\n\n<a href='https://www.aeknow.org/block/transaction/{$hash}'>{$hash}</a>";	
 						}
 					} else {
 						$mycontent = "正在从 {$subAddress} 发送 {$amount} {$coinToken} 到 {$subToAddress}\n\n提示:\n这只是个测试数据,不会真实发送";
@@ -199,11 +198,11 @@ class ReceiveMsgTypeModel {
 		} elseif ($reqContent == "V1_Wallet_Get_Balance") {
 			$wecomWalletAddress = $this->CorpUserModel-> getWecomAddress($reqFromUserName);
 			if ($wecomWalletAddress) {
-				$balance = $this->GetModel->getAccountsBalance($wecomWalletAddress);  //查询链上金额
+				$balance = $this->GetModel->getAccountsBalance($wecomWalletAddress); //查询链上金额
 				$upperAE = $balance / 1e18;
 				$substrAddress = mb_substr($wecomWalletAddress, -4);
 				$largeAE = $upperAE >= 100 ? "\n\n注意:\n您所存储资产较大(大于100AE),托管钱包经网络传输并不安全,请尽快转移" : null;
-				$mycontent = "ak_***{$substrAddress} 余额:\n\n{$upperAE} AE{$largeAE}";
+				$mycontent = "{$substrAddress} 余额:\n{$upperAE} AE{$largeAE}";
 			} else {
 				$mycontent = "查询失败,还未创建钱包?";
 			}
