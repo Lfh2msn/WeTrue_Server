@@ -60,7 +60,8 @@ class ReceiveMsgTypeModel {
 
 		} elseif (strtoupper($reqContent) == "USERCOUNT") {
 			$countUser = $this->CorpUserModel-> getCountUser();
-			$mycontent = "当前总绑定:{$countUser}";
+			$mycontent = "当前总账户:{$countUser}";
+
 		} elseif (substr($reqContent, 0, 6) == "发送") {
 			$coinKey   = "ae|wtt|abc|aeg";
 			$upperKey  = strtoupper($coinKey); //转大写
