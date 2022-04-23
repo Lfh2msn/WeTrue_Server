@@ -31,7 +31,7 @@ class CorpUserModel {
 	}
 
 	public function saveCreateWallet($wallet, $user_id)
-	{// 创建钱包
+	{// 保存创建钱包
 		/*
 		{
 			"mnemonic": "woman bicycle daughter rule polar night ecology ring game media avocado battle",
@@ -50,7 +50,7 @@ class CorpUserModel {
 			$this->db->table($this->wet_wecom_users)->where('wecom_user_id', $user_id)->update($updateData);
 			return $publicKey;
 		} catch (Exception $e) {
-			return "创建失败:". $e->getMessage();
+			return false;
 		}
 	}
 
@@ -76,6 +76,14 @@ class CorpUserModel {
 		$query = $this->db->query($sql);
 		$row   = $query->getRow();
 		return $row ? $row->wecom_address : false;
+	}
+
+	public function getWecomPrivate($user_id)
+	{// 获取企业钱包私钥
+		$sql   = "SELECT wecom_private FROM $this->wet_wecom_users WHERE wecom_user_id = '$user_id' LIMIT 1";
+		$query = $this->db->query($sql);
+		$row   = $query->getRow();
+		return $row ? $row->wecom_private : false;
 	}
 
 	public function getWecomMnemonic($user_id)
