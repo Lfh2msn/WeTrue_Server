@@ -75,8 +75,8 @@ class ReceiveMsgTypeModel {
 					$match
 				);
 				$mycontent = "格式错误,示例:\n打赏+空格+金额Name+空格+地址\n\n如:\n打赏 0.1ae ak_xxooXYZ";
-				
-				if ($isMatch && $openReward) {
+				/** 备注: 上链周期太长,容易反复请求造成重复上链,应先存后处理,成功再推送消息 */
+				if ($isMatch) {
 					$coinToken = strtoupper($match[5]); //提取Token
 					$toAddress = $match[7]; //提取目标地址
 					$keyList   = explode("|", $upperKey); //匹配Token转数组
