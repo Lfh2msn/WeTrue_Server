@@ -21,7 +21,7 @@ class RewardModel extends Model {
 		$this->GetModel     = new GetModel();
 		$this->wet_temp     = "wet_temp";
 		$this->wet_content  = "wet_content";
-		$this->wet_content_sh  = "wet_content_sh";
+		$this->wet_content_sh = "wet_content_sh";
 		$this->wet_users    = "wet_users";
 		$this->wet_reward   = "wet_reward";
     }

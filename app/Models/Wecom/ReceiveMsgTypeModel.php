@@ -41,7 +41,7 @@ class ReceiveMsgTypeModel {
 		$reqContentUpper = strtoupper($reqContent); //转大写
 
 		if ($reqContent == "帮助" || $reqContentUpper == "HELP" ) {
-			$mycontent = "支持币价查询:\n回复关键词:AE\n\n支持绑定WeTrue钱包:\n例:绑定ak_xxxx\n\n支持发布内容上链到AE主网:\n该功能，开发中……";
+			$mycontent = "支持查询:\n回复关键词:AE\n\n支持绑定WeTrue钱包:\n例:绑定ak_xxxx\n\n更多功能,开发中……";
 
 		} elseif ( in_array($reqContentUpper, $coinList) ) {
 			$mycontent = $this->GetPriceModel-> gateioPrice($reqContentUpper);
@@ -62,52 +62,63 @@ class ReceiveMsgTypeModel {
 			$countUser = $this->CorpUserModel-> getCountUser();
 			$mycontent = "当前总账户:{$countUser}";
 
-		} elseif (substr($reqContent, 0, 6) == "发送") {
-			$coinKey   = "ae|wtt|abc|aeg|wet";
-			$upperKey  = strtoupper($coinKey); //转大写
-			$matchList = $coinKey."|".$upperKey; //合并
-			$wallet  = "ak_[1-9A-HJ-NP-Za-km-z]{48,50}"; //钱包匹配规则
-			$isMatch = preg_match(
-				"/^(发送)+( )+([0-9]?\.?([0-9]){1})+($matchList)+( )+($wallet)$/",
-				$reqContent,
-				$match
-			);
-			if ($isMatch) {
-				$coinToken = strtoupper($match[5]); //提取Token
-				$toAddress = $match[7]; //提取目标地址
-				$keyList   = explode("|", $upperKey); //匹配Token转数组
-				$isCoin    = in_array($coinToken, $keyList);
-				$isAddress = $this->DisposeModel-> checkAddress($toAddress);
-				if ($isCoin && $isAddress) {
-					$offset = stripos($reqContent, $match[5]);
-					$amount = substr($reqContent, 6, $offset-6);
-					$wecomAddress = $this->CorpUserModel-> getWecomAddress($reqFromUserName);
-					$wecomPrivate = $this->CorpUserModel-> getWecomPrivate($reqFromUserName);
-					$subAddress   = mb_substr($wecomAddress, -4);
-					$subToAddress = mb_substr($toAddress, -4);
-					if ($coinToken == "AE") {
-						$data = [
-							"recipientId" => $toAddress,
-							"secretKey"   => $wecomPrivate,
-							"amount" 	  => $amount,
-							"payload" 	  => 'From WeTrue WeCom'
-						];
-						$response = $this->AeWallet-> spendAE($data); //发送AE
+		} elseif (substr($reqContent, 0, 6) == "打赏") {
+			$openReward = false; //开启或关闭打赏
+			if ($openReward) {
+				$coinKey   = "ae|wtt|abc|aeg|ans|wet";
+				$upperKey  = strtoupper($coinKey); //转大写
+				$matchList = "{$coinKey}|{$upperKey}"; //合并
+				$wallet  = "ak_[1-9A-HJ-NP-Za-km-z]{48,50}"; //钱包匹配规则
+				$isMatch = preg_match(
+					"/^(打赏)+( )+([0-9]?\.?([0-9]){1})+($matchList)+( )+($wallet)$/",
+					$reqContent,
+					$match
+				);
+				$mycontent = "格式错误,示例:\n打赏+空格+金额Name+空格+地址\n\n如:\n打赏 0.1ae ak_xxooXYZ";
+				
+				if ($isMatch && $openReward) {
+					$coinToken = strtoupper($match[5]); //提取Token
+					$toAddress = $match[7]; //提取目标地址
+					$keyList   = explode("|", $upperKey); //匹配Token转数组
+					$isCoin    = in_array($coinToken, $keyList);
+					$isAddress = $this->DisposeModel-> checkAddress($toAddress);
+					if ($isCoin && $isAddress) {
+						$offset = stripos($reqContent, $match[5]);
+						$amount = substr($reqContent, 6, $offset-6);
+						$wecomAddress = $this->CorpUserModel-> getWecomAddress($reqFromUserName);
+						$wecomPrivate = $this->CorpUserModel-> getWecomPrivate($reqFromUserName);
+						$subAddress   = mb_substr($wecomAddress, -4);
+						$subToAddress = mb_substr($toAddress, -4);
+						if ($coinToken == "AE") {
+							$data = [
+								"recipientId" => $toAddress,
+								"secretKey"   => $wecomPrivate,
+								"amount" 	  => $amount,
+								"payload" 	  => 'From WeTrue WeCom'
+							];
+							$response = $this->AeWallet-> spendAE($data); //发送AE
+						} else {
+							$contractId = $this->contractAddress($coinToken);
+							$data = [
+								"contractId"  => $contractId,
+								"recipientId" => $toAddress,
+								"secretKey"   => $wecomPrivate,
+								"amount" 	  => $amount
+							];
+							$response = $this->AeWallet-> transferToken($data); //发送Token
+						}
 						$json_arr = (array) json_decode($response, true);
 						$hash = $json_arr['hash'];
-						$mycontent = "发送失败";
+						$mycontent = "打赏 {$coinToken} 失败";
 						if ($response && $hash) {
-							$mycontent = "已发送{$amount}{$coinToken}->{$subToAddress}\n具体以链上为准,Hash:\n\n<a href='https://www.aeknow.org/block/transaction/{$hash}'>{$hash}</a>";	
+							$mycontent = "成功打赏{$amount}{$coinToken}->{$subToAddress}\n具体以链上为准,Hash:\n\nhttps://www.aeknow.org/block/transaction/{$hash}";	
 						}
-					} else {
-						$mycontent = "正从{$subAddress}发送{$amount}{$coinToken}到{$subToAddress}\n\n提示:\n这只是个测试数据,不会真实发送";
 					}
-				} else {
-					$mycontent = "格式错误,示例:\n发送+空格+金额及Token+空格+地址\n\n如:\n发送 0.1ae ak_xxooCoin";
 				}
 			} else {
-				$mycontent = "格式错误,示例:\n发送+空格+金额及Token+空格+地址\n\n如:\n发送 0.1ae ak_xxooMatch";
+				$mycontent = "打赏已关闭";
 			}
+			
 		}
 		
 		$sReqTimeStamp = time();
@@ -164,7 +175,7 @@ class ReceiveMsgTypeModel {
 				} else {
 					$publicKey = $this->CorpUserModel-> saveCreateWallet($newCreateWallet, $reqFromUserName);
 					if ($publicKey) {
-						$mycontent = "创建成功\n\n注意:您创建为托管钱包,助记词或密钥经过网络传输可能存在安全隐患,并不适合大额存储,请注意资金安全。AE钱包地址:\n\n{$publicKey}";
+						$mycontent = "创建成功\n\n注意:您创建为托管钱包,并不适合大量存储,请注意风险安全。AE地址:\n\n{$publicKey}";
 					} else {
 						$mycontent = "创建失败,MDW报错";
 					}
@@ -223,6 +234,23 @@ class ReceiveMsgTypeModel {
 		<Content><![CDATA[".$mycontent."]]></Content>
 		</xml>";
 		return $sRespData;
+	}
+
+	private function contractAddress($token)
+	{ //Token 地址匹配
+		$contractId = "";
+		if ($token == "WTT") {
+			$contractId = "ct_KeTvHnhU85vuuQMMZocaiYkPL9tkoavDRT3Jsy47LK2YqLHYb";
+		} elseif ($token == "WET") {
+			$contractId = "ct_uGk1rkSdccPKXLzS259vdrJGTWAY9sfgVYspv6QYomxvWZWBM";
+		} elseif ($token == "ABC") {
+			$contractId = "ct_7UfopTwsRuLGFEcsScbYgQ6YnySXuyMxQWhw6fjycnzS5Nyzq";
+		} elseif ($token == "AEG") {
+			$contractId = "ct_BwJcRRa7jTAvkpzc2D16tJzHMGCJurtJMUBtyyfGi2QjPuMVv";
+		} elseif ($token == "ANS") {
+			$contractId = "ct_2649d1du9jTBUKe8BsGNyaNiXe5gMZRXxx4iuQ7VFdCuKS1DJp";
+		}
+		return $contractId;
 	}
 
 }

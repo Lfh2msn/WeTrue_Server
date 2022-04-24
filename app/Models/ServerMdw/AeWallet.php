@@ -31,10 +31,25 @@ class AeWallet extends ComModel {
 
 	public function spendAE($data)
 	{ //发送AE转账
+		$bsConfig = $this->ConfigModel-> backendConfig();
+		$url = $bsConfig['wetrueMdw'].'/aesdk/v1/spendAE';
+		$data['node'] = $bsConfig['backendServiceNode'];
+		$res = $this->curlPost($data, $url);
+		return $res;
+	}
+
+	public function transferToken($data)
+	{ //发送AEX-9 Token转账
+		$bsConfig = $this->ConfigModel-> backendConfig();
+		$url = $bsConfig['wetrueMdw'].'/aesdk/v1/transferToken';
+		$data['node'] = $bsConfig['backendServiceNode'];
+		$res = $this->curlPost($data, $url);
+		return $res;
+	}
+
+	private function curlPost($data, $url)
+	{ //Post
 		try {
-			$bsConfig = $this->ConfigModel-> backendConfig();
-			$url = $bsConfig['wetrueMdw'].'/aesdk/v1/sendAE';
-			$data['node'] = $bsConfig['backendServiceNode'];
 			$data_json = json_encode($data);
 			$ch = curl_init();
 			curl_setopt($ch, CURLOPT_HTTPHEADER, ['Content-Type: application/json']);
