@@ -97,13 +97,9 @@ class User extends BaseController {
 	public function isNickname()
 	{//获取昵称是否存在
 		$nickname = $this->request->getPost('nickname');
-		$data['code'] = 200;  //升级合并后可删除
-		$data['msg']  = 'success';  //升级合并后可删除
 		$type = (new ValidModel())-> isNickname($nickname);
-		$data['data']['isNickname'] = $type;  //升级合并后可删除
 		$data['isNickname'] = $type;
-		echo json_encode($data);  //升级合并后可删除
-		//echo $this->DisposeModel-> wetJsonRt(200,'success',$data);
+		echo $this->DisposeModel-> wetJsonRt(200,'success',$data);
 	}
 
 }

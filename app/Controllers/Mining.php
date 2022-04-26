@@ -9,9 +9,7 @@ class Mining extends BaseController {
 	public function openAccount()
 	{//开通映射
         $hash 		   = $this->request->getPost('hash');
-		$reqAddress    = $this->request->getPost('userAddress');
-		$aktAddress    = $_SERVER['HTTP_KEY'];
-		$userAddress   = $aktAddress ?? $reqAddress;
+		$userAddress   = $_SERVER['HTTP_KEY'];
 		$isHash 	   = $this->DisposeModel-> checkAddress($hash);
 		$isUserAddress = $this->DisposeModel-> checkAddress($userAddress);
 		if ($isHash && $isUserAddress) {
@@ -23,9 +21,7 @@ class Mining extends BaseController {
 	
 	public function submitState()
 	{//开通映射提交状态
-        $reqAddress  = $this->request->getPost('userAddress');
-		$aktAddress  = $_SERVER['HTTP_KEY'];
-		$userAddress = $aktAddress ?? $reqAddress;
+		$userAddress = $_SERVER['HTTP_KEY'];
 		$isAddress   = $this->DisposeModel-> checkAddress($userAddress);
 		if ($isAddress) {
 			$submitState  = (new ValidModel())-> isSubmitOpenState($userAddress);
@@ -44,9 +40,7 @@ class Mining extends BaseController {
 	public function mapping()
 	{//映射挖矿
 		(int)$amount   = $this->request->getPost('amount');
-		$reqAddress    = $this->request->getPost('userAddress');
-		$aktAddress    = $_SERVER['HTTP_KEY'];
-		$userAddress   = $aktAddress ?? $reqAddress;
+		$userAddress   = $_SERVER['HTTP_KEY'];
 		$isUserAddress = $this->DisposeModel-> checkAddress($userAddress);
 		$isVipAccount  = (new ValidModel())-> isVipAccount($userAddress);
 		if ($isVipAccount && is_numeric($amount) && $isUserAddress) {
@@ -59,9 +53,7 @@ class Mining extends BaseController {
 
 	public function earning()
 	{//领取收益
-		$reqAddress    = $this->request->getPost('userAddress');
-		$aktAddress    = $_SERVER['HTTP_KEY'];
-		$userAddress   = $aktAddress ?? $reqAddress;
+		$userAddress   = $_SERVER['HTTP_KEY'];
 		$isUserAddress = $this->DisposeModel-> checkAddress($userAddress);
 		$isVipAccount  = (new ValidModel())-> isVipAccount($userAddress);
 		if ($isUserAddress && $isVipAccount) {
@@ -74,9 +66,7 @@ class Mining extends BaseController {
 
 	public function unMapping()
 	{//解除映射
-		$reqAddress    = $this->request->getPost('userAddress');
-		$aktAddress    = $_SERVER['HTTP_KEY'];
-		$userAddress   = $aktAddress ?? $reqAddress;
+		$userAddress   = $_SERVER['HTTP_KEY'];
 		$isUserAddress = $this->DisposeModel-> checkAddress($userAddress);
 		$isVipAccount  = (new ValidModel())-> isVipAccount($userAddress);
 		if ($isVipAccount && $isUserAddress) {
@@ -89,9 +79,7 @@ class Mining extends BaseController {
 
 	public function mapInfo()
 	{//获取用户映射挖矿信息
-        $reqAddress    = $this->request->getPost('userAddress');
-		$aktAddress    = $_SERVER['HTTP_KEY'];
-		$userAddress   = $aktAddress ?? $reqAddress;
+		$userAddress   = $_SERVER['HTTP_KEY'];
 		$isUserAddress = $this->DisposeModel-> checkAddress($userAddress);
 		$isVipAccount  = (new ValidModel())-> isVipAccount($userAddress);
 		if ($isUserAddress && $isVipAccount) {
