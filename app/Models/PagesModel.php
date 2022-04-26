@@ -1,13 +1,15 @@
 <?php namespace App\Models;
 
 use CodeIgniter\Model;
-use App\Models\ValidModel;
-use App\Models\ContentModel;
-use App\Models\CommentModel;
-use App\Models\ReplyModel;
-use App\Models\ConfigModel;
-use App\Models\DisposeModel;
-use App\Models\SuperheroContentModel;
+use App\Models\{
+	ValidModel,
+	ContentModel,
+	CommentModel,
+	ReplyModel,
+	ConfigModel,
+	DisposeModel,
+	SuperheroContentModel
+};
 
 class PagesModel extends Model {
 //分页列表模型

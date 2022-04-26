@@ -1,10 +1,12 @@
 <?php 
 namespace App\Models;
 
-use App\Models\GetModel;
-use App\Models\MsgModel;
-use App\Models\ValidModel;
-use App\Models\AensModel;
+use App\Models\{
+	GetModel,
+	MsgModel,
+	ValidModel,
+	AensModel
+};
 
 class MentionsModel extends ComModel
 {//@模块 Model

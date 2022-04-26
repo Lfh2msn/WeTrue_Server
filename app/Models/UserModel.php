@@ -1,12 +1,14 @@
 <?php 
 namespace App\Models;
 
-use App\Models\ComModel;
-use App\Models\AirdropModel;
-use App\Models\FocusModel;
-use App\Models\ValidModel;
-use App\Models\DisposeModel;
-use App\Models\ConfigModel;
+use App\Models\{
+	ComModel,
+	AirdropModel,
+	FocusModel,
+	ValidModel,
+	DisposeModel,
+	ConfigModel
+};
 
 class UserModel extends ComModel
 {//用户Model

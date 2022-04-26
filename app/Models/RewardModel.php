@@ -1,12 +1,14 @@
 <?php namespace App\Models;
 
 use CodeIgniter\Model;
-use App\Models\UserModel;
-use App\Models\ConfigModel;
-use App\Models\ValidModel;
-use App\Models\DisposeModel;
-use App\Models\MsgModel;
-use App\Models\GetModel;
+use App\Models\{
+	UserModel,
+	ConfigModel,
+	ValidModel,
+	DisposeModel,
+	MsgModel,
+	GetModel
+};
 
 class RewardModel extends Model {
 //打赏Model

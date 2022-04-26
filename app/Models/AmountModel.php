@@ -1,8 +1,10 @@
 <?php namespace App\Models;
 
-use App\Models\ComModel;
-use App\Models\UserModel;
-use App\Models\ValidModel;
+use App\Models\{
+	ComModel,
+	UserModel,
+	ValidModel
+};
 
 class AmountModel extends ComModel {
 //Amount Model

@@ -1,10 +1,12 @@
 <?php namespace App\Models;
 
-use App\Models\ComModel;
-use App\Models\DisposeModel;
-use App\Models\UserModel;
-use App\Models\ConfigModel;
-use App\Models\ValidModel;
+use App\Models\{
+	ComModel,
+	DisposeModel,
+	UserModel,
+	ConfigModel,
+	ValidModel
+};
 
 class SuperheroModel extends ComModel {
 //抓取Superhero内容入库Model

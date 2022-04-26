@@ -1,8 +1,10 @@
 <?php 
 namespace App\Models;
 
-use App\Models\ComModel;
-use App\Models\ConfigModel;
+use App\Models\{
+	ComModel,
+	ConfigModel
+};
 
 class AecliModel extends ComModel
 {//AE cli 调用 Model

@@ -1,9 +1,10 @@
 <?php namespace App\Models;
 
 use CodeIgniter\Model;
-use App\Models\DisposeModel;
-use App\Models\ValidModel;
-
+use App\Models\{
+	DisposeModel,
+	ValidModel
+};
 
 class DriftModel extends Model {
 //Drift模型

@@ -1,10 +1,12 @@
 <?php 
 namespace App\Models;
 
-use App\Models\ComModel;
-use App\Models\ContentModel;
-use App\Models\ValidModel;
-use App\Models\DisposeModel;
+use App\Models\{
+	ComModel,
+	ContentModel,
+	ValidModel,
+	DisposeModel
+};
 
 class TopicModel extends ComModel
 {//话题Model

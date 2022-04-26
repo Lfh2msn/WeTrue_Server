@@ -1,8 +1,10 @@
 <?php namespace App\Models;
 
-use App\Models\ComModel;
-use App\Models\ConfigModel;
-use App\Models\DisposeModel;
+use App\Models\{
+	ComModel,
+	ConfigModel,
+	DisposeModel
+};
 
 class GetModel extends ComModel {
 //获取Model

@@ -1,10 +1,12 @@
 <?php namespace App\Models;
 
 use CodeIgniter\Model;
-use App\Models\UserModel;
-use App\Models\ConfigModel;
-use App\Models\DisposeModel;
-use App\Models\ValidModel;
+use App\Models\{
+	UserModel,
+	ConfigModel,
+	DisposeModel,
+	ValidModel
+};
 
 class PraiseModel extends Model {
 //点赞Model

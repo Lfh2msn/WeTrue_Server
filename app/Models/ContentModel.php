@@ -1,10 +1,12 @@
 <?php namespace App\Models;
 
-use App\Models\ComModel;
-use App\Models\ValidModel;
-use App\Models\RewardModel;
-use App\Models\DisposeModel;
-use App\Models\UserModel;
+use App\Models\{
+	ComModel,
+	ValidModel,
+	RewardModel,
+	DisposeModel,
+	UserModel
+};
 
 class ContentModel extends ComModel
 {//主贴Model

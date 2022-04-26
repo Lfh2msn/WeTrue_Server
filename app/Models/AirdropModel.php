@@ -1,10 +1,12 @@
 <?php 
 namespace App\Models;
 
-use App\Models\ComModel;
-use App\Models\AecliModel;
-use App\Models\ValidModel;
-use App\Models\DisposeModel;
+use App\Models\{
+	ComModel,
+	AecliModel,
+	ValidModel,
+	DisposeModel
+};
 
 class AirdropModel extends ComModel
 {//空投Model

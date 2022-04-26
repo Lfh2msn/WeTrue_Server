@@ -1,11 +1,13 @@
 <?php namespace App\Models;
 
 use CodeIgniter\Model;
-use App\Models\ContentModel;
-use App\Models\DisposeModel;
-use App\Models\UserModel;
-use App\Models\ValidModel;
-use App\Models\TopicModel;
+use App\Models\{
+	ContentModel,
+	DisposeModel,
+	UserModel,
+	ValidModel,
+	TopicModel
+};
 
 class SearchModel extends Model {
 //搜索Model

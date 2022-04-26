@@ -1,13 +1,15 @@
 <?php namespace App\Models;
 
 use CodeIgniter\Model;
-use App\Models\DisposeModel;
-use App\Models\HashReadModel;
-use App\Models\ContentModel;
-use App\Models\CommentModel;
-use App\Models\ReplyModel;
-use App\Models\ValidModel;
-use App\Models\GetModel;
+use App\Models\{
+	DisposeModel,
+	HashReadModel,
+	ContentModel,
+	CommentModel,
+	ReplyModel,
+	ValidModel,
+	GetModel
+};
 
 class ComplainModel extends Model {
 //投诉Model

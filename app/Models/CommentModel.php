@@ -1,10 +1,12 @@
 <?php namespace App\Models;
 
 use CodeIgniter\Model;
-use App\Models\UserModel;
-use App\Models\ReplyModel;
-use App\Models\ValidModel;
-use App\Models\DisposeModel;
+use App\Models\{
+	UserModel,
+	ReplyModel,
+	ValidModel,
+	DisposeModel
+};
 
 class CommentModel extends Model {
 //评论Model

@@ -1,16 +1,18 @@
 <?php namespace App\Models;
 
-use App\Models\ComModel;
-use App\Models\GetModel;
-use App\Models\UserModel;
-use App\Models\ReplyModel;
-use App\Models\ValidModel;
-use App\Models\AmountModel;
-use App\Models\ConfigModel;
-use App\Models\DisposeModel;
-use App\Models\ContentModel;
-use App\Models\CommentModel;
-use App\Models\ComplainModel;
+use App\Models\{
+	ComModel,
+	GetModel,
+	UserModel,
+	ReplyModel,
+	ValidModel,
+	AmountModel,
+	ConfigModel,
+	DisposeModel,
+	ContentModel,
+	CommentModel,
+	ComplainModel
+};
 
 class BloomModel extends ComModel {
 //过滤Model

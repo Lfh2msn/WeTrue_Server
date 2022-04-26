@@ -1,8 +1,10 @@
 <?php namespace App\Models;
 
 use CodeIgniter\Model;
-use App\Models\UserModel;
-use App\Models\ValidModel;
+use App\Models\{
+	UserModel,
+	ValidModel
+};
 
 class AensModel extends Model {
 //AENS Model

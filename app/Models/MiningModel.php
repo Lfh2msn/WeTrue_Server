@@ -1,12 +1,14 @@
 <?php 
 namespace App\Models;
 
-use App\Models\ComModel;
-use App\Models\AecliModel;
-use App\Models\ValidModel;
-use App\Models\ConfigModel;
-use App\Models\GetModel;
-use App\Models\DisposeModel;
+use App\Models\{
+	ComModel,
+	AecliModel,
+	ValidModel,
+	ConfigModel,
+	GetModel,
+	DisposeModel
+};
 
 class MiningModel extends ComModel
 {//挖矿Model

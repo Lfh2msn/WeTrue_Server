@@ -1,14 +1,16 @@
 <?php namespace App\Models;
 
 use CodeIgniter\Model;
-use App\Models\GetModel;
-use App\Models\BloomModel;
-use App\Models\ValidModel;
-use App\Models\DeleteModel;
-use App\Models\ConfigModel;
-use App\Models\DisposeModel;
-use App\Models\SuperheroModel;
-use App\Models\AeChainContentModel;
+use App\Models\{
+	GetModel,
+	BloomModel,
+	ValidModel,
+	DeleteModel,
+	ConfigModel,
+	DisposeModel,
+	SuperheroModel,
+	AeChainContentModel
+};
 
 class HashReadModel extends Model {
 //链上hash入库Model

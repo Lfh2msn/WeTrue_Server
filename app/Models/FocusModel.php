@@ -1,9 +1,11 @@
 <?php namespace App\Models;
 
 use CodeIgniter\Model;
-use App\Models\UserModel;
-use App\Models\DisposeModel;
-use App\Models\ValidModel;
+use App\Models\{
+	UserModel,
+	DisposeModel,
+	ValidModel
+};
 
 class FocusModel extends Model {
 //关注Model
