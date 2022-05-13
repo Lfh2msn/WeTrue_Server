@@ -165,9 +165,9 @@ class ValidModel extends Model {
 		return $row ? true : false;
 	}
 
-	public function isSubmitOpenState($address)
-	{//映射挖矿开通地址是否提交
-		$sql   = "SELECT tp_sender_id FROM wet_temp WHERE tp_sender_id = '$address' AND tp_type = 'mapping' LIMIT 1";
+	public function isOpenVipState($address)
+	{//开通VIP提交状态
+		$sql   = "SELECT tp_sender_id FROM wet_temp WHERE tp_sender_id = '$address' AND tp_type = 'openvip' LIMIT 1";
         $query = $this->db->query($sql);
 		$row   = $query->getRow();
 		return $row ? true : false;

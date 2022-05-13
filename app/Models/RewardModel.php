@@ -75,7 +75,7 @@ class RewardModel extends Model {
 		$isTempHash = $this->ValidModel-> isTempHash($hash);
 		if ($isTempHash) {
 			echo $this->DisposeModel-> wetJsonRt(406, 'error_repeat_temp');
-		} else {  //写入临时缓存
+		} else { //写入临时缓存
 			$insertTempSql = "INSERT INTO $this->wet_temp(tp_hash, tp_to_hash, tp_type) VALUES ('$hash', '$to_hash', '$tp_type')";
 			$this->db->query($insertTempSql);
 			echo $this->DisposeModel-> wetJsonRt(200);
@@ -101,7 +101,6 @@ class RewardModel extends Model {
 			$this->deleteTemp($hash);
 			return;
 		}
-		$bsConfig  = $this->ConfigModel-> backendConfig();
 
 		$aeknowApiJson = $this->GetModel->getAeknowContractTx($hash);
 		if (empty($aeknowApiJson)) {
@@ -131,17 +130,15 @@ class RewardModel extends Model {
 
 		$isShid = $this->DisposeModel-> checkSuperheroTipid($to_hash);
 		if ($isShid) { //SH ID 处理
-			$sql   = "SELECT sender_id FROM $this->wet_content_sh WHERE tip_id = '$to_hash' LIMIT 1";
-			$query = $this->db->query($sql);
-			$row   = $query->getRow();
-			$conID = $row-> sender_id;
+			$sql = "SELECT sender_id FROM $this->wet_content_sh WHERE tip_id = '$to_hash' LIMIT 1";
 		} else {
-			$sql   = "SELECT sender_id FROM $this->wet_content WHERE hash = '$to_hash' LIMIT 1";
-			$query = $this->db->query($sql);
-			$row   = $query->getRow();
-			$conID = $row-> sender_id;
+			$sql = "SELECT sender_id FROM $this->wet_content WHERE hash = '$to_hash' LIMIT 1";
 		}
+		$query = $this->db->query($sql);
+		$row   = $query->getRow();
+		$conID = $row-> sender_id;
 
+		$bsConfig = $this->ConfigModel-> backendConfig();
 		if ($row &&
 			$contract_id == $bsConfig['WTTContractAddress'] &&
 			$return_type == "ok"  &&

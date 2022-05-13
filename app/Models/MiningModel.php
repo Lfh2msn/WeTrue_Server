@@ -21,98 +21,9 @@ class MiningModel extends ComModel
 		$this->DisposeModel = new DisposeModel();
 		$this->ValidModel   = new ValidModel();
 		$this->GetModel     = new GetModel();
-		$this->wet_users    = "wet_users";
 		$this->wet_mapping  = "wet_mapping";
 		$this->wet_temp     = "wet_temp";
     }
-
-	public function openAccount($address, $hash)
-	{//新开户
-		$tp_type   = "mapping";
-		$isTempHash = $this->ValidModel-> isTempHash($hash);
-		if ($isTempHash) {
-			echo $this->DisposeModel-> wetJsonRt(406, 'error_repeat_temp');
-		} else {  //写入临时缓存
-			$insertTempSql = "INSERT INTO $this->wet_temp(tp_hash, tp_sender_id, tp_type) VALUES ('$hash', '$address', '$tp_type')";
-			$this->db->query($insertTempSql);
-			echo $this->DisposeModel-> wetJsonRt(200, 'success');
-		}
-
-		$delTempSql = "DELETE FROM $this->wet_temp WHERE tp_time <= now()-interval '2 D' AND tp_type = '$tp_type'";
-		$this->db->query($delTempSql);
-
-		$tempSql = "SELECT tp_hash FROM $this->wet_temp WHERE tp_type = '$tp_type' ORDER BY tp_time DESC LIMIT 30";
-		$tempQy  = $this->db-> query($tempSql);
-		$tempRes = $tempQy->getResult();
-		foreach ($tempRes as $row) {
-			$tp_hash = $row->tp_hash;
-			$this->decodeMapping($tp_hash);
-		}
-	}
-
-	public function decodeMapping($hash)
-	{//新开户-解码开通
-		$bsConfig = (new ConfigModel())-> backendConfig();
-		$textTime = date("Y-m-d");
-		$aeknowApiJson = $this->GetModel->getAeknowContractTx($hash);
-		if (empty($aeknowApiJson)) {
-			$logMsg = "开通失败获取AEKnow-API错误：{$hash}\r\n\r\n";
-			$logPath = "airdrop/mining/error-{$textTime}.txt";
-			$this->DisposeModel->wetFwriteLog($logMsg, $logPath);
-			return;
-        }
-
-		$chainHeight = $this->GetModel->getChainHeight($hash);  //获取链上高度
-		if (empty($chainHeight)) {
-			$logMsg = "开通映射获取链上高度失败--hash：{$hash}\r\n\r\n";
-			$logPath = "airdrop/mining/error-{$textTime}.txt";
-			$this->DisposeModel->wetFwriteLog($logMsg, $logPath);
-			return;
-        }
-
-		$sender_id    = $aeknowApiJson['sender_id'];
-		$recipient_id = $aeknowApiJson['recipient_id'];
-		$amount 	  = $aeknowApiJson['amount'];
-		$return_type  = $aeknowApiJson['return_type'];
-		$block_height = $aeknowApiJson['block_height'];
-		$contract_id  = $aeknowApiJson['contract_id'];
-		$poorHeight	  = ($chainHeight - $block_height);
-
-		if ($return_type == "revert") {  //无效转账
-			$this->deleteTemp($hash);
-			return;
-		}
-
-		if (
-			$recipient_id == $bsConfig['openMapAddress'] &&
-			$amount		  == $bsConfig['mapAccountAmount'] &&
-			$contract_id  == $bsConfig['WTTContractAddress'] &&
-			$poorHeight   <= 480 &&
-			$return_type  == "ok"
-		) {
-			$isVipAddress = $this->ValidModel-> isVipAccount($address);
-			if($isVipAddress) {
-				$this->db->table('wet_users_vip')->where('address', $address)->update( ['is_vip' => 1] );
-			} else {
-				$insertData = [
-					'address' => $address,
-					'is_vip'  => 1
-				];
-				$this->db->table('wet_users_vip')->insert($insertData);
-			}
-
-
-			$insertSql = "INSERT INTO wet_users_vip(address, is_vip) VALUES ('$address', 1)";
-			$this->db->query($insertSql);
-
-			$ymdhTime = date("Y-m-d h:i:s");
-			$wtt_ttos = $this->DisposeModel->bigNumber("div", $amount);
-			$logMsg   = "开通映射--账户:{$sender_id}\r\n花费WTT:{$wtt_ttos}\r\n高度:{$block_height}\r\n时间:{$ymdhTime}\r\nHash:{$hash}\r\n\r\n";
-			$logPath  = "log/mining/open-mapping-{$textTime}.txt";
-			$this->DisposeModel->wetFwriteLog($logMsg, $logPath);
-			$this->deleteTemp($hash);
-		}
-	}
 
 	public function inMapping($address, $amount)
 	{//用户映射挖矿
@@ -414,12 +325,6 @@ class MiningModel extends ComModel
 		$query = $this->db->query($sql);
 		$total = $query->getRow();
 		return $total->total_ae;
-	}
-
-	private function deleteTemp($hash)
-	{//删除临时缓存
-		$delete = "DELETE FROM $this->wet_temp WHERE tp_hash = '$hash'";
-		$this->db->query($delete);
 	}
 
 	private function earningLock($address, $value)
