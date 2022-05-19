@@ -7,7 +7,8 @@ use App\Models\Config\{
 	CompilerConfig,
 	BaseApiConfig,
 	AeknowConfig,
-	AeMdwConfig
+	AeMdwConfig,
+	WebClientConfig
 };
 
 class Config extends BaseController {
@@ -34,6 +35,8 @@ class Config extends BaseController {
 		$data['compiler'] = (new CompilerConfig())-> urls();
 		$data['aeknow']   = (new AeknowConfig())-> urls();
 		$data['aeMdw']    = (new AeMdwConfig())-> urls();
+		$data['webClient'] = (new WebClientConfig())-> urls();
+		
 		$code = 200;
 		$msg  = 'success';
 		echo $this->DisposeModel-> wetJsonRt($code, $msg, $data);
