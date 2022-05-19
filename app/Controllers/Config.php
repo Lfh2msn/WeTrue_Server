@@ -2,6 +2,13 @@
 namespace App\Controllers;
 
 use App\Models\ConfigModel;
+use App\Models\Config\{
+	NodesConfig,
+	CompilerConfig,
+	BaseApiConfig,
+	AeknowConfig,
+	AeMdwConfig
+};
 
 class Config extends BaseController {
 
@@ -20,48 +27,15 @@ class Config extends BaseController {
 		echo $this->DisposeModel-> wetJsonRt($code, $msg, $data);
     }
 
-	public function nodes()
-	{//获取AE节点列表
-		$config  = (new ConfigModel())-> nodesConfig();
-		$data['data'] = [];
-		if($config){
-			$code = 200;
-			$msg  = 'success';
-			$data = $config;
-		}else{
-			$code = 406;
-			$msg  = 'error';
-		}
-		echo $this->DisposeModel-> wetJsonRt($code, $msg, $data);
-    }
-
-	public function compiler()
-	{//获取编译器列表
-		$config  = (new ConfigModel())-> compilerConfig();
-		$data['data'] = [];
-		if($config){
-			$code = 200;
-			$msg  = 'success';
-			$data = $config;
-		}else{
-			$code = 406;
-			$msg  = 'error';
-		}
-		echo $this->DisposeModel-> wetJsonRt($code, $msg, $data);
-    }
-
-	public function ipfsnodes()
-	{//获取ipfs节点列表
-		$config  = (new ConfigModel())-> ipfsNodeUrlConfig();
-		$data['data'] = [];
-		if($config){
-			$code = 200;
-			$msg  = 'success';
-			$data = $config;
-		}else{
-			$code = 406;
-			$msg  = 'error';
-		}
+	public function url()
+	{//获取各Url配置
+		$data['baseApi']  = (new BaseApiConfig())-> urls();
+		$data['nodes']    = (new NodesConfig())-> urls();
+		$data['compiler'] = (new CompilerConfig())-> urls();
+		$data['aeknow']   = (new AeknowConfig())-> urls();
+		$data['aeMdw']    = (new AeMdwConfig())-> urls();
+		$code = 200;
+		$msg  = 'success';
 		echo $this->DisposeModel-> wetJsonRt($code, $msg, $data);
     }
 

@@ -5,6 +5,7 @@ use App\Models\{
 	ComModel,
 	ConfigModel
 };
+use App\Models\Config\CompilerConfig;
 
 class AecliModel extends ComModel
 {//AE cli 调用 Model
@@ -59,8 +60,9 @@ class AecliModel extends ComModel
 	public function spendWTT($address, $amount)
 	{	
 		$bsConfig		 = (new ConfigModel())-> backendConfig();
+		$cpUrls		     = (new CompilerConfig())-> urls();
 		$nodeUrl		 = $bsConfig['backendServiceNode'];
-		$compilerUrl	 = $bsConfig['backendCompilerUrl'];
+		$compilerUrl	 = $cpUrls[0]['url'];
 		$wallet		     = $bsConfig['walletPath_2'];
 		$password		 = $bsConfig['walletPassword'];
 		$aex9Source		 = $bsConfig['aex9Source'];

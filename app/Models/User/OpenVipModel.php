@@ -43,11 +43,11 @@ class OpenVipModel extends ComModel
 		$tempRes = $tempQy->getResult();
 		foreach ($tempRes as $row) {
 			$tp_hash = $row->tp_hash;
-			$this->decodeMapping($tp_hash);
+			$this->decode($tp_hash);
 		}
 	}
 
-	public function decodeMapping($hash)
+	public function decode($hash)
 	{//新开户-解码开通
 		$textTime = date("Y-m");
 		$aeknowApiJson = $this->GetModel->getAeknowContractTx($hash);
@@ -63,7 +63,7 @@ class OpenVipModel extends ComModel
 			$logMsg = "获取链上高度失败hash: {$hash}\r\n\r\n";
 			$logPath = "log/vip_open/error-{$textTime}.txt";
 			$this->DisposeModel->wetFwriteLog($logMsg, $logPath);
-			return;
+			return $this->DisposeModel-> wetJsonRt(406, 'error_height');
         }
 
 		$senderId    = $aeknowApiJson['sender_id'];
@@ -103,6 +103,7 @@ class OpenVipModel extends ComModel
 			$logPath = "log/vip_open/open-vip-{$textTime}.txt";
 			$this->DisposeModel->wetFwriteLog($logMsg, $logPath);
 			$this->deleteTemp($hash);
+			return $this->DisposeModel-> wetJsonRt(200, 'success');
 		}
 	}
 
