@@ -2,13 +2,14 @@
 
 use App\Models\{
 	DisposeModel,
-	ValidModel,
-	GetModel
+	ValidModel
 };
-use App\Models\Get\GetPriceModel;
 use App\Models\Wecom\CorpUserModel;
 use App\Models\ServerMdw\AeWallet;
-
+use App\Models\Get\{
+	GetPriceModel,
+	GetAeChainModel
+};
 class ReceiveMsgTypeModel {
 //企业微信被动回复类型处理 Model
 
@@ -19,7 +20,7 @@ class ReceiveMsgTypeModel {
 		$this->CorpUserModel = new CorpUserModel();
 		$this->AeWallet 	 = new AeWallet();
 		$this->ValidModel 	 = new ValidModel();
-		$this->GetModel 	 = new GetModel();
+		$this->GetAeChainModel = new GetAeChainModel();
 		$this->wet_wecom_users = "wet_wecom_users";
     }
 
@@ -209,7 +210,7 @@ class ReceiveMsgTypeModel {
 		} elseif ($reqContent == "V1_Wallet_Get_Balance") {
 			$wecomWalletAddress = $this->CorpUserModel-> getWecomAddress($reqFromUserName);
 			if ($wecomWalletAddress) {
-				$balance = $this->GetModel->getAccountsBalance($wecomWalletAddress); //查询链上金额
+				$balance = $this->GetAeChainModel->accountsBalance($wecomWalletAddress); //查询链上金额
 				$upperAE = $balance / 1e18;
 				$substrAddress = mb_substr($wecomWalletAddress, -4);
 				$largeAE = $upperAE >= 100 ? "\n\n注意:\n您所存储资产较大(大于100AE),托管钱包经网络传输并不安全,请尽快转移" : null;

@@ -7,9 +7,9 @@ use App\Models\{
 	ContentModel,
 	CommentModel,
 	ReplyModel,
-	ValidModel,
-	GetModel
+	ValidModel
 };
+use App\Models\Get\GetAeChainModel;
 
 class ComplainModel extends Model {
 //投诉Model
@@ -23,7 +23,7 @@ class ComplainModel extends Model {
 		$this->CommentModel  = new CommentModel();
 		$this->ReplyModel 	 = new ReplyModel();
 		$this->ValidModel 	 = new ValidModel();
-		$this->GetModel 	 = new GetModel();
+		$this->GetAeChainModel = new GetAeChainModel();
 		$this->wet_complain  = "wet_complain";
 		$this->wet_behavior  = "wet_behavior";
 	}
@@ -60,7 +60,7 @@ class ComplainModel extends Model {
 			return json_encode($data);
         }
 
-		$rpSenderId = $this->GetModel-> getTxSenderId($hash);  //获取tx发送人ID
+		$rpSenderId = $this->GetAeChainModel-> txSenderId($hash);  //获取tx发送人ID
         if ( empty($rpSenderId) ) {
 			$data['msg'] = 'error_unknown';
         	return json_encode($data);

@@ -228,7 +228,7 @@ class PagesModel extends Model {
 				$arrList[] = $row->hash;
 			}
 
-			$addList = [];
+			$addList = ['th_2ZaQiNxpN2scykBsSd8npcwGkXo36hrP4oTWxCdUuBTJxbMv1U'];
 			if($addList && $opt['type'] == 'contentList' && $page=1) {
 				$arrList = $this->DisposeModel-> arrayToArray($addList, $arrList);
 				$arrList = array_unique($arrList);

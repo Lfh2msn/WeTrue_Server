@@ -2,7 +2,6 @@
 
 use CodeIgniter\Model;
 use App\Models\{
-	GetModel,
 	BloomModel,
 	ValidModel,
 	DeleteModel,
@@ -11,13 +10,15 @@ use App\Models\{
 	SuperheroModel,
 	AeChainContentModel
 };
+use App\Models\Get\GetAeChainModel;
+
 
 class HashReadModel extends Model {
 //链上hash入库Model
 
 	public function __construct(){
 		$this->db = \Config\Database::connect('default');
-		$this->GetModel   = new GetModel();
+		$this->GetAeChainModel = new GetAeChainModel();
 		$this->BloomModel = new BloomModel();
 		$this->ValidModel = new ValidModel();
 		$this->DeleteModel = new DeleteModel();
@@ -49,7 +50,7 @@ class HashReadModel extends Model {
 		$result  = $tpquery-> getResult();
 		foreach ($result as $row) {
 			$tp_hash  = $row-> tp_hash;
-			$json 	  = $this->GetModel->getTransactions($tp_hash);
+			$json 	  = $this->GetAeChainModel->transactions($tp_hash);
 			if (!$json) {
 				$logMsg = "链上未获取到数据:{$tp_hash}\r\n";
 				$this->DisposeModel->wetFwriteLog($logMsg);

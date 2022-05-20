@@ -2,18 +2,18 @@
 namespace App\Models;
 
 use App\Models\{
-	GetModel,
 	MsgModel,
 	ValidModel,
 	AensModel
 };
+use App\Models\Get\GetAeChainModel;
 
 class MentionsModel extends ComModel
 {//@模块 Model
 
 	public function __construct(){
         parent::__construct();
-		$this->GetModel   = new GetModel();
+		$this->GetAeChainModel = new GetAeChainModel();
 		$this->MsgModel   = new MsgModel();
 		$this->ValidModel = new ValidModel();
 		$this->AensModel  = new AensModel();
@@ -29,7 +29,7 @@ class MentionsModel extends ComModel
 	public function getAddressByAensPoint($aens)
 	{//AENS获取AE地址
 		$aens    = str_replace("@", "" ,$aens);
-		$address = $this->GetModel->getAddressByNamePoint($aens);
+		$address = $this->GetAeChainModel->addressByNamePoint($aens);
 		$this->AensModel-> insertUserAens($address, $aens);
 		return $address;
 	}

@@ -4,7 +4,6 @@ use CodeIgniter\Model;
 
 use App\Models\{
 	MsgModel,
-	GetModel,
 	UserModel,
 	StarModel,
 	TopicModel,
@@ -15,11 +14,12 @@ use App\Models\{
 	MentionsModel
 };
 use App\Models\ServerMdw\WetModel;
+use App\Models\Get\GetAeChainModel;
 
 class AeChainContentModel extends Model {
 //Ae链上hash入库Model
 	private $MsgModel;
-	private $GetModel;
+	private $GetAeChainModel;
 	private $UserModel;
 	private $StarModel;
 	private $TopicModel;
@@ -38,7 +38,7 @@ class AeChainContentModel extends Model {
 		$this->db = \Config\Database::connect('default');
 		$this->WetModel   = new WetModel();
 		$this->MsgModel   = new MsgModel();
-		$this->GetModel   = new GetModel();
+		$this->GetAeChainModel = new GetAeChainModel();
 		$this->UserModel  = new UserModel();
 		$this->StarModel  = new StarModel();
 		$this->TopicModel = new TopicModel();
@@ -67,7 +67,7 @@ class AeChainContentModel extends Model {
 			$this->DisposeModel->wetFwriteLog($logMsg);
 			return $this->DisposeModel-> wetJsonRt(406,'error_block_hash');
 		}
-		$utcTime = $this->GetModel->getMicroBlockTime($microBlock);
+		$utcTime = $this->GetAeChainModel->microBlockTime($microBlock);
 		$json['mb_time'] = $utcTime;
 		$payload = $this->DisposeModel-> decodePayload($json['tx']['payload']);
 		$hash	 = $json['hash'];
@@ -131,7 +131,7 @@ class AeChainContentModel extends Model {
 				$holdAE = $bsConfig['usableHoldAE'];  //要求最低持有AE开关
 				if ($holdAE) {
 					$holdAettos     = $bsConfig['usableHoldAettos'];  //要求最低持有AE
-					$accountsAettos = $this->GetModel->getAccountsBalance($data['sender']);  //查询链上金额
+					$accountsAettos = $this->GetAeChainModel->accountsBalance($data['sender']);  //查询链上金额
 					if ($accountsAettos < $holdAettos) {
 						$this->deleteTemp($hash);
 						$logMsg  = date('Y-m-d')."-持有AE不足最低要求:{$hash}\r\n";

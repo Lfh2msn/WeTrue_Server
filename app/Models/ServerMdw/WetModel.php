@@ -8,7 +8,7 @@ class WetModel extends ComModel {
 	public function __construct(){
 		parent::__construct();
 		//$this->db = \Config\Database::connect('default');
-		$this->ConfigModel  = new ConfigModel();
+		$this->ConfigModel = new ConfigModel();
     }
 
 	public function getNewContentList()

@@ -4,10 +4,13 @@ use App\Models\{
 	ComModel,
 	ValidModel,
 	ConfigModel,
-	GetModel,
 	DisposeModel
 };
 use App\Models\Config\OpenVipConfig;
+use App\Models\Get\{
+	GetAeChainModel,
+	GetAeknowModel
+};
 
 class OpenVipModel extends ComModel
 {//用户开通VIP Model
@@ -18,7 +21,8 @@ class OpenVipModel extends ComModel
 		$this->DisposeModel  = new DisposeModel();
 		$this->OpenVipConfig = new OpenVipConfig();
 		$this->ValidModel    = new ValidModel();
-		$this->GetModel      = new GetModel();
+		$this->GetAeChainModel = new GetAeChainModel();
+		$this->GetAeknowModel  = new GetAeknowModel();
 		$this->wet_temp      = "wet_temp";
 		$this->wet_users_vip = "wet_users_vip";
     }
@@ -50,7 +54,7 @@ class OpenVipModel extends ComModel
 	public function decode($hash)
 	{//新开户-解码开通
 		$textTime = date("Y-m");
-		$aeknowApiJson = $this->GetModel->getAeknowContractTx($hash);
+		$aeknowApiJson = $this->GetAeknowModel->tokenTx($hash);
 		if (empty($aeknowApiJson)) {
 			$logMsg = "开通失败获取AEKnow-API错误: {$hash}\r\n\r\n";
 			$logPath = "log/vip_open/error-{$textTime}.txt";
@@ -58,7 +62,7 @@ class OpenVipModel extends ComModel
 			return $this->DisposeModel-> wetJsonRt(406, 'error_unknown');
         }
 
-		$chainHeight = $this->GetModel->getChainHeight($hash);  //获取链上高度
+		$chainHeight = $this->GetAeChainModel->chainHeight($hash);  //获取链上高度
 		if (empty($chainHeight)) {
 			$logMsg = "获取链上高度失败hash: {$hash}\r\n\r\n";
 			$logPath = "log/vip_open/error-{$textTime}.txt";

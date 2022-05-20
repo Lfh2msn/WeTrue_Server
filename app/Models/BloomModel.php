@@ -2,7 +2,6 @@
 
 use App\Models\{
 	ComModel,
-	GetModel,
 	UserModel,
 	ReplyModel,
 	ValidModel,
@@ -13,6 +12,10 @@ use App\Models\{
 	CommentModel,
 	ComplainModel
 };
+use App\Models\Get\{
+	GetAeChainModel,
+	GetAeknowModel
+};
 
 class BloomModel extends ComModel {
 //过滤Model
@@ -20,12 +23,13 @@ class BloomModel extends ComModel {
 	public function __construct()
 	{
 		parent::__construct();
-		$this->GetModel		= new GetModel();
+		$this->GetAeChainModel = new GetAeChainModel();
 		$this->UserModel	= new UserModel();
 		$this->ValidModel	= new ValidModel();
 		$this->AmountModel	= new AmountModel();
 		$this->ConfigModel	= new ConfigModel();
 		$this->DisposeModel = new DisposeModel();
+		$this->GetAeknowModel = new GetAeknowModel();
 		$this->wet_reply    = "wet_reply";
 		$this->wet_bloom    = "wet_bloom";
         $this->wet_content  = "wet_content";
@@ -39,13 +43,13 @@ class BloomModel extends ComModel {
 		if (!$isNewUser) return true;
 		$isAmountVip = $this->ValidModel-> isAmountVip($address);
 		if ($isAmountVip) return true;
-		$senderList = $this->GetModel-> getSenderByLatestTx($address);
+		$senderList = $this->GetAeknowModel-> latestSpendTx($address);
 		if (!$senderList) return false;
 		foreach ($senderList as $sender) {
 			$isBloomAddress = $this->ValidModel-> isBloomAddress($sender);
 			$isAmountVip = $this->ValidModel-> isAmountVip($sender);
 			if ($isBloomAddress || $isAmountVip) {
-				$balance = $this->GetModel-> getAccountsBalance($address);
+				$balance = $this->GetAeChainModel-> accountsBalance($address);
 				if (!$balance) return false;
 				$bigAE   = $this->DisposeModel-> bigNumber("div", $balance);
 				$floorAE = floor($bigAE);

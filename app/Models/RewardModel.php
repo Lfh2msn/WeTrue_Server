@@ -6,9 +6,9 @@ use App\Models\{
 	ConfigModel,
 	ValidModel,
 	DisposeModel,
-	MsgModel,
-	GetModel
+	MsgModel
 };
+use App\Models\Get\GetAeknowModel;
 
 class RewardModel extends Model {
 //打赏Model
@@ -20,7 +20,7 @@ class RewardModel extends Model {
 		$this->ValidModel   = new ValidModel();
 		$this->UserModel    = new UserModel();
 		$this->DisposeModel = new DisposeModel();
-		$this->GetModel     = new GetModel();
+		$this->GetAeknowModel = new GetAeknowModel();
 		$this->wet_temp     = "wet_temp";
 		$this->wet_content  = "wet_content";
 		$this->wet_content_sh = "wet_content_sh";
@@ -102,7 +102,7 @@ class RewardModel extends Model {
 			return;
 		}
 
-		$aeknowApiJson = $this->GetModel->getAeknowContractTx($hash);
+		$aeknowApiJson = $this->GetAeknowModel->tokenTx($hash);
 		if (empty($aeknowApiJson)) {
 			$logMsg = "error_aeknow_api--hash：{$hash}\r\nto_hash：{$to_hash}\r\n\r\n";
 			$logPath = "airdrop/reward/{date('Y-m-d')}.txt";
