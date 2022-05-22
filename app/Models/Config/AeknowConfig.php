@@ -7,15 +7,15 @@ public function urls()
 {
 	$data[] = array(
 		'url'	=> 'https://www.aeknow.org',
-		'name' 	=> 'AeKnow',
+		'name' 	=> 'AEKnow',
 	);
 	$data[] = array(
 		'url'	=> 'https://api.wetrue.io/Aeknow',
-		'name' 	=> 'WET-AEK-IO',
+		'name' 	=> 'WeTrueIO-AEKnow',
 	);
 	$data[] = array(
 		'url'	=> 'https://api.wetrue.cc/Aeknow',
-		'name' 	=> 'WET-AEK-CC',
+		'name' 	=> 'WeTrueCC-AEKnow',
 	);
 	return $data;
 }

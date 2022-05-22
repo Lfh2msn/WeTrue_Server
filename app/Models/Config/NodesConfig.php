@@ -6,12 +6,16 @@ class NodesConfig {
 	public function urls()
 	{
 		$data[] = array(
-			'url'	=> 'https://mainnet.wetrue.cc',
-			'name' 	=> 'WeTrue',
-		);
-		$data[] = array(
 			'url'	=> 'https://mainnet.aeternity.io',
 			'name' 	=> 'Aeternity',
+		);
+		$data[] = array(
+			'url'	=> 'https://mainnet.wetrue.io',
+			'name' 	=> 'WeTrueIO',
+		);
+		$data[] = array(
+			'url'	=> 'https://mainnet.wetrue.cc',
+			'name' 	=> 'WeTrueCC',
 		);
 		$data[] = array(
 			'url'	=> 'https://node.aeasy.io',

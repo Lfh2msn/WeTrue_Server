@@ -7,11 +7,11 @@ public function urls()
 {
 	$data[] = array(
 		'url'	=> 'https://wetrue.io/#',
-		'name' 	=> 'WeTrue-IO',
+		'name' 	=> 'WeTrueIO',
 	);
 	$data[] = array(
 		'url'	=> 'https://wetrue.cc/#',
-		'name' 	=> 'WeTrue-CC',
+		'name' 	=> 'WeTrueCC',
 	);
 	return $data;
 }

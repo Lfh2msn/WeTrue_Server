@@ -4,10 +4,14 @@ class CompilerConfig {
 //编译器配置
 
 public function urls()
-{
+{	
+	$data[] = array(
+		'url'	=> 'https://compiler.wetrue.io',
+		'name' 	=> 'WeTrueIO',
+	);
 	$data[] = array(
 		'url'	=> 'https://compiler.wetrue.cc',
-		'name' 	=> 'WeTrue',
+		'name' 	=> 'WeTrueCC',
 	);
 	$data[] = array(
 		'url'	=> 'https://compiler.aeasy.io',

@@ -10,8 +10,12 @@ public function urls()
 		'name' 	=> 'Aeternity',
 	);
 	$data[] = array(
+		'url'	=> 'https://mainnet.wetrue.io/mdw',
+		'name' 	=> 'WeTrueIO-MDW',
+	);
+	$data[] = array(
 		'url'	=> 'https://mainnet.wetrue.cc/mdw',
-		'name' 	=> 'WeTrue-MDW',
+		'name' 	=> 'WeTrueCC-MDW2',
 	);
 	return $data;
 }
