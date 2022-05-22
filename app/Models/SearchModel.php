@@ -2,12 +2,12 @@
 
 use CodeIgniter\Model;
 use App\Models\{
-	ContentModel,
 	DisposeModel,
 	UserModel,
 	ValidModel,
 	TopicModel
 };
+use App\Models\Content\ContentPullModel;
 
 class SearchModel extends Model {
 //搜索Model
@@ -15,11 +15,11 @@ class SearchModel extends Model {
 	public function __construct(){
 		//parent::__construct();
 		$this->db = \Config\Database::connect('default');
-		$this->ContentModel = new ContentModel();
+		$this->UserModel  = new UserModel();
+		$this->ValidModel = new ValidModel();
+		$this->TopicModel = new TopicModel();
 		$this->DisposeModel = new DisposeModel();
-		$this->UserModel	= new UserModel();
-		$this->ValidModel	= new ValidModel();
-		$this->TopicModel	= new TopicModel();
+		$this->ContentPullModel = new ContentPullModel();
 	}
 
 	public function search($page, $size, $offset, $opt=[])
@@ -99,7 +99,7 @@ class SearchModel extends Model {
 			if($isBloomHash || !$isBloomAddress || $isTopicState)
 			{
 				if($opt['type']  == 'topic') {
-					$isData = $this->ContentModel-> txContent($hash, $opt);
+					$isData = $this->ContentPullModel-> txContent($hash, $opt);
 					if(isset($isData)) $detaila[] = $isData;
 				}
 

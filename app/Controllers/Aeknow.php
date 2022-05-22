@@ -12,6 +12,12 @@ class Aeknow extends BaseController {
 			echo json_encode( (NEW GetAeknowModel())-> tokenList($param[0]) );
 		}
 
+		//Token 携带 Payload
+		if ($type == "tokentx") {
+			echo (NEW GetAeknowModel())-> tokenPayloadTx($param[0]);
+			//echo json_encode( (NEW GetAeknowModel())-> tokenPayloadTx($param[0]) );
+		}
+
 		//AE 交易记录
 		if ($type == "spendtx") {
 			echo json_encode( (NEW GetAeknowModel())-> spendTx($param) );

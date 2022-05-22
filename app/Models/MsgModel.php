@@ -3,14 +3,16 @@ namespace App\Models;
 
 use App\Models\{
 	ComModel,
-	ContentModel,
 	CommentModel,
 	ReplyModel,
 	RewardModel,
 	ValidModel,
 	DisposeModel,
-	SuperheroContentModel,
 	ConfigModel
+};
+use App\Models\Content\{
+	ContentPullModel,
+	SuperheroContentModel
 };
 use App\Models\Wecom\{
 	SendModel,
@@ -23,15 +25,16 @@ class MsgModel extends ComModel
 	public function __construct(){
         parent::__construct();
 		$this->DisposeModel	= new DisposeModel();
-		$this->ContentModel = new ContentModel();
 		$this->CommentModel = new CommentModel();
 		$this->ReplyModel 	= new ReplyModel();
 		$this->RewardModel	= new RewardModel();
 		$this->ValidModel	= new ValidModel();
+		$this->SendModel    = new SendModel();
+		$this->ConfigModel  = new ConfigModel();
+		$this->CorpUserModel    = new CorpUserModel();
+		$this->ContentPullModel = new ContentPullModel();
 		$this->SuperheroContentModel = new SuperheroContentModel();
-		$this->SendModel   = new SendModel();
-		$this->ConfigModel = new ConfigModel();
-		$this->CorpUserModel = new CorpUserModel();
+		
 		$this->wet_message  = "wet_message";
     }
 
@@ -89,7 +92,7 @@ class MsgModel extends ComModel
 					$isData['state']   = $state;
 					$isData['type']    = $type;
 					$isData['utctime'] = $utctime;
-					$isData['topic']   = $this->ContentModel-> simpleContent($toHash, $opt=[]);
+					$isData['topic']   = $this->ContentPullModel-> simpleContent($toHash, $opt=[]);
 					$isShTipid = $this->DisposeModel-> checkSuperheroTipid($toHash);
 					if ($isShTipid) $isData['topic'] = $this->SuperheroContentModel-> simpleContent($toHash, $opt=[]);
 					$comment = $this->CommentModel-> simpleComment($hash, $opt);
@@ -107,7 +110,7 @@ class MsgModel extends ComModel
 					$isData['utctime'] = $utctime;
 					$commentPayload    = $this->CommentModel-> simpleComment($toHash, $opt);
 					$topicHash		   = $commentPayload['toHash'];
-					$isData['topic']   = $this->ContentModel-> simpleContent($topicHash, $opt=[]);
+					$isData['topic']   = $this->ContentPullModel-> simpleContent($topicHash, $opt=[]);
 					$isData['comment'] = $commentPayload;
 					$isData['reply']   = $this->ReplyModel-> txReply($hash);
 					$isData['reward']  = [];
@@ -120,7 +123,7 @@ class MsgModel extends ComModel
 					$isData['state']   = $state;
 					$isData['type']    = $type;
 					$isData['utctime'] = $utctime;
-					$isData['topic']   = $this->ContentModel-> simpleContent($toHash, $opt=[]);
+					$isData['topic']   = $this->ContentPullModel-> simpleContent($toHash, $opt=[]);
 					$isData['reward']  = $this->RewardModel-> simpleReward($hash);
 					$isData['comment'] = [];
 					$isData['reply']   = [];

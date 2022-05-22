@@ -3,16 +3,16 @@ namespace App\Models;
 
 use App\Models\{
 	ComModel,
-	ContentModel,
 	ValidModel,
 	DisposeModel
 };
+use App\Models\Content\ContentPullModel;
 
 class TopicModel extends ComModel
 {//话题Model
 	public function __construct(){
         parent::__construct();
-		$this->ContentModel 	 = new ContentModel();
+		$this->ContentPullModel  = new ContentPullModel();
 		$this->ValidModel 		 = new ValidModel();
 		$this->DisposeModel 	 = new DisposeModel();
 		$this->UserModel 	 	 = new UserModel();
@@ -120,7 +120,7 @@ class TopicModel extends ComModel
 				foreach ($arrList as $hash) {
 					$isBloomHash = $this->ValidModel-> isBloomHash($hash);
 					if (!$isBloomHash) {
-						$isData = $this->ContentModel-> txContent($hash, $opt);
+						$isData = $this->ContentPullModel-> txContent($hash, $opt);
 						if(isset($isData)) $detaila[] = $isData;
 					}
 					$data['data'] = $detaila;

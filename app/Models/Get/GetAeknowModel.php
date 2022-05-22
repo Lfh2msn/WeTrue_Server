@@ -35,8 +35,11 @@ class GetAeknowModel {
 	{//获取Aeknow API AEX9合约Token 带Payload信息
         $url  = 'https://www.aeknow.org/api/tokentx/'.$hash;
 		@$get = file_get_contents($url);
-		$json = (array) json_decode($get, true);
-		$s_id = $json['sender_id'];
+		//$json = (array) json_decode($get, true);
+
+		//$s_id = $json['sender_id'];
+
+		/*
 		$num  = 0;
 		while (!$s_id && $num < 20) {
 			@$get = file_get_contents($url);
@@ -51,7 +54,8 @@ class GetAeknowModel {
 			$this->DisposeModel->wetFwriteLog($logMsg);
 			return;
         }
-		return $json;
+		
+		return $s_id;*/
 	}
 
 	public function latestSpendTx($address)

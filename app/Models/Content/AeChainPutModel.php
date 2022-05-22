@@ -1,4 +1,4 @@
-<?php namespace App\Models;
+<?php namespace App\Models\Content;
 
 use CodeIgniter\Model;
 
@@ -16,7 +16,7 @@ use App\Models\{
 use App\Models\ServerMdw\WetModel;
 use App\Models\Get\GetAeChainModel;
 
-class AeChainContentModel extends Model {
+class AeChainPutModel extends Model {
 //Ae链上hash入库Model
 	private $MsgModel;
 	private $GetAeChainModel;

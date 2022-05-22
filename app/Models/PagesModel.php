@@ -3,11 +3,13 @@
 use CodeIgniter\Model;
 use App\Models\{
 	ValidModel,
-	ContentModel,
 	CommentModel,
 	ReplyModel,
 	ConfigModel,
-	DisposeModel,
+	DisposeModel
+};
+use App\Models\Content\{
+	ContentPullModel,
 	SuperheroContentModel
 };
 
@@ -20,11 +22,11 @@ class PagesModel extends Model {
         //parent::__construct();
 		$this->db = \Config\Database::connect('default');
 		$this->ValidModel   = new ValidModel();
-		$this->ContentModel = new ContentModel();
 		$this->CommentModel = new CommentModel();
 		$this->ReplyModel 	= new ReplyModel();
 		$this->ConfigModel 	= new ConfigModel();
 		$this->DisposeModel = new DisposeModel();
+		$this->ContentPullModel = new ContentPullModel();
 		$this->SuperheroContentModel = new SuperheroContentModel();
 		
     }
@@ -192,7 +194,7 @@ class PagesModel extends Model {
 
 		if($opt['select'] == 'content') {
 			$opt['rewardList'] = true;
-			$Content = $this->ContentModel-> txContent($hash, $opt);
+			$Content = $this->ContentPullModel-> txContent($hash, $opt);
 		}
 
 		if($opt['select'] == 'comment') {
@@ -239,7 +241,7 @@ class PagesModel extends Model {
 				$isBloomHash = $this->ValidModel-> isBloomHash($hash);
 				if (!$isBloomHash) {
 					if ($opt['select']  == 'content') {
-						$isData = $this->ContentModel-> txContent($hash, $opt);
+						$isData = $this->ContentPullModel-> txContent($hash, $opt);
 						if(isset($isData)) $detaila[] = $isData;
 					}
 	
@@ -259,7 +261,7 @@ class PagesModel extends Model {
 					}
 
 					if ($opt['select']  == 'contentAndSH') { //收藏，包含主贴和sh主贴
-						$isData = $this->ContentModel-> txContent($hash, $opt);
+						$isData = $this->ContentPullModel-> txContent($hash, $opt);
 						if(isset($isData)){
 							$detaila[] = $isData;
 						} else {

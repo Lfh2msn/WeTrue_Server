@@ -6,26 +6,30 @@ use App\Models\{
 	ValidModel,
 	DeleteModel,
 	ConfigModel,
-	DisposeModel,
-	SuperheroModel,
-	AeChainContentModel
+	DisposeModel
 };
 use App\Models\Get\GetAeChainModel;
-
+use App\Models\Content\{
+	AeChainPutModel,
+	AeSuperheroPutModel
+};
+use App\Models\ContractCall\AeContractCallTxModels;
 
 class HashReadModel extends Model {
 //链上hash入库Model
 
 	public function __construct(){
 		$this->db = \Config\Database::connect('default');
-		$this->GetAeChainModel = new GetAeChainModel();
-		$this->BloomModel = new BloomModel();
-		$this->ValidModel = new ValidModel();
+
+		$this->BloomModel  = new BloomModel();
+		$this->ValidModel  = new ValidModel();
 		$this->DeleteModel = new DeleteModel();
 		$this->ConfigModel = new ConfigModel();
 		$this->DisposeModel = new DisposeModel();
-		$this->SuperheroModel = new SuperheroModel();
-		$this->AeChainContentModel = new AeChainContentModel();
+		$this->GetAeChainModel = new GetAeChainModel();
+		$this->AeChainPutModel = new AeChainPutModel();
+		$this->AeSuperheroPutModel = new AeSuperheroPutModel();
+		$this->AeContractCallTxModels = new AeContractCallTxModels();
 		$this->wet_temp = "wet_temp";
     }
 
@@ -56,10 +60,16 @@ class HashReadModel extends Model {
 				$this->DisposeModel->wetFwriteLog($logMsg);
 				continue;
 			}
+
+			if ($json['tx']['type'] == 'ContractCallTx'){ //合约呼叫转到合约处理
+				$this->AeContractCallTxModels-> txChainJsonRead($json);
+				continue;
+			}
+
 			$sender = $json['tx']['sender_id'];
 			$isContinue = $this->BloomModel-> userCheck($sender); //黑名单账户检查
 			if (!$isContinue) continue;
-			$isBloomAddress = $this->ValidModel ->isBloomAddress($sender);
+			$isBloomAddress = $this->ValidModel-> isBloomAddress($sender);
 			if ($isBloomAddress) {
 				$logMsg = "被bloom过滤账户:{$tp_hash}\r\n";
 				$this->DisposeModel->wetFwriteLog($logMsg);
@@ -68,18 +78,18 @@ class HashReadModel extends Model {
 				continue;
 			}
 
-			if ( empty(  //过滤无效预设钱包
-					$json['tx']['recipient_id'] == $bsConfig['receivingAccount'] || 
-					$json['tx']['type'] == 'SpendTx' || 
-					$json['tx']['payload'] == null || 
-					$json['tx']['payload'] == "ba_Xfbg4g=="
-				) ){
-					$this->deleteTemp($hash);  //删除临时缓存
-					$logMsg = "错误类型:{$hash}\r\n";
-					$this->DisposeModel->wetFwriteLog($logMsg);
-					continue;
+			if ( //过滤无效预设钱包
+				$json['tx']['recipient_id'] != $bsConfig['receivingAccount'] || 
+				$json['tx']['type'] != 'SpendTx' || 
+				$json['tx']['payload'] == null || 
+				$json['tx']['payload'] == "ba_Xfbg4g=="
+			){
+				$this->deleteTemp($hash);  //删除临时缓存
+				$logMsg = "错误类型:{$hash}\r\n";
+				$this->DisposeModel->wetFwriteLog($logMsg);
+				continue;
 			}
-			$this->AeChainContentModel->decodeContent($json);
+			$this->AeChainPutModel->decodeContent($json);
 			/**
 			 * 抓取超级英雄数据，及写入
 			 * 服务器9-12小时=中国时间22--00点执行
@@ -100,7 +110,7 @@ class HashReadModel extends Model {
 				|| $currentHour == 22
 				|| $currentHour == 0
 				) {
-				$this->SuperheroModel-> getContent(1);
+				$this->AeSuperheroPutModel-> putContent(1);
 			}
 		}
 	}

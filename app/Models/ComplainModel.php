@@ -4,12 +4,13 @@ use CodeIgniter\Model;
 use App\Models\{
 	DisposeModel,
 	HashReadModel,
-	ContentModel,
 	CommentModel,
 	ReplyModel,
 	ValidModel
 };
+use App\Models\Content\ContentPullModel;
 use App\Models\Get\GetAeChainModel;
+
 
 class ComplainModel extends Model {
 //投诉Model
@@ -19,7 +20,7 @@ class ComplainModel extends Model {
 		$this->db = \Config\Database::connect('default');
 		$this->DisposeModel  = new DisposeModel();
 		$this->HashReadModel = new HashReadModel();
-		$this->ContentModel  = new ContentModel();
+		$this->ContentPullModel = new ContentPullModel();
 		$this->CommentModel  = new CommentModel();
 		$this->ReplyModel 	 = new ReplyModel();
 		$this->ValidModel 	 = new ValidModel();
@@ -130,7 +131,7 @@ class ComplainModel extends Model {
 			$conRow   = $conQuery-> getRow();
 
 			if ($conRow) {
-				$detaila[] = $this->ContentModel-> txContent($hash, $opt);
+				$detaila[] = $this->ContentPullModel-> txContent($hash, $opt);
 			} else {
 				$comSql   = "SELECT hash FROM wet_comment WHERE hash='$hash' LIMIT 1";
 				$comQuery = $this-> db-> query($comSql);

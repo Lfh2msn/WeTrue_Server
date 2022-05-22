@@ -1,4 +1,4 @@
-<?php namespace App\Models;
+<?php namespace App\Models\Content;
 
 use App\Models\{
 	ComModel,
@@ -8,7 +8,7 @@ use App\Models\{
 	UserModel
 };
 
-class ContentModel extends ComModel
+class ContentPullModel extends ComModel
 {//主贴Model
 
 	private $tablename;

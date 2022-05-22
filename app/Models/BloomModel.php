@@ -8,7 +8,6 @@ use App\Models\{
 	AmountModel,
 	ConfigModel,
 	DisposeModel,
-	ContentModel,
 	CommentModel,
 	ComplainModel
 };
@@ -16,6 +15,7 @@ use App\Models\Get\{
 	GetAeChainModel,
 	GetAeknowModel
 };
+use App\Models\Content\ContentPullModel;
 
 class BloomModel extends ComModel {
 //过滤Model
@@ -161,7 +161,7 @@ class BloomModel extends ComModel {
 			$conRow   = $conQuery-> getRow();
 
 			if ($conRow) {
-				$detaila[] = (new ContentModel())-> txContent($hash, $opt);
+				$detaila[] = (new ContentPullModel())-> txContent($hash, $opt);
 			} else {
 				$comSql   = "SELECT hash FROM $this->wet_comment WHERE hash='$hash' LIMIT 1";
 				$comQuery = $this-> db-> query($comSql);

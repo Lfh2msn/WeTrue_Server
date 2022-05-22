@@ -1,4 +1,4 @@
-<?php namespace App\Models;
+<?php namespace App\Models\Content;
 
 use App\Models\{
 	ComModel,
@@ -8,7 +8,7 @@ use App\Models\{
 	ValidModel
 };
 
-class SuperheroModel extends ComModel {
+class AeSuperheroPutModel extends ComModel {
 //抓取Superhero内容入库Model
 
 	public function __construct(){
@@ -21,7 +21,7 @@ class SuperheroModel extends ComModel {
 		$this->wet_users 	  = "wet_users";
     }
 
-	public function getContent($page)
+	public function putContent($page)
 	{ //获取TipID及内容，并写入数据库
 		$bsConfig = $this->ConfigModel-> backendConfig();
 		$active   = $bsConfig['topicActive'];
@@ -38,7 +38,7 @@ class SuperheroModel extends ComModel {
 			'blacklist' 	  => true
 		);
 		$postdata = http_build_query($post_data);
-		$options  = array(
+		$options = array(
 						'http' => array(
 										'method'  => 'GET',
 										'header'  => 'application/json; charset=utf-8',

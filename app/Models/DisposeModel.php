@@ -273,22 +273,22 @@ class DisposeModel extends Model {
 		$i = -1;
 		while ($i++<$len) {
 			$verListA[$i] = intval(@$verListA[$i]);
-			if ($verListA[$i] < 0 ) {
+			if ( $verListA[$i] < 0 ) {
                 $verListA[$i] = 0;
             }
 
 			$verListB[$i] = intval(@$verListB[$i]);
-			if ($verListB[$i] < 0 ) {
+			if ( $verListB[$i] < 0 ) {
                 $verListB[$i] = 0; 
             }
 
-			if ($verListA[$i]>$verListB[$i]) {
+			if ( $verListA[$i] > $verListB[$i] ) {
                 return true;
             }
-			if ($verListA[$i]<$verListB[$i]) {
+			if ( $verListA[$i] < $verListB[$i]) {
                 return false;
             }
-			if ($i==($len-1)) {
+			if ( $i == ($len-1) ) {
                 return true;
             }
 		}
@@ -297,12 +297,15 @@ class DisposeModel extends Model {
     public function getRealIP()
     {//获取IP
         $ip = FALSE;
-        if(!empty($_SERVER["HTTP_CLIENT_IP"])){
+        if ( !empty($_SERVER["HTTP_CLIENT_IP"]) ){
             $ip = $_SERVER["HTTP_CLIENT_IP"];
         }
-        if (!empty($_SERVER['HTTP_X_FORWARDED_FOR'])) {
+        if ( !empty($_SERVER['HTTP_X_FORWARDED_FOR']) ) {
             $ips = explode (", ", $_SERVER['HTTP_X_FORWARDED_FOR']);
-            if ($ip) { array_unshift($ips, $ip); $ip = FALSE; }
+            if ($ip) {
+                array_unshift($ips, $ip);
+                $ip = FALSE;
+            }
             for ($i = 0; $i < count($ips); $i++) {
                 if (!eregi ("^(10│172.16│192.168).", $ips[$i])) {
                     $ip = $ips[$i];

@@ -3,17 +3,17 @@
 class BaseApiConfig {
 //基础api配置
 
-public function urls()
-{
-	$data[] = array(
-		'url'	=> 'https://api.wetrue.io',
-		'name' 	=> 'WeTrueIO',
-	);
-	$data[] = array(
-		'url'	=> 'https://api.wetrue.cc',
-		'name' 	=> 'WeTrueCC',
-	);
-	return $data;
-}
+	public function urls()
+	{
+		$data[] = array(
+			'url'	=> 'https://api.wetrue.io',
+			'name' 	=> 'WeTrueIO',
+		);
+		$data[] = array(
+			'url'	=> 'https://api.wetrue.cc',
+			'name' 	=> 'WeTrueCC',
+		);
+		return $data;
+	}
 
 }
