@@ -5,8 +5,9 @@ use CodeIgniter\Model;
 use App\Models\Config\AeTokenConfig;
 use App\Models\Get\GetAeknowModel;
 use App\Models\DisposeModel;
+use App\Models\ContractCall\TokenEventModel;
 
-class AeContractCallTxModels extends Model
+class AeContractCallTxModel extends Model
 {//AE智能合约TX处理模块
 
 	public function __construct(){
@@ -14,6 +15,7 @@ class AeContractCallTxModels extends Model
 		$this->DisposeModel = new DisposeModel();
 		$this->AeTokenConfig  = new AeTokenConfig();
 		$this->GetAeknowModel = new GetAeknowModel();
+		$this->TokenEventModel = new TokenEventModel();
 		$this->wet_temp = "wet_temp";
     }
 
@@ -29,16 +31,23 @@ class AeContractCallTxModels extends Model
 			$this->DisposeModel->wetFwriteLog($logMsg);
 			return $this->DisposeModel-> wetJsonRt(406,'error_token');
 		}
-		echo '11aa';
+
+		//从 AEKnow 获取数据
 		$aekJson = $this->GetAeknowModel-> tokenPayloadTx($hash);
-		return $aekJson;
-/*
-		if ($aekJson['payload']) {
-			return $aekJson['payload']['type'];
+
+		if ($aekJson['return_type'] != "ok") {
+			$this->deleteTemp($hash);
+			return $this->DisposeModel-> wetJsonRt(406,'error_return_type');
 		}
 
-		return $this->DisposeModel-> wetJsonRt(406,'error');
-*/
+		if ($aekJson['payload']) {
+			$aekJson['payload'] = (array) json_decode(base64_decode($aekJson['payload'], true), true);
+		}
+
+		if ($aekJson['payload']['type'] == 'reward') {
+			$this->TokenEventModel-> wttReward($aekJson);
+		}
+
 	}
 
 	private function deleteTemp($hash)

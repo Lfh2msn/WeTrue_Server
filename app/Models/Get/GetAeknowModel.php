@@ -24,7 +24,7 @@ class GetAeknowModel {
 		}
 
 		if (empty($s_id)) {
-			$logMsg = "获取AEKnow-API-tokenTx-错误:{$hash}\r\n\r\n";
+			$logMsg = "获取AEKnow-API-tokenTx-错误:{$hash}\r\n";
 			$this->DisposeModel->wetFwriteLog($logMsg);
 			return;
         }
@@ -35,27 +35,25 @@ class GetAeknowModel {
 	{//获取Aeknow API AEX9合约Token 带Payload信息
         $url  = 'https://www.aeknow.org/api/tokentx/'.$hash;
 		@$get = file_get_contents($url);
-		//$json = (array) json_decode($get, true);
-
-		//$s_id = $json['sender_id'];
-
-		/*
+		$json = (array) json_decode($get, true);
+		$r_id = $json['recipient_id'];
 		$num  = 0;
-		while (!$s_id && $num < 20) {
+		while (!$r_id && $num < 20) {
 			@$get = file_get_contents($url);
 			$json = (array) json_decode($get, true);
-			$s_id = $json['sender_id'];
+			$r_id = $json['recipient_id'];
 			$num++;
 			sleep(6);
 		}
 
-		if (empty($s_id)) {
-			$logMsg = "获取AEKnow-API-tokenPayloadTx-错误:{$hash}\r\n\r\n";
-			$this->DisposeModel->wetFwriteLog($logMsg);
+		if (empty($r_id)) {
+			$path   = "log/aeknow_read/".date('Y-m').".txt";
+			$logMsg = "获取AEKnow-API-tokenPayloadTx-错误:{$hash}\r\n";
+			$this->DisposeModel->wetFwriteLog($logMsg, $path);
 			return;
         }
 		
-		return $s_id;*/
+		return $json;
 	}
 
 	public function latestSpendTx($address)

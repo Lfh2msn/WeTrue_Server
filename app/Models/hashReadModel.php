@@ -13,7 +13,7 @@ use App\Models\Content\{
 	AeChainPutModel,
 	AeSuperheroPutModel
 };
-use App\Models\ContractCall\AeContractCallTxModels;
+use App\Models\ContractCall\AeContractCallTxModel;
 
 class HashReadModel extends Model {
 //链上hash入库Model
@@ -28,8 +28,8 @@ class HashReadModel extends Model {
 		$this->DisposeModel = new DisposeModel();
 		$this->GetAeChainModel = new GetAeChainModel();
 		$this->AeChainPutModel = new AeChainPutModel();
-		$this->AeSuperheroPutModel = new AeSuperheroPutModel();
-		$this->AeContractCallTxModels = new AeContractCallTxModels();
+		$this->AeSuperheroPutModel  = new AeSuperheroPutModel();
+		$this->AeContractCallTxModel = new AeContractCallTxModel();
 		$this->wet_temp = "wet_temp";
     }
 
@@ -61,8 +61,9 @@ class HashReadModel extends Model {
 				continue;
 			}
 
-			if ($json['tx']['type'] == 'ContractCallTx'){ //合约呼叫转到合约处理
-				$this->AeContractCallTxModels-> txChainJsonRead($json);
+			if ($json['tx']['type'] == 'ContractCallTx'){
+				//合约呼叫 转到 合约处理
+				$this->AeContractCallTxModel-> txChainJsonRead($json);
 				continue;
 			}
 

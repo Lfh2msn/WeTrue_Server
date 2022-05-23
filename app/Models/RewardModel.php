@@ -9,6 +9,7 @@ use App\Models\{
 	MsgModel
 };
 use App\Models\Get\GetAeknowModel;
+use App\Models\Config\AeTokenConfig;
 
 class RewardModel extends Model {
 //打赏Model
@@ -21,6 +22,7 @@ class RewardModel extends Model {
 		$this->UserModel    = new UserModel();
 		$this->DisposeModel = new DisposeModel();
 		$this->GetAeknowModel = new GetAeknowModel();
+		$this->AeTokenConfig  = new AeTokenConfig();
 		$this->wet_temp     = "wet_temp";
 		$this->wet_content  = "wet_content";
 		$this->wet_content_sh = "wet_content_sh";
@@ -90,37 +92,52 @@ class RewardModel extends Model {
 		foreach ($getRes as $row) {
 			$tp_hash   = $row-> tp_hash;
 			$tp_toHash = $row-> tp_to_hash;
-			$this->decodeReward($tp_hash, $tp_toHash);
+			$this->getReward($tp_hash, $tp_toHash);
 		}
 	}
 
-	public function decodeReward($hash, $to_hash)
-	{//打赏数据处理
+	public function getReward($hash, $to_hash)
+	{//打赏数据获取处理
 		$isRewardHash = $this->ValidModel-> isRewardHash($hash);
 		if ($isRewardHash) {
 			$this->deleteTemp($hash);
+			$logMsg = "error_reward_repeat--hash：{$hash}\r\nto_hash：{$to_hash}\r\n\r\n";
+			$logPath = "log/reward/{date('Y-m')}.txt";
+			$this->DisposeModel->wetFwriteLog($logMsg, $logPath);
 			return;
 		}
 
-		$aeknowApiJson = $this->GetAeknowModel->tokenTx($hash);
-		if (empty($aeknowApiJson)) {
+		$json = $this->GetAeknowModel->tokenPayloadTx($hash);
+		if (empty($json)) {
 			$logMsg = "error_aeknow_api--hash：{$hash}\r\nto_hash：{$to_hash}\r\n\r\n";
-			$logPath = "airdrop/reward/{date('Y-m-d')}.txt";
+			$logPath = "log/reward/{date('Y-m')}.txt";
 			$this->DisposeModel->wetFwriteLog($logMsg, $logPath);
 			return;
         }
 
-		$sender_id    = $aeknowApiJson['sender_id'];
-		$recipient_id = $aeknowApiJson['recipient_id'];
-		$amount 	  = $aeknowApiJson['amount'];
-		$return_type  = $aeknowApiJson['return_type'];
-		$block_height = (int)$aeknowApiJson['block_height'];
-		$contract_id  = $aeknowApiJson['contract_id'];
+		$tokenName   = 'WTT';
+		$contractId  = $this->AeTokenConfig-> getContractId($tokenName);
+		$return_type = $json['return_type'];
+		$contract_id = $json['contract_id'];
 
-		if ($return_type == "revert") {
+		if ($contract_id != $contractId || $return_type != 'ok') {
 			$this->deleteTemp($hash);
+			$logMsg = "error_reward_contractIdOrType--hash：{$hash}\r\nto_hash：{$to_hash}\r\n\r\n";
+			$logPath = "log/reward/{date('Y-m')}.txt";
+			$this->DisposeModel->wetFwriteLog($logMsg, $logPath);
 			return;
 		}
+
+		$this->rewardPut($json, $to_hash);
+	}
+
+	public function rewardPut($json, $to_hash)
+	{//打赏入库处理
+		$hash		  = $json['txhash'];
+		$sender_id    = $json['sender_id'];
+		$recipient_id = $json['recipient_id'];
+		$amount 	  = $json['amount'];
+		$block_height = (int)$json['block_height'];
 
 		$isRewardHash = $this->ValidModel-> isRewardHash($hash);
 		if ($isRewardHash) {
@@ -138,12 +155,7 @@ class RewardModel extends Model {
 		$row   = $query->getRow();
 		$conID = $row-> sender_id;
 
-		$bsConfig = $this->ConfigModel-> backendConfig();
-		if ($row &&
-			$contract_id == $bsConfig['WTTContractAddress'] &&
-			$return_type == "ok"  &&
-			$conID		 == $recipient_id
-		) {
+		if ($row && $conID == $recipient_id) {
 			$inData = [
 				'hash'	       => $hash,
 				'to_hash'      => $to_hash,
