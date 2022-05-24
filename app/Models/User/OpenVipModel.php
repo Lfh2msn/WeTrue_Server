@@ -14,7 +14,6 @@ use App\Models\Get\{
 	GetAeknowModel
 };
 
-
 class OpenVipModel extends ComModel
 {//用户开通VIP Model
 
@@ -26,7 +25,7 @@ class OpenVipModel extends ComModel
 		$this->ValidModel    = new ValidModel();
 		$this->GetAeChainModel = new GetAeChainModel();
 		$this->GetAeknowModel  = new GetAeknowModel();
-		$this->AeTokenConfig  = new AeTokenConfig();
+		$this->AeTokenConfig = new AeTokenConfig();
 		$this->wet_temp      = "wet_temp";
 		$this->wet_users_vip = "wet_users_vip";
     }

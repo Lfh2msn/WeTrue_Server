@@ -3,9 +3,9 @@ namespace App\Models\ContractCall;
 
 use App\Models\{
 	DisposeModel,
-	RewardModel,
-	OpenVipModel
+	RewardModel
 };
+use App\Models\User\OpenVipModel;
 
 class TokenEventModel
 {//AE智能合约TX处理模块

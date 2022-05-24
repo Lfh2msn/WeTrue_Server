@@ -34,11 +34,12 @@ class Submit extends BaseController {
 		}
     }
 
-	public function hash()
+	public function hash($gHash=null)
 	{//发布hash
-		$hash    = $this->request->getPost('hash');
+		$pHash   = $this->request->getPost('hash');
 		$await   = $this->request->getPost('await');
 		$chainId = $_SERVER['HTTP_CHAIN_ID'] ?? 457;
+		$hash    = $gHash ?? $pHash;
 		if ($await){
 			$await = true;
 		} else {

@@ -9,8 +9,8 @@ class OpenVip extends BaseController {
 
 	public function openVip()
 	{//开通VIP
-        $hash 	 = $this->request->getPost('hash');
-		$address = $_SERVER['HTTP_KEY'];
+        $hash      = $this->request->getPost('hash');
+		$address   = $_SERVER['HTTP_KEY'];
 		$isHash    = $this->DisposeModel-> checkAddress($hash);
 		$isAddress = $this->DisposeModel-> checkAddress($address);
 		if ($isHash && $isAddress) {
@@ -26,8 +26,8 @@ class OpenVip extends BaseController {
 		$isAddress = $this->DisposeModel-> checkAddress($address);
 		if ($isAddress) {
 			$isOpenVipState = (new ValidModel())-> isOpenVipState($address);
-			$isVipAccount   = (new ValidModel())-> isVipAccount($address);
-			if ($isOpenVipState || $isVipAccount) {
+			$isVipAddress   = (new ValidModel())-> isVipAddress($address);
+			if ($isOpenVipState || $isVipAddress) {
 				$data = $this->DisposeModel-> wetJsonRt(200,'error_repeat',true);
 			} else {
 				$data = $this->DisposeModel-> wetJsonRt(200,'success',false);

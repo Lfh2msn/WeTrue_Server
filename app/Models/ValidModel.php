@@ -167,7 +167,7 @@ class ValidModel extends Model {
 
 	public function isOpenVipState($address)
 	{//开通VIP提交状态
-		$sql   = "SELECT tp_sender_id FROM wet_temp WHERE tp_sender_id = '$address' AND tp_type = 'openvip' LIMIT 1";
+		$sql   = "SELECT tp_sender_id FROM wet_temp WHERE tp_sender_id = '$address' LIMIT 1";
         $query = $this->db->query($sql);
 		$row   = $query->getRow();
 		return $row ? true : false;
