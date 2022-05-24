@@ -44,8 +44,8 @@ class AeContractCallTxModel extends Model
 			$aekJson['payload'] = (array) json_decode(base64_decode($aekJson['payload'], true), true);
 		}
 
-		if ($aekJson['payload']['type'] == 'reward') {
-			$this->TokenEventModel-> wttReward($aekJson);
+		if ($aekJson['payload']['type']) {
+			$this->TokenEventModel-> event($aekJson);
 		}
 
 	}
