@@ -1,6 +1,6 @@
 <?php namespace App\Models\Wecom;
 
-use App\Models\ConfigModel;
+use App\Models\Config\WecomConfig;
 use App\Models\Wecom\Callback\WXBizMsgCrypt;
 use App\Models\Wecom\ReceiveMsgTypeModel;
 
@@ -8,8 +8,8 @@ class ReceiveModel {
 //企业微信被动回复 Model
 
 	public function __construct(){
-		$this->$ConfigModel  = new ConfigModel();
-		$weConfig      = $this->$ConfigModel-> wecomConfig();
+		$this->$WecomConfig  = new WecomConfig();
+		$weConfig      = $this->$WecomConfig-> config();
 		$wecomCid_1      = $weConfig['WECOM_CID_1'];
 		$wecomToken_1  = $weConfig['WECOM_TOKEN_1'];
 		$wecomAesKey_1 = $weConfig['WECOM_AESKEY_1'];

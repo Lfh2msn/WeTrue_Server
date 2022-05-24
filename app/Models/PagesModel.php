@@ -5,9 +5,9 @@ use App\Models\{
 	ValidModel,
 	CommentModel,
 	ReplyModel,
-	ConfigModel,
 	DisposeModel
 };
+use App\Models\Config\ContentRecConfig;
 use App\Models\Content\{
 	ContentPullModel,
 	SuperheroContentModel
@@ -24,8 +24,8 @@ class PagesModel extends Model {
 		$this->ValidModel   = new ValidModel();
 		$this->CommentModel = new CommentModel();
 		$this->ReplyModel 	= new ReplyModel();
-		$this->ConfigModel 	= new ConfigModel();
 		$this->DisposeModel = new DisposeModel();
+		$this->ContentRecConfig = new ContentRecConfig();
 		$this->ContentPullModel = new ContentPullModel();
 		$this->SuperheroContentModel = new SuperheroContentModel();
 		
@@ -102,14 +102,14 @@ class PagesModel extends Model {
 		if ( $opt['type'] == 'hotRecList' )
 		{//热点推荐
 			$this->tablename = "wet_content";
-			$bsConfig   	 = $this->ConfigModel-> backendConfig();
-			$hotRecDay  	 = $bsConfig['hotRecDay'];
-			$factorPraise	 = $bsConfig['factorPraise'];
-			$factorComment	 = $bsConfig['factorComment'];
-			$factorStar		 = $bsConfig['factorStar'];
-			$factorRead		 = $bsConfig['factorRead'];
-			$factorTime	 	 = $bsConfig['factorTime'];
-			$factorReward	 = $bsConfig['factorReward'];
+			$crConfig   	 = $this->ContentRecConfig-> factor();
+			$hotRecDay  	 = $crConfig['hotDay'];
+			$factorPraise	 = $crConfig['praise'];
+			$factorComment	 = $crConfig['comment'];
+			$factorStar		 = $crConfig['star'];
+			$factorRead		 = $crConfig['read'];
+			$factorTime	 	 = $crConfig['time'];
+			$factorReward	 = $crConfig['reward'];
 			$nowTime		 = time() * 1000;
 			$cycleTime 	 	 = $nowTime - (86400000 * $hotRecDay);  //当前时间 - 86400000毫秒 * 天 //1614950034235 1621087508000
 			$countSql		 = "SELECT count(hash) FROM $this->tablename WHERE utctime >= $cycleTime";

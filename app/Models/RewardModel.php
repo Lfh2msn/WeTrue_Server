@@ -101,7 +101,7 @@ class RewardModel extends Model {
 		$isRewardHash = $this->ValidModel-> isRewardHash($hash);
 		if ($isRewardHash) {
 			$this->deleteTemp($hash);
-			$logMsg = "error_reward_repeat--hash：{$hash}\r\nto_hash：{$to_hash}\r\n\r\n";
+			$logMsg = "error_reward_repeat--hash：{$hash}\r\nto_hash：{$to_hash}\r\n";
 			$logPath = "log/reward/{date('Y-m')}.txt";
 			$this->DisposeModel->wetFwriteLog($logMsg, $logPath);
 			return;
@@ -109,7 +109,7 @@ class RewardModel extends Model {
 
 		$json = $this->GetAeknowModel->tokenPayloadTx($hash);
 		if (empty($json)) {
-			$logMsg = "error_aeknow_api--hash：{$hash}\r\nto_hash：{$to_hash}\r\n\r\n";
+			$logMsg = "error_aeknow_api--hash：{$hash}\r\nto_hash：{$to_hash}\r\n";
 			$logPath = "log/reward/{date('Y-m')}.txt";
 			$this->DisposeModel->wetFwriteLog($logMsg, $logPath);
 			return;
@@ -122,7 +122,7 @@ class RewardModel extends Model {
 
 		if ($contract_id != $contractId || $return_type != 'ok') {
 			$this->deleteTemp($hash);
-			$logMsg = "error_reward_contractIdOrType--hash：{$hash}\r\nto_hash：{$to_hash}\r\n\r\n";
+			$logMsg = "error_reward_contractIdOrType--hash：{$hash}\r\nto_hash：{$to_hash}\r\n";
 			$logPath = "log/reward/{date('Y-m')}.txt";
 			$this->DisposeModel->wetFwriteLog($logMsg, $logPath);
 			return;

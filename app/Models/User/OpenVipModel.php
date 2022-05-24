@@ -3,14 +3,17 @@
 use App\Models\{
 	ComModel,
 	ValidModel,
-	ConfigModel,
 	DisposeModel
 };
-use App\Models\Config\OpenVipConfig;
+use App\Models\Config\{
+	OpenVipConfig,
+	AeTokenConfig
+};
 use App\Models\Get\{
 	GetAeChainModel,
 	GetAeknowModel
 };
+
 
 class OpenVipModel extends ComModel
 {//用户开通VIP Model
@@ -23,6 +26,7 @@ class OpenVipModel extends ComModel
 		$this->ValidModel    = new ValidModel();
 		$this->GetAeChainModel = new GetAeChainModel();
 		$this->GetAeknowModel  = new GetAeknowModel();
+		$this->AeTokenConfig  = new AeTokenConfig();
 		$this->wet_temp      = "wet_temp";
 		$this->wet_users_vip = "wet_users_vip";
     }
@@ -47,49 +51,61 @@ class OpenVipModel extends ComModel
 		$tempRes = $tempQy->getResult();
 		foreach ($tempRes as $row) {
 			$tp_hash = $row->tp_hash;
-			$this->decode($tp_hash);
+			$this->getOpenAccount($tp_hash);
 		}
 	}
 
-	public function decode($hash)
-	{//新开户-解码开通
+
+	public function getOpenAccount($hash)
+	{//获取开通数据
 		$textTime = date("Y-m");
-		$aeknowApiJson = $this->GetAeknowModel->tokenTx($hash);
-		if (empty($aeknowApiJson)) {
-			$logMsg = "开通失败获取AEKnow-API错误: {$hash}\r\n\r\n";
+		$json = $this->GetAeknowModel->tokenPayloadTx($hash);
+		if (empty($json)) {
+			$logMsg = "获取AEKnow-API错误: {$hash}\r\n";
 			$logPath = "log/vip_open/error-{$textTime}.txt";
 			$this->DisposeModel->wetFwriteLog($logMsg, $logPath);
 			return $this->DisposeModel-> wetJsonRt(406, 'error_unknown');
         }
 
+		$tokenName   = 'WTT';
+		$contractId  = $this->AeTokenConfig-> getContractId($tokenName);
+		$return_type = $json['return_type'];
+		$contract_id = $json['contract_id'];
+
+		if ($contract_id != $contractId || $return_type != 'ok') {
+			$this->deleteTemp($hash);
+			$logMsg = "开通合约id或状态错误--hash: {$hash}\r\n";
+			$logPath = "log/vip_open/error-{$textTime}.txt";
+			$this->DisposeModel->wetFwriteLog($logMsg, $logPath);
+			return;
+		}
+
+		$this->openVipPut($json);
+	}
+
+	public function openVipPut($json)
+	{//开通vip 入库处理
+		$hash		 = $json['txhash'];
+		$senderId    = $json['sender_id'];
+		$recipientId = $json['recipient_id'];
+		$amount 	 = $json['amount'];
+		$blockHeight = $json['block_height'];
+		$textTime    = date("Y-m");
+
 		$chainHeight = $this->GetAeChainModel->chainHeight($hash);  //获取链上高度
 		if (empty($chainHeight)) {
-			$logMsg = "获取链上高度失败hash: {$hash}\r\n\r\n";
+			$logMsg = "获取链上高度失败hash: {$hash}\r\n";
 			$logPath = "log/vip_open/error-{$textTime}.txt";
 			$this->DisposeModel->wetFwriteLog($logMsg, $logPath);
 			return $this->DisposeModel-> wetJsonRt(406, 'error_height');
         }
-
-		$senderId    = $aeknowApiJson['sender_id'];
-		$recipientId = $aeknowApiJson['recipient_id'];
-		$amount 	 = $aeknowApiJson['amount'];
-		$returnType  = $aeknowApiJson['return_type'];
-		$blockHeight = $aeknowApiJson['block_height'];
-		$contractId  = $aeknowApiJson['contract_id'];
-		$poorHeight	 = ($chainHeight - $blockHeight);
-
-		if ($return_type == "revert") {  //无效转账
-			$this->deleteTemp($hash);
-			return;
-		}
+		$poorHeight	= ($chainHeight - $blockHeight);
 
 		$opConfig = $this->OpenVipConfig->config();
 		if (
 			$recipientId == $opConfig['openVipAddress'] &&
 			$amount		 == $opConfig['openVipAmount'] &&
-			$contractId  == $opConfig['openTokenAddress'] &&
-			$poorHeight  <= 480 &&
-			$returnType  == "ok"
+			$poorHeight  <= 480
 		) {
 			$isVipAddress = $this->ValidModel-> isVipAccount($senderId);
 			if($isVipAddress) {
@@ -103,11 +119,16 @@ class OpenVipModel extends ComModel
 			}
 
 			$wttAmount = $this->DisposeModel->bigNumber("div", $amount);
-			$logMsg  = "开通VIP成功-账户:{$senderId}\r\n花费WTT:{$wttAmount}\r\n高度:{$blockHeight}\r\nHash:{$hash}\r\n\r\n";
+			$logMsg  = "开通成功-账户:{$senderId}\r\n花费WTT:{$wttAmount}\r\n高度:{$blockHeight}\r\nHash:{$hash}\r\n\r\n";
 			$logPath = "log/vip_open/open-vip-{$textTime}.txt";
 			$this->DisposeModel->wetFwriteLog($logMsg, $logPath);
 			$this->deleteTemp($hash);
 			return $this->DisposeModel-> wetJsonRt(200, 'success');
+		} else {
+			$logMsg = "接收地址或金额或高度错误hash: {$hash}\r\n";
+			$logPath = "log/vip_open/error-{$textTime}.txt";
+			$this->DisposeModel->wetFwriteLog($logMsg, $logPath);
+			$this->deleteTemp($hash);
 		}
 	}
 

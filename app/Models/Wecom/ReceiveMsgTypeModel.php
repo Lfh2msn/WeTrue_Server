@@ -10,6 +10,7 @@ use App\Models\Get\{
 	GetPriceModel,
 	GetAeChainModel
 };
+
 class ReceiveMsgTypeModel {
 //企业微信被动回复类型处理 Model
 

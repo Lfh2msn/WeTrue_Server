@@ -1,19 +1,19 @@
 <?php namespace App\Models\Wecom;
 
-use App\Models\ConfigModel;
+use App\Models\Config\WecomConfig;
 
 class SendModel {
 //企业微信发送 Model
 
 	public function __construct() {
 		$this->db = \Config\Database::connect('default');
-		$this->ConfigModel = new ConfigModel();
+		$this->WecomConfig = new WecomConfig();
 		$this->wecom_token = "wet_wecom_token";
     }
 
 	public function sendToWecom($payload, $sendKey, $touser)
 	{
-		$weConfig      = $this->ConfigModel-> wecomConfig();
+		$weConfig      = $this->WecomConfig-> config();
 		$wecomCid_1    = $weConfig['WECOM_CID_1'];
 		$wecomSecret_1 = $weConfig['WECOM_SECRET_1'];
 		$wecomAid_1    = $weConfig['WECOM_AID_1'];
