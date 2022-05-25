@@ -14,7 +14,8 @@ class OpenVipConfig {
 			'openVip'     	   => true, //vip可开通状态
 			'openVipAddress'   => 'ak_2afGvLkUTwdCixNLxKVbpmtGqDMSGVnU2orSTChNqKRcYk7xvV', //vip收款地址
 			'openVipAmount'    => "680000000000000000000", //开通VIP金额,680WTT = 680000000000000000000
-			'openTokenAddress' => $contractId //开通币种合约
+			'openTokenAddress' => $contractId, //开通币种合约
+			'limitHeight'      => 480 //有效区块高度限制
 		);
     }
 }

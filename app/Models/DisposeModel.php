@@ -101,7 +101,15 @@ class DisposeModel extends Model {
         return $json;
     }
 
-
+    public function randBase58()
+	{//随机头像
+        $rand   = mt_rand();
+        $uniqid = uniqid($rand, true);
+        $sha256 = hash('sha256', $uniqid);
+        $address = $this-> hexToAddress($sha256);
+        return $address;
+    }
+    
     public function bigNumber($x, string $m, string $n = "1000000000000000000")
     {/**大数计算--注意必须为string
         * 使用方法:

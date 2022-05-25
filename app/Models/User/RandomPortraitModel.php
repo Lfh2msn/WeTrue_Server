@@ -3,112 +3,90 @@
 use App\Models\{
 	ComModel,
 	ValidModel,
-	ConfigModel,
 	DisposeModel
 };
-use App\Models\Config\OpenVipConfig;
+use App\Models\Config\{
+	RandomPortraitConfig,
+	AeTokenConfig
+};
 use App\Models\Get\{
-	GetAeChainModel,
-	GetAeknowModel
+	GetAeChainModel
 };
 
 class RandomPortraitModel extends ComModel
-{//用户随机头像
+{//随机头像
 
 	public function __construct()
 	{
 		parent::__construct();
-		$this->DisposeModel  = new DisposeModel();
-		$this->OpenVipConfig = new OpenVipConfig();
-		$this->ValidModel    = new ValidModel();
+		$this->ValidModel = new ValidModel();
+		$this->DisposeModel = new DisposeModel();
+		$this->AeTokenConfig = new AeTokenConfig();
 		$this->GetAeChainModel = new GetAeChainModel();
-		$this->GetAeknowModel  = new GetAeknowModel();
-		$this->wet_temp      = "wet_temp";
-		$this->wet_users_vip = "wet_users_vip";
+		$this->RandomPortraitConfig = new RandomPortraitConfig();
+		$this->wet_temp  = "wet_temp";
+		$this->wet_users = "wet_users";
+		$this->wet_random_portrait = "wet_random_portrait";
     }
 
-	public function openAccount($hash, $address)
-	{//新开户
-		$tp_type = "openvip";
-		$isTempHash = $this->ValidModel-> isTempHash($hash);
-		if ($isTempHash) {
-			echo $this->DisposeModel-> wetJsonRt(406, 'error_repeat');
-		} else {  //写入临时缓存
-			$insertTempSql = "INSERT INTO $this->wet_temp(tp_hash, tp_sender_id, tp_type) VALUES ('$hash', '$address', '$tp_type')";
-			$this->db->query($insertTempSql);
-			echo $this->DisposeModel-> wetJsonRt(200, 'success');
-		}
 
-		$delTempSql = "DELETE FROM $this->wet_temp WHERE tp_time <= now()-interval '5 D' AND tp_type = '$tp_type'";
-		$this->db->query($delTempSql);
-
-		$tempSql = "SELECT tp_hash FROM $this->wet_temp WHERE tp_type = '$tp_type' ORDER BY tp_time DESC LIMIT 30";
-		$tempQy  = $this->db-> query($tempSql);
-		$tempRes = $tempQy->getResult();
-		foreach ($tempRes as $row) {
-			$tp_hash = $row->tp_hash;
-			$this->decode($tp_hash);
-		}
-	}
-
-	public function decode($hash)
-	{//新开户-解码开通
+	public function randomPortraitPut($json)
+	{//随机头像 入库处理
+		$hash	  = $json['txhash'];
+		$sendId   = $json['sender_id'];
+		$recId    = $json['recipient_id'];
+		$amount   = $json['amount'];
+		$bHeight  = $json['block_height'];
 		$textTime = date("Y-m");
-		$aeknowApiJson = $this->GetAeknowModel->tokenTx($hash);
-		if (empty($aeknowApiJson)) {
-			$logMsg = "开通失败获取AEKnow-API错误: {$hash}\r\n\r\n";
-			$logPath = "log/vip_open/error-{$textTime}.txt";
-			$this->DisposeModel->wetFwriteLog($logMsg, $logPath);
-			return $this->DisposeModel-> wetJsonRt(406, 'error_unknown');
-        }
 
-		$chainHeight = $this->GetAeChainModel->chainHeight($hash);  //获取链上高度
-		if (empty($chainHeight)) {
-			$logMsg = "获取链上高度失败hash: {$hash}\r\n\r\n";
-			$logPath = "log/vip_open/error-{$textTime}.txt";
+		$isHash = $this->ValidModel-> isRandomPortraitHash($hash);
+		if ($isHash) {
+			$this->deleteTemp($hash);
+			return $this->DisposeModel-> wetJsonRt(406, 'error_repeat');
+		}
+
+		$cHeight = $this->GetAeChainModel->chainHeight($hash);  //获取链上高度
+		if (empty($cHeight)) {
+			$logMsg = "获取链上高度失败hash: {$hash}\r\n";
+			$logPath = "log/random_portrait/error-{$textTime}.txt";
 			$this->DisposeModel->wetFwriteLog($logMsg, $logPath);
 			return $this->DisposeModel-> wetJsonRt(406, 'error_height');
         }
+		$pHeight = ($cHeight - $bHeight);
 
-		$senderId    = $aeknowApiJson['sender_id'];
-		$recipientId = $aeknowApiJson['recipient_id'];
-		$amount 	 = $aeknowApiJson['amount'];
-		$returnType  = $aeknowApiJson['return_type'];
-		$blockHeight = $aeknowApiJson['block_height'];
-		$contractId  = $aeknowApiJson['contract_id'];
-		$poorHeight	 = ($chainHeight - $blockHeight);
-
-		if ($return_type == "revert") {  //无效转账
-			$this->deleteTemp($hash);
-			return;
-		}
-
-		$opConfig = $this->OpenVipConfig->config();
+		$rpConfig = $this->RandomPortraitConfig-> config();
 		if (
-			$recipientId == $opConfig['openVipAddress'] &&
-			$amount		 == $opConfig['openVipAmount'] &&
-			$contractId  == $opConfig['openTokenAddress'] &&
-			$poorHeight  <= 480 &&
-			$returnType  == "ok"
+			$recId   == $rpConfig['recAddress'] &&
+			$amount	 == $rpConfig['recAmount'] &&
+			$pHeight <= $rpConfig['limitHeight']
 		) {
-			$isVipAddress = $this->ValidModel-> isVipAccount($senderId);
-			if($isVipAddress) {
-				$this->db->table($this->wet_users_vip)->where('address', $senderId)->update( ['is_vip' => 1] );
-			} else {
-				$insertData = [
-					'address' => $senderId,
-					'is_vip'  => 1
-				];
-				$this->db->table($this->wet_users_vip)->insert($insertData);
-			}
+			//开始创建随机数头像
+			$random = $this->DisposeModel-> randBase58();
 
+			//更新头像
+			$this->db->table($this->wet_users)->where('address', $sendId)->update( ['portrait' => $random] );
+
+			//入库头像列表
+			$insertData = [
+				'address' => $sendId,
+				'random'  => $random,
+				'hash'    => $hash
+			];
+			$this->db->table($this->wet_random_portrait)->insert($insertData);
+			
 			$wttAmount = $this->DisposeModel->bigNumber("div", $amount);
-			$logMsg  = "开通VIP成功-账户:{$senderId}\r\n花费WTT:{$wttAmount}\r\n高度:{$blockHeight}\r\nHash:{$hash}\r\n\r\n";
-			$logPath = "log/vip_open/open-vip-{$textTime}.txt";
+			$logMsg  = "成功-账户:{$sendId} 花费WTT:{$wttAmount} 高度:{$bHeight} Hash:{$hash}\r\n";
+			$logPath = "log/random_portrait/open-vip-{$textTime}.txt";
 			$this->DisposeModel->wetFwriteLog($logMsg, $logPath);
 			$this->deleteTemp($hash);
-			return $this->DisposeModel-> wetJsonRt(200, 'success');
+			return $this->DisposeModel-> wetJsonRt(200);
+		} else {
+			$logMsg = "接收地址或金额或高度错误hash: {$hash}\r\n";
+			$logPath = "log/random_portrait/error-{$textTime}.txt";
+			$this->DisposeModel->wetFwriteLog($logMsg, $logPath);
+			$this->deleteTemp($hash);
 		}
+		return $this->DisposeModel-> wetJsonRt(406, 'error');
 	}
 
 	private function deleteTemp($hash)

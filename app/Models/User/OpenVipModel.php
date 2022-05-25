@@ -99,12 +99,12 @@ class OpenVipModel extends ComModel
 			return $this->DisposeModel-> wetJsonRt(406, 'error_height');
         }
 		$poorHeight	= ($chainHeight - $blockHeight);
-
 		$opConfig = $this->OpenVipConfig->config();
+
 		if (
 			$recipientId == $opConfig['openVipAddress'] &&
 			$amount		 == $opConfig['openVipAmount'] &&
-			$poorHeight  <= 480
+			$poorHeight  <= $opConfig['limitHeight']
 		) {
 			$isVipAddress = $this->ValidModel-> isVipAccount($senderId);
 			if($isVipAddress) {
@@ -118,7 +118,7 @@ class OpenVipModel extends ComModel
 			}
 
 			$wttAmount = $this->DisposeModel->bigNumber("div", $amount);
-			$logMsg  = "开通成功-账户:{$senderId}\r\n花费WTT:{$wttAmount}\r\n高度:{$blockHeight}\r\nHash:{$hash}\r\n\r\n";
+			$logMsg  = "开通成功-账户:{$senderId} 花费WTT:{$wttAmount} 高度:{$blockHeight} Hash:{$hash}\r\n";
 			$logPath = "log/vip_open/open-vip-{$textTime}.txt";
 			$this->DisposeModel->wetFwriteLog($logMsg, $logPath);
 			$this->deleteTemp($hash);
@@ -129,6 +129,7 @@ class OpenVipModel extends ComModel
 			$this->DisposeModel->wetFwriteLog($logMsg, $logPath);
 			$this->deleteTemp($hash);
 		}
+		return $this->DisposeModel-> wetJsonRt(406, 'error');
 	}
 
 	private function deleteTemp($hash)

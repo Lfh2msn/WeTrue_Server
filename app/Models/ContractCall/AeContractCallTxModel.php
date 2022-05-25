@@ -4,14 +4,25 @@ namespace App\Models\ContractCall;
 use CodeIgniter\Model;
 use App\Models\Config\AeTokenConfig;
 use App\Models\Get\GetAeknowModel;
-use App\Models\DisposeModel;
+use App\Models\{
+	DisposeModel,
+	ConfigModel
+};
 use App\Models\ContractCall\TokenEventModel;
 
 class AeContractCallTxModel extends Model
 {//AE智能合约TX处理模块
 
+	private $ConfigModel;
+	private $DisposeModel;
+	private $AeTokenConfig;
+	private $GetAeknowModel;
+	private $TokenEventModel;
+	private $wet_temp;
+
 	public function __construct(){
 		$this->db = \Config\Database::connect('default');
+		$this->ConfigModel = new ConfigModel();
 		$this->DisposeModel = new DisposeModel();
 		$this->AeTokenConfig  = new AeTokenConfig();
 		$this->GetAeknowModel = new GetAeknowModel();
@@ -44,8 +55,26 @@ class AeContractCallTxModel extends Model
 			$aekJson['payload'] = (array) json_decode(base64_decode($aekJson['payload'], true), true);
 		}
 
+		//版本检测
+		$bsConfig = $this->ConfigModel-> backendConfig();
+		$WeTrue  = $aekJson['payload']['WeTrue'];
+		$require = $bsConfig['requireVersion'];
+		$version = $this->DisposeModel-> versionCompare($WeTrue, $require);  //版本检测
+		if (!$version)
+		{  //版本号错误或低
+			if(!$WeTrue){ //非WeTrue
+				$this->deleteTemp($hash);
+				$logMsg = "非WeTrue格式:{$hash},版本号：{$WeTrue}\r\n";
+				$this->DisposeModel->wetFwriteLog($logMsg);
+				return $this->DisposeModel-> wetJsonRt(406,'error_WeTrue');
+			}
+			$logMsg = "版本号异常:{$hash},版本号：{$WeTrue}\r\n";
+			$this->DisposeModel->wetFwriteLog($logMsg);
+			return $this->DisposeModel-> wetJsonRt(406,'error_version');
+		}
+
 		if ($aekJson['payload']['type']) {
-			$this->TokenEventModel-> event($aekJson);
+			return $this->TokenEventModel-> event($aekJson);
 		}
 
 	}
