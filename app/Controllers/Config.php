@@ -8,7 +8,8 @@ use App\Models\Config\{
 	BaseApiConfig,
 	AeknowConfig,
 	AeMdwConfig,
-	WebClientConfig
+	WebClientConfig,
+	RandomPortraitConfig
 };
 
 class Config extends BaseController {
@@ -51,6 +52,14 @@ class Config extends BaseController {
 		$data = (new ConfigModel())-> appVersionConfig($list);
 		echo json_encode($data);
     }
+
+	public function randomPortrait()
+	{//随机头像配置
+		$code = 200;
+		$msg  = 'success';
+		$data = (new RandomPortraitConfig())-> config();
+		echo $this->DisposeModel-> wetJsonRt($code, $msg, $data);
+	}
 	
 
 }

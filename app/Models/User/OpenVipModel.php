@@ -102,12 +102,13 @@ class OpenVipModel extends ComModel
 		$opConfig = $this->OpenVipConfig->config();
 
 		if (
+			$opConfig['openVip'] &&
 			$recipientId == $opConfig['openVipAddress'] &&
 			$amount		 == $opConfig['openVipAmount'] &&
 			$poorHeight  <= $opConfig['limitHeight']
 		) {
-			$isVipAddress = $this->ValidModel-> isVipAccount($senderId);
-			if($isVipAddress) {
+			$isVipAccount = $this->ValidModel-> isVipAccount($senderId);
+			if($isVipAccount) {
 				$this->db->table($this->wet_users_vip)->where('address', $senderId)->update( ['is_vip' => 1] );
 			} else {
 				$insertData = [
@@ -128,8 +129,9 @@ class OpenVipModel extends ComModel
 			$logPath = "log/vip_open/error-{$textTime}.txt";
 			$this->DisposeModel->wetFwriteLog($logMsg, $logPath);
 			$this->deleteTemp($hash);
+			return $this->DisposeModel-> wetJsonRt(406, 'error');
 		}
-		return $this->DisposeModel-> wetJsonRt(406, 'error');
+		
 	}
 
 	private function deleteTemp($hash)
