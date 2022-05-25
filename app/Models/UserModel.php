@@ -51,8 +51,7 @@ class UserModel extends ComModel
 			$data['reward'] 	= $userReward;
 			$data['userReward'] = $this->DisposeModel-> rewardGrade($userReward);
 			$portrait 			= $row->portrait;
-			//$data['portrait']   = $portrait ? "/User/portrait/".$address : "/images/default_head.png";
-			$data['portrait']   = $portrait ? "/User/portrait/".$address : "";
+			$data['portrait']   = $portrait ?? "";
 			$is_vip = $this->ValidModel-> isVipAddress($address);
 			$data['isVip']  	= $is_vip ? true : false;
 			$data['isAuth']  	= $row->is_auth ? true : false;
@@ -106,9 +105,7 @@ class UserModel extends ComModel
 		$data['userActive']   = $this->DisposeModel-> activeGrade($userActive);
 		$data['userReward']   = $this->DisposeModel-> rewardGrade($userReward);
 		$data['lastActive']   = ($userActive - $row->last_active) * $bsConfig['airdropWttRatio'];
-		//$data['portrait']	  = $portrait ? "/User/portrait/".$address : "/images/default_head.png";
-		$data['portrait']     = $portrait ? "/User/portrait/".$address : "";
-		$data['portraitHash'] = $portraitHash ?? "";
+		$data['portrait']     = $portrait ?? "";
 		$data['topic'] 		  = (int)$row->topic_sum;
 		$data['star'] 		  = (int)$row->star_sum;
 		$data['focus'] 		  = (int)$row->focus_sum;
