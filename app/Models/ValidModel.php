@@ -260,9 +260,9 @@ class ValidModel extends Model {
 		return $row->wecom_mnemonic ? true : false;
 	}
 
-	public function isRandomPortraitHash($hash)
+	public function isRandomAvatarHash($hash)
 	{//是否存在随机头像Hash
-		$sql   = "SELECT hash FROM wet_random_portrait WHERE hash = '$hash' LIMIT 1";
+		$sql   = "SELECT hash FROM wet_random_Avatar WHERE hash = '$hash' LIMIT 1";
         $query = $this->db->query($sql);
 		$row   = $query->getRow();
 		return $row ? true : false;

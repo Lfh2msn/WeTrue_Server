@@ -29,7 +29,7 @@ class UserModel extends ComModel
 					default_aens,
 					sex,
 					uactive,
-					portrait,
+					avatar,
 					reward_sum,
 					last_active,
 					is_auth
@@ -50,8 +50,9 @@ class UserModel extends ComModel
 			$data['userActive'] = $this->DisposeModel-> activeGrade($userActive);
 			$data['reward'] 	= $userReward;
 			$data['userReward'] = $this->DisposeModel-> rewardGrade($userReward);
-			$portrait 			= $row->portrait;
-			$data['portrait']   = $portrait ?? "";
+			$avatar 			= $row->avatar;
+			$data['portrait']   = $avatar ?? ""; //即将废弃(2.5.0)(APP 2.8.5)
+			$data['avatar']   = $avatar ?? "";
 			$is_vip = $this->ValidModel-> isVipAddress($address);
 			$data['isVip']  	= $is_vip ? true : false;
 			$data['isAuth']  	= $row->is_auth ? true : false;
@@ -66,20 +67,20 @@ class UserModel extends ComModel
 			type => login,登录类型
 		];*/
 		$sql="SELECT 
-					nickname,
-					default_aens,
-					sex,
-					uactive,
-					portrait,
-					portrait_hash,
-					last_active,
-					reward_sum,
-					topic_sum,
-					focus_sum,
-					fans_sum,
-					star_sum,
-					is_auth
-				FROM $this->tablename WHERE address = '$address' LIMIT 1";
+				nickname,
+				default_aens,
+				sex,
+				uactive,
+				avatar,
+				avatar_hash,
+				last_active,
+				reward_sum,
+				topic_sum,
+				focus_sum,
+				fans_sum,
+				star_sum,
+				is_auth
+			FROM $this->tablename WHERE address = '$address' LIMIT 1";
         $query = $this->db->query($sql);
 		$row = $query->getRow();
 		$bsConfig = $this->ConfigModel-> backendConfig();
@@ -89,33 +90,33 @@ class UserModel extends ComModel
 				(new AirdropModel())-> airdropAE($address);
 			}
 		}
-		$userActive   = (int)$row->uactive ?? 0;
-		$userReward   = $row->reward_sum ?? 0;
-		$portrait 	  = $row->portrait;
-		$portraitHash = $row->portrait_hash;
-		$nickname     = $this->DisposeModel-> delete_xss($row->nickname);
-		$nickname 	  = mb_substr($nickname, 0, 15);
-		$defaultAens  = $row->default_aens;
-		$data['userAddress']  = $address;
-		$data['nickname']     = $nickname ?? "";
-		$data['defaultAens']  = $defaultAens ?? "";
-		$data['sex'] 	      = (int)$row->sex;
-		$data['active'] 	  = $userActive;
-		$data['reward'] 	  = $userReward;
-		$data['userActive']   = $this->DisposeModel-> activeGrade($userActive);
-		$data['userReward']   = $this->DisposeModel-> rewardGrade($userReward);
-		$data['lastActive']   = ($userActive - $row->last_active) * $bsConfig['airdropWttRatio'];
-		$data['portrait']     = $portrait ?? "";
-		$data['topic'] 		  = (int)$row->topic_sum;
-		$data['star'] 		  = (int)$row->star_sum;
-		$data['focus'] 		  = (int)$row->focus_sum;
-		$data['fans']  		  = (int)$row->fans_sum;
+		$userActive  = (int)$row->uactive ?? 0;
+		$userReward  = $row->reward_sum ?? 0;
+		$avatar 	 = $row->avatar;
+		$nickname    = $this->DisposeModel-> delete_xss($row->nickname);
+		$nickname 	 = mb_substr($nickname, 0, 15);
+		$defaultAens = $row->default_aens;
+		$data['userAddress'] = $address;
+		$data['nickname']    = $nickname ?? "";
+		$data['defaultAens'] = $defaultAens ?? "";
+		$data['sex'] 	     = (int)$row->sex;
+		$data['active'] 	 = $userActive;
+		$data['reward'] 	 = $userReward;
+		$data['userActive']  = $this->DisposeModel-> activeGrade($userActive);
+		$data['userReward']  = $this->DisposeModel-> rewardGrade($userReward);
+		$data['lastActive']  = ($userActive - $row->last_active) * $bsConfig['airdropWttRatio'];
+		$data['portrait']    = $avatar ?? ""; //即将废弃(2.5.0)(APP 2.8.5)
+		$data['avatar']      = $avatar ?? "";
+		$data['topic'] 		 = (int)$row->topic_sum;
+		$data['star'] 		 = (int)$row->star_sum;
+		$data['focus'] 		 = (int)$row->focus_sum;
+		$data['fans']  		 = (int)$row->fans_sum;
 		$is_vip = $this->ValidModel-> isVipAddress($address);
-		$data['isVip']  	  = $is_vip ? true : false;
-		$data['isAuth']  	  = $row->is_auth ? true : false;
+		$data['isVip']  	 = $is_vip ? true : false;
+		$data['isAuth']  	 = $row->is_auth ? true : false;
 		$isAdmin = $this->ValidModel-> isAdmin($address);
 		if ($isAdmin) {
-			$data['isAdmin']  = $isAdmin;
+			$data['isAdmin'] = $isAdmin;
 		}
 		return $data;
 	}
@@ -129,29 +130,6 @@ class UserModel extends ComModel
 			$nickname = $this->DisposeModel-> delete_xss($row->nickname);
 			$nickname = mb_substr($nickname, 0, 15);
 			$data = $nickname ?? "";
-        } else {
-			$data = "error_address";
-		}
-		return $data;
-	}
-
-	public function getPortraitUrl($address)
-	{//获取用户头像路径
-		$sql      = "SELECT portrait FROM wet_users WHERE address = '$address' LIMIT 1";
-        $query    = $this->db->query($sql);
-		$row      = $query->getRow();
-		$portrait = $row->portrait;
-		$data = $portrait ? "/User/portrait/".$address : "/images/default_head.png";
-		return $data;
-	}
-
-	public function getPortrait($address)
-	{//获取用户头像
-		$sql   = "SELECT portrait FROM wet_users WHERE address = '$address' LIMIT 1";
-        $query = $this->db->query($sql);
-		$row   = $query->getRow();
-		if ($row) {
-			$data = $row->portrait ?? "";
         } else {
 			$data = "error_address";
 		}

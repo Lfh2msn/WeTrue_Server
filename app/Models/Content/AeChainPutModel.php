@@ -107,7 +107,6 @@ class AeChainPutModel extends Model {
 		if ($data['type'] == 'comment')  {$userAmount = $ftConfig['commentAmount'];}
 		if ($data['type'] == 'reply')    {$userAmount = $ftConfig['replyAmount'];}
 		if ($data['type'] == 'nickname') {$userAmount = $ftConfig['nicknameAmount'];}
-		if ($data['type'] == 'portrait') {$userAmount = $ftConfig['portraitAmount'];}
 		if ($data['type'] == 'sex')      {$userAmount = $ftConfig['sexAmount'];}
 
 		if ($data['amount'] < $userAmount) {
@@ -408,39 +407,9 @@ class AeChainPutModel extends Model {
 				return;
 			}
 
-			elseif ( $data['type'] == 'portrait' )
-			{//头像
-				$data['content'] = trim($payload['content']);
-				$selectHash = "SELECT hash FROM $this->wet_users WHERE maxportrait = '$data[hash]' LIMIT 1";
-				$getRow		= $this->db->query($selectHash)-> getRow();
-				if ($getRow) {
-					$this->deleteTemp($hash);
-					$logMsg = "重复头像hash:{$data['hash']}\r\n";
-					$this->DisposeModel->wetFwriteLog($logMsg);
-					return $this->DisposeModel-> wetJsonRt(406,'error');
-				}
-
-				$verify = $this->ValidModel-> isUser($data['sender']);
-				if ($verify) {
-					$upData = [
-								'portrait'    => $data['content'],
-								'maxportrait' => $data['hash']
-							];
-					$this->db->table($this->wet_users)->where('address', $data['sender'])->update($upData);
-				} else {
-					$insertData = [
-						'address'     => $data['sender'],
-						'portrait'    => $data['content'],
-						'maxportrait' => $data['hash']
-					];
-					$this->db->table($this->wet_users)->insert($insertData);
-				}
-				$active = $bsConfig['portraitActive'];
-			}
-
 			elseif ( $data['type'] == 'drift' )
 			{//漂流瓶
-
+				return;
 			} else {
 				$this->deleteTemp($hash);
 				$logMsg = "data[type]标签错误:{$hash}\r\n";

@@ -111,7 +111,6 @@ class ContentPullModel extends ComModel
 			$isStrCount = $strCount ? $operation : $row->payload;
 			$deleteXss  = $this->DisposeModel-> delete_xss($isStrCount);
 			$data['payload']   = $this->DisposeModel-> sensitive($deleteXss);
-			//$data['imgTx']   = $row->img_tx ? "https://api.wetrue.io/Image/toimg/".$hash : $this->UserModel-> getPortraitUrl($sender_id);
 			$data['mediaList'] = json_decode($row->media_list, true) ?? [];
 			$data['users']['nickname'] = $this->UserModel-> getName($sender_id);
 			$data['users']['userAddress'] = $sender_id;	

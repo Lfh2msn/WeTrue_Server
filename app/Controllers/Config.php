@@ -9,7 +9,7 @@ use App\Models\Config\{
 	AeknowConfig,
 	AeMdwConfig,
 	WebClientConfig,
-	RandomPortraitConfig
+	RandomAvatarConfig
 };
 
 class Config extends BaseController {
@@ -54,12 +54,16 @@ class Config extends BaseController {
     }
 
 	public function randomPortrait()
+	{//随机头像配置 -- 即将废弃(2.5.0)(APP 2.9.5)
+		$this-> randomAvatar();
+	}
+	
+	public function randomAvatar()
 	{//随机头像配置
 		$code = 200;
 		$msg  = 'success';
-		$data = (new RandomPortraitConfig())-> config();
+		$data = (new RandomAvatarConfig())-> config();
 		echo $this->DisposeModel-> wetJsonRt($code, $msg, $data);
 	}
-	
 
 }

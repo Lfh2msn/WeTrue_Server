@@ -56,30 +56,8 @@ class Submit extends BaseController {
 		}
 	}
 
-	public function hashToken()
-	{//发布aex9-hash
-		$hash    = $this->request->getPost('hash');
-		$await   = $this->request->getPost('await');
-		$chainId = $_SERVER['HTTP_CHAIN_ID'] ?? 457;
-		if ($await){
-			$await = true;
-		} else {
-			$await = false;
-		}
-		$isHash = $this->DisposeModel-> checkAddress($hash);
-		if ($isHash) {
-            $data = (new HashReadModel())-> split($hash, $await, $chainId);
-			echo $data;
-        } elseif (!$hash) {
-			echo $this->DisposeModel-> wetJsonRt(406, 'error_type');
-		} else {
-			echo $this->DisposeModel-> wetJsonRt(406, 'error_hash');
-		}
-	}
-	
-
 	public function reward()
-	{//打赏
+	{//打赏 -- 即将废弃
 		$hash  	  = $this->request->getPost('hash');
 		$to_hash  = $this->request->getPost('toHash');
 		$isHash   = $this->DisposeModel-> checkAddress($hash);

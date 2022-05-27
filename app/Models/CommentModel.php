@@ -94,9 +94,6 @@ class CommentModel extends Model {
 			$isStrCount		 = $strCount ? $operation : $row->payload;
 			$deleteXss		 = $this->DisposeModel-> delete_xss($isStrCount);
 			$data['payload'] = $this->DisposeModel-> sensitive($deleteXss);
-			if (!$opt['imgTx']) {
-				$data['imgTx'] = $this->UserModel-> getPortraitUrl($sender_id);
-			}
 			$data['users']   = $this->UserModel-> getUser($sender_id);
         }
     	return $data;

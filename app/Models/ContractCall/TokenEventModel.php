@@ -17,45 +17,31 @@ class TokenEventModel
 		$this->DisposeModel = new DisposeModel();
 		$this->RewardModel  = new RewardModel();
 		$this->OpenVipModel = new OpenVipModel();
-		$this->RandomPortraitModel = new RandomPortraitModel();
+		$this->RandomAvatarModel = new RandomAvatarModel();
     }
 
 	public function event($json)
 	{//	事件处理
-		if ($json['payload']['type'] == 'reward') {
-			return $this-> wttReward($json);
+		$payloadType = $json['payload']['type'];
+
+		if ($payloadType == 'reward') {
+		// WTT 打赏
+			$to_hash = $json['payload']['content'];
+			return $this->RewardModel-> rewardPut($json, $to_hash);
 		}
 
-		if ($json['payload']['type'] == 'openVip') {
-			return $this-> wttOpenVip($json);
+		if ($payloadType == 'open_vip' || $payloadType == 'openVip') {
+		// WTT 开通VIP
+			return $this->OpenVipModel-> openVipPut($json);
 		}
 
-		if ($json['payload']['type'] == 'randomPortrait') {
-			return $this-> wttRandomPortrait($json);
+		if ($payloadType == 'random_avatar' || $payloadType == 'randomPortrait') {
+		// WTT 随机头像
+			return $this->RandomAvatarModel-> randomAvatarPut($json);
 		}
 
 		return $this->DisposeModel-> wetJsonRt(406, 'error_type');
 	}
-
-	public function wttReward($json)
-	{//	WTT 打赏
-		$to_hash = $json['payload']['content'];
-		$this->RewardModel-> rewardPut($json, $to_hash);
-		return $this->DisposeModel-> wetJsonRt(200);
-	}
-
-	public function wttOpenVip($json)
-	{//	WTT 开通VIP
-		$this->OpenVipModel-> openVipPut($json);
-		return $this->DisposeModel-> wetJsonRt(200);
-	}
-
-	public function wttRandomPortrait($json)
-	{//	WTT 随机头像
-		$this->RandomPortraitModel-> randomPortraitPut($json);
-		return $this->DisposeModel-> wetJsonRt(200);
-	}
-	
 
 }
 
