@@ -16,7 +16,7 @@ class RandomAvatarConfig {
 			'recAddress'     => 'ak_2afGvLkUTwdCixNLxKVbpmtGqDMSGVnU2orSTChNqKRcYk7xvV', //收款地址
 			'recAmount'      => "10000000000000000000", //费用10WTT = 10000000000000000000
 			'recToken'       => $contractId, //开通币种合约
-			'limitHeight'    => 10 //有效区块高度限制
+			'limitHeight'    => 480 //有效区块高度限制
 		);
     }
 }

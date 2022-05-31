@@ -7,7 +7,7 @@ use App\Models\{
 };
 use App\Models\User\{
 	OpenVipModel,
-	RandomPortraitModel
+	RandomAvatarModel
 };
 
 class TokenEventModel
