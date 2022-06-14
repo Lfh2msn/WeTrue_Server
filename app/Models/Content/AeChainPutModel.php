@@ -15,11 +15,11 @@ use App\Models\{
 };
 use App\Models\ServerMdw\WetModel;
 use App\Models\Get\GetAeChainModel;
+use App\Models\Config\ActiveConfig;
 
 class AeChainPutModel extends Model {
 //Ae链上hash入库Model
 	private $MsgModel;
-	private $GetAeChainModel;
 	private $UserModel;
 	private $StarModel;
 	private $TopicModel;
@@ -29,6 +29,8 @@ class AeChainPutModel extends Model {
 	private $WetModel;
 	private $DisposeModel;
 	private $MentionsModel;
+	private $GetAeChainModel;
+	private $ActiveConfig;
 	private $wet_content;
 	private $wet_comment;
 	private $wet_reply;
@@ -38,15 +40,16 @@ class AeChainPutModel extends Model {
 		$this->db = \Config\Database::connect('default');
 		$this->WetModel   = new WetModel();
 		$this->MsgModel   = new MsgModel();
-		$this->GetAeChainModel = new GetAeChainModel();
 		$this->UserModel  = new UserModel();
 		$this->StarModel  = new StarModel();
 		$this->TopicModel = new TopicModel();
 		$this->ValidModel = new ValidModel();
 		$this->FocusModel = new FocusModel();
+		$this->ActiveConfig  = new ActiveConfig();
 		$this->ConfigModel   = new ConfigModel();
 		$this->DisposeModel  = new DisposeModel();
 		$this->MentionsModel = new MentionsModel();
+		$this->GetAeChainModel = new GetAeChainModel();
 		$this->wet_temp 	 = "wet_temp";
 		$this->wet_behavior  = "wet_behavior";
 		$this->wet_content 	 = "wet_content";
@@ -101,13 +104,30 @@ class AeChainPutModel extends Model {
 		$data['content'] = $payload['content'];
 		$data['chainId'] = 457;
 
-		//用户费用检测
+		//用户 活跃度及费用 设置检测
 		$ftConfig = $this->ConfigModel-> frontConfig($data['sender']);
-		if ($data['type'] == 'topic')    {$userAmount = $ftConfig['topicAmount'];}
-		if ($data['type'] == 'comment')  {$userAmount = $ftConfig['commentAmount'];}
-		if ($data['type'] == 'reply')    {$userAmount = $ftConfig['replyAmount'];}
-		if ($data['type'] == 'nickname') {$userAmount = $ftConfig['nicknameAmount'];}
-		if ($data['type'] == 'sex')      {$userAmount = $ftConfig['sexAmount'];}
+		$activeConfig = $this->ActiveConfig->config();
+
+		if ($data['type'] == 'topic') { //主贴
+			$userAmount = $ftConfig['topicAmount'];
+			$getActive  = $activeConfig['topicActive'];
+		}
+		if ($data['type'] == 'comment') { //评论
+			$userAmount = $ftConfig['commentAmount'];
+			$getActive  = $activeConfig['commentActive'];
+		}
+		if ($data['type'] == 'reply') { //回复
+			$userAmount = $ftConfig['replyAmount'];
+			$getActive  = $activeConfig['replyActive'];
+		}
+		if ($data['type'] == 'nickname') { //昵称
+			$userAmount = $ftConfig['nicknameAmount'];
+			$getActive  = $activeConfig['nicknameActive'];
+		}
+		if ($data['type'] == 'sex') { //性别
+			$userAmount = $ftConfig['sexAmount'];
+			$getActive  = $activeConfig['sexActive'];
+		}
 
 		if ($data['amount'] < $userAmount) {
 			$this->deleteTemp($hash);
@@ -115,6 +135,7 @@ class AeChainPutModel extends Model {
 			$this->DisposeModel->wetFwriteLog($logMsg);
 			return $this->DisposeModel-> wetJsonRt(406,'error_amount');
 		}
+
 		try{
 			//内容分配
 			if( $data['type'] == 'topic' )
@@ -153,7 +174,6 @@ class AeChainPutModel extends Model {
 								'chain_id'	   => $data['chainId']
 							];
 				$this->db->table($this->wet_content)->insert($insertData);
-				$active = $bsConfig['topicActive'];
 				//是否话题
 				$isTopic = $this->TopicModel-> isTopic($data['content']);
 				if($isTopic) {
@@ -211,8 +231,6 @@ class AeChainPutModel extends Model {
 					$upSql = "UPDATE $this->wet_content SET comment_sum = comment_sum + 1 WHERE hash = '$data[toHash]'";
 				}
 				$this->db->query($upSql);
-				$active = $bsConfig['commentActive'];
-
 				//写入消息
 				$msgOpt = [ 'type'=>$data['type'] ];
 				if ($isShTipid) { //Superhero ID
@@ -284,8 +302,6 @@ class AeChainPutModel extends Model {
 				$this->db->table($this->wet_reply)->insert($insertData);
 				$upSql = "UPDATE $this->wet_comment SET comment_sum = comment_sum + 1 WHERE hash = '$data[toHash]'";
 				$this->db->query($upSql);
-				$active = $bsConfig['replyActive'];
-
 				//写入消息
 				$msgOpt = [ 'type'=>$data['type'] ];
 				$toHashID = $this->MsgModel-> toHashSendID($data['toHash'], $msgOpt);  //获取被评论ID
@@ -351,7 +367,6 @@ class AeChainPutModel extends Model {
 					];
 					$this->db->table($this->wet_users)->insert($insertData);
 				}
-				$active = $bsConfig['nicknameActive'];
 			}
 
 			elseif ( $data['type'] == 'sex' )
@@ -368,7 +383,6 @@ class AeChainPutModel extends Model {
 				if (!$verify) $this->UserModel-> userPut($data['sender']);
 				$upData = [ 'sex' => $data['content'] ];
 				$this->db->table($this->wet_users)->where('address', $data['sender'])->update($upData);
-				$active = $bsConfig['sexActive'];
 			}
 
 			elseif ( $data['type'] == 'focus' )
@@ -422,11 +436,11 @@ class AeChainPutModel extends Model {
 				'address'   => $data['sender'],
 				'hash'      => $data['hash'],
 				'thing'     => $data['type'],
-				'influence' => $active,
+				'influence' => $getActive,
 				'toaddress' => $data['receipt']
 			];
 			$this->db->table($this->wet_behavior)->insert($insetrBehaviorDate);
-			$this->UserModel-> userActive($data['sender'], $active, $e = true);
+			$this->UserModel-> userActive($data['sender'], $getActive, $e = true);
 			
 			if( $data['type'] == 'topic' ) { //发布主贴用户发帖量+1
 				$upSql = "UPDATE $this->wet_users SET topic_sum = topic_sum + 1 WHERE address = '$data[sender]'";

@@ -4,28 +4,28 @@ use App\Models\{
 	ComModel,
 	DisposeModel,
 	UserModel,
-	ConfigModel,
 	ValidModel
 };
+use App\Models\Config\ActiveConfig;
 
 class AeSuperheroPutModel extends ComModel {
 //抓取Superhero内容入库Model
 
 	public function __construct(){
 		parent::__construct();
-		$this->DisposeModel   = new DisposeModel();
-		$this->UserModel      = new UserModel();
-		$this->ConfigModel    = new ConfigModel();
-		$this->ValidModel     = new ValidModel();
+		$this->UserModel    = new UserModel();
+		$this->ValidModel   = new ValidModel();
+		$this->DisposeModel = new DisposeModel();
+		$this->ActiveConfig = new ActiveConfig();
 		$this->wet_content_sh = "wet_content_sh";
 		$this->wet_users 	  = "wet_users";
     }
 
 	public function putContent($page)
 	{ //获取TipID及内容，并写入数据库
-		$bsConfig = $this->ConfigModel-> backendConfig();
-		$active   = $bsConfig['topicActive'];
-		$shApiUrl = $bsConfig['superheroApiUrl'];
+		$acConfig  = $this->ActiveConfig-> config();
+		$getActive = $acConfig['topicActive'];
+		$shApiUrl =  'https://raendom-backend.z52da5wt.xyz'; //超级英雄API节点路径
 
 		$url = "{$shApiUrl}/tips?ordering=latest&page={$page}&blacklist=true";
 		//$url = "{$shApiUrl}/tips?page={$page}&blacklist=true";
@@ -110,7 +110,7 @@ class AeSuperheroPutModel extends ComModel {
 					];
 					
 					$this->db->table($this->wet_content_sh)->insert($insertData);
-					$this->UserModel-> userActive($json[$key]['sender'], $active, $e = true);
+					$this->UserModel-> userActive($json[$key]['sender'], $getActive, $e = true);
 					$upSql = "UPDATE $this->wet_users SET topic_sum = topic_sum + 1 WHERE address = '$json[$key][sender]'";
 					$this->db->query($upSql);
 				}

@@ -3,10 +3,10 @@
 use CodeIgniter\Model;
 use App\Models\{
 	UserModel,
-	ConfigModel,
 	DisposeModel,
 	ValidModel
 };
+use App\Models\Config\ActiveConfig;
 
 class PraiseModel extends Model {
 //点赞Model
@@ -15,7 +15,7 @@ class PraiseModel extends Model {
         //parent::__construct();
 		$this->db = \Config\Database::connect('default');
 		$this->UserModel    = new UserModel();
-		$this->ConfigModel  = new ConfigModel();
+		$this->ActiveConfig = new ActiveConfig();
 		$this->DisposeModel = new DisposeModel();
 		$this->ValidModel   = new ValidModel();
 		$this->wet_behavior = "wet_behavior";
@@ -66,19 +66,19 @@ class PraiseModel extends Model {
 			$this->db->query($updateSql);
 			$this->db->query($praiseSql);
 			//用户活跃入库
-			$bkConfig  = $this->ConfigModel-> backendConfig();
-			$pActive   = $bkConfig['praiseActive'];
+			$acConfig  = $this->ActiveConfig-> config();
+			$psActive  = $acConfig['praiseActive'];
 			$countSql  = "SELECT count(hash) AS count_pick FROM wet_praise WHERE sender_id = '$akToken' AND praise_time >= now()-interval '1 D'";
 			$countqy   = $this->db-> query($countSql);
 			$countPick = $countqy-> getRow()-> count_pick;
 			if ($countPick <= 20) { //24小时内小于20赞
-				$this->UserModel-> userActive($akToken, $pActive, $e);
+				$this->UserModel-> userActive($akToken, $psActive, $e);
 			}
 			//入库行为记录
 			$insetrBehaviorDate = [
 				'address'   => $akToken,
 				'thing'     => 'isPraise',
-				'influence' => $pActive,
+				'influence' => $psActive,
 				'toaddress' => $hash
 			];
 			$this->db->table($this->wet_behavior)->insert($insetrBehaviorDate);

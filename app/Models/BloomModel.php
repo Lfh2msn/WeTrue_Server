@@ -6,7 +6,6 @@ use App\Models\{
 	ReplyModel,
 	ValidModel,
 	AmountModel,
-	ConfigModel,
 	DisposeModel,
 	CommentModel,
 	ComplainModel
@@ -16,6 +15,7 @@ use App\Models\Get\{
 	GetAeknowModel
 };
 use App\Models\Content\ContentPullModel;
+use App\Models\Config\ActiveConfig;
 
 class BloomModel extends ComModel {
 //过滤Model
@@ -27,7 +27,7 @@ class BloomModel extends ComModel {
 		$this->UserModel	= new UserModel();
 		$this->ValidModel	= new ValidModel();
 		$this->AmountModel	= new AmountModel();
-		$this->ConfigModel	= new ConfigModel();
+		$this->ActiveConfig	= new ActiveConfig();
 		$this->DisposeModel = new DisposeModel();
 		$this->GetAeknowModel = new GetAeknowModel();
 		$this->wet_reply    = "wet_reply";
@@ -94,9 +94,9 @@ class BloomModel extends ComModel {
         $this->db->query($insertBloom);
 
         $senderID = (new ComplainModel())-> complainAddress($hash);
-        $bsConfig = $this->ConfigModel-> backendConfig();
-        $active = $bsConfig['complainActive'];
-        $this->UserModel-> userActive($senderID, $active, $e = false);
+        $acConfig = $this->ActiveConfig-> config();
+        $clActive = $acConfig['complainActive'];
+        $this->UserModel-> userActive($senderID, $clActive, $e = false);
 
         (new ComplainModel())-> deleteComplain($hash);
 
@@ -104,7 +104,7 @@ class BloomModel extends ComModel {
 			'address'   => $akToken,
 			'hash'      => $hash,
 			'thing'     => 'admin_bf',
-			'influence' => '-'.$active,
+			'influence' => '-'.$clActive,
 			'toaddress' => $senderID
 		];
 		$this->db->table($this->wet_behavior)->insert($insetrBehaviorDate);
