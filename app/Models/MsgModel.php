@@ -7,8 +7,7 @@ use App\Models\{
 	ReplyModel,
 	RewardModel,
 	ValidModel,
-	DisposeModel,
-	ConfigModel
+	DisposeModel
 };
 use App\Models\Content\{
 	ContentPullModel,
@@ -18,6 +17,7 @@ use App\Models\Wecom\{
 	SendModel,
 	CorpUserModel
 };
+use App\Models\Config\WecomConfig;
 
 class MsgModel extends ComModel
 {//消息Model
@@ -30,11 +30,10 @@ class MsgModel extends ComModel
 		$this->RewardModel	= new RewardModel();
 		$this->ValidModel	= new ValidModel();
 		$this->SendModel    = new SendModel();
-		$this->ConfigModel  = new ConfigModel();
+		$this->WecomConfig  = new WecomConfig();
 		$this->CorpUserModel    = new CorpUserModel();
 		$this->ContentPullModel = new ContentPullModel();
 		$this->SuperheroContentModel = new SuperheroContentModel();
-		
 		$this->wet_message  = "wet_message";
     }
 
@@ -217,7 +216,7 @@ class MsgModel extends ComModel
 
 		$url 		 = "https://wetrue.cc/#/pages/index/detail?hash={$toHash}";
 		$description = "您收到一条来自WeTrue{$type},点击查看详情";
-		$weConfig    = $this->ConfigModel-> wecomConfig();
+		$weConfig    = $this->WecomConfig-> config();
 		$wetrueKey   = $weConfig['WETRUE_KEY_1'];
 		$touser		 = $this->CorpUserModel-> getUserId($reqAddress);
 		if ($touser){
