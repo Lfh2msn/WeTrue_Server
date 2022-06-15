@@ -40,7 +40,7 @@ class TopicModel extends ComModel
 								 topic_sum, 
 								 read_sum
 							FROM $this->wet_topic_tag 
-							WHERE keywords ilike '$keyword%' AND state = '1' 
+							WHERE keywords ilike '$keyword' AND state = '1' 
 							LIMIT 1";
 			$getTagRow = $this->db->query($selectTag)-> getRow();
 			$data = [
@@ -79,7 +79,7 @@ class TopicModel extends ComModel
 		if ($isTopic) {
 			$selectTag = "SELECT uid, topic_sum
 							FROM $this->wet_topic_tag 
-							WHERE keywords ilike '$keyword%' 
+							WHERE keywords ilike '$keyword' 
 							AND state = '1' LIMIT 1";
 			$getTagRow = $this->db->query($selectTag)-> getRow();
 

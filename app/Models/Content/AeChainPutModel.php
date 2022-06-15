@@ -93,7 +93,7 @@ class AeChainPutModel extends Model {
 		$data['WeTrue']  = $WeTrue;
 		$isSource		 = $payload['source'];// ?? 'WeTrue';
 		$sourceDelXSS 	 = $this->DisposeModel-> delete_xss($isSource);
-		$sourceSubstr	 = substr($sourceDelXSS, 0, 12);
+		$sourceSubstr	 = substr($sourceDelXSS, 0, 15);
 		$data['source']  = $sourceSubstr;
 		$data['type']    = $this->DisposeModel-> delete_xss($payload['type']);
 		$data['hash']    = $hash;
