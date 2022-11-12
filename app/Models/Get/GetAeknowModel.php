@@ -58,8 +58,41 @@ class GetAeknowModel {
 
 	public function latestSpendTx($address)
 	{//获取最新十条tx发送人
-		//$bsConfig = $this->ConfigModel-> backendConfig();
-		//$url = $bsConfig['backendServiceMdw'].'/txs/backward?account='.$recipient.'&limit=10&page=1';
+	/*
+	//从 mdw 获取
+		$url = 'https://mainnet.aeternity.io/mdw/txs/backward?account='.$recipient.'&limit=10&page=1';
+		@$get = file_get_contents($url);
+		$json = (array) json_decode($get, true);		
+		$send = $json['data']['tx']['sender_id'];
+		$num  = 0;
+		
+		while (!$send && $num < 2) {
+			@$get = file_get_contents($url);
+			$json = (array) json_decode($get, true);
+			$send = $json['data']['tx']['sender_id'];
+			$num++;
+			sleep(2);
+		}
+
+        if (empty($send)) {
+			$logMsg = "获取最新N条发送人失败--:{$address}\r\n";
+			$this->DisposeModel->wetFwriteLog($logMsg);
+			return;
+        }
+
+		$data = $json['data'];
+		$sender = [];
+		foreach ($data as $row){
+			if ($row['recipient_id'] == $address) {
+				$sender[] = $row['tx']['sender_id'];
+			}
+		}
+		$sender = array_unique($sender);
+		$sender = array_values($sender);
+		return $sender;
+	*/
+
+	//从 aeknow 获取
 		$url = "https://aeknow.org/api/spendtx/".$address;
 		@$get = file_get_contents($url);
 		$json = (array) json_decode($get, true);
@@ -74,7 +107,7 @@ class GetAeknowModel {
 		}
 
         if (empty($send)) {
-			$logMsg = "获取最新N条发送人失败--:{$address}\r\n\r\n";
+			$logMsg = "获取最新N条发送人失败--:{$address}\r\n";
 			$this->DisposeModel->wetFwriteLog($logMsg);
 			return;
         }
