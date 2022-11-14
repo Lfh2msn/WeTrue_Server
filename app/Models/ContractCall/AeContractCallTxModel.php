@@ -32,10 +32,11 @@ class AeContractCallTxModel extends Model
 
 	public function txChainJsonRead($json)
 	{//	链上Hash处理
-		$tokenName = 'WTT';
+		
 		$hash = $json['hash'];
+		//指定合同ID
+		$tokenName = 'WTT';
 		$contractId = $this->AeTokenConfig-> getContractId($tokenName);
-
 		if ( $json['tx']['contract_id'] != $contractId ) {
 			$this->deleteTemp($hash);
 			$logMsg = "Token Contract_id 错误:{$hash}\r\n";
@@ -52,7 +53,8 @@ class AeContractCallTxModel extends Model
 		}
 
 		if ($aekJson['payload']) {
-			$aekJson['payload'] = (array) json_decode(base64_decode($aekJson['payload'], true), true);
+			$payload = (array) json_decode(base64_decode($aekJson['payload'], true), true);
+			$aekJson['payload'] = $payload;
 		}
 
 		//版本检测
@@ -64,7 +66,7 @@ class AeContractCallTxModel extends Model
 		{  //版本号错误或低
 			if(!$WeTrue){ //非WeTrue
 				$this->deleteTemp($hash);
-				$logMsg = "非WeTrue格式:{$hash},版本号：{$WeTrue}\r\n";
+				$logMsg = "非WeTrue格式:{$hash}\r\n";
 				$this->DisposeModel->wetFwriteLog($logMsg);
 				return $this->DisposeModel-> wetJsonRt(406,'error_WeTrue');
 			}
