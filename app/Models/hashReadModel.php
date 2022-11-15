@@ -91,11 +91,11 @@ class HashReadModel extends Model {
 				continue;
 			}
 			$this->AeChainPutModel->decodeContent($json);
-			/**
+			/*
 			 * 抓取超级英雄数据，及写入
 			 * 服务器9-12小时=中国时间22--00点执行
 			 * 服务器21-23小时=中国时间10--14点执行
-			 */
+			*/
 			$currentHour = date('H');
 			if (
 				   $currentHour == 2

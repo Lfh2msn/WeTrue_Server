@@ -92,7 +92,13 @@ class ValidModel extends Model {
         $query = $this->db->query($sql);
 		$row   = $query->getRow();
 		$ac	   = $row->uactive;
-		if ($ac < 50) return true;
+		if ($ac < 50) {
+			$sql   = "SELECT count(hash) FROM wet_content WHERE sender_id = '$address'";
+			$query = $this->db->query($sql);
+			$row   = $query->getRow();
+			$count = $row->count;//数量
+			if ($count < 3) return true;
+		}
 		return false;
 	}
 
