@@ -53,7 +53,7 @@ class AeContractCallTxModel extends Model
 		}
 
 		if ($aekJson['payload']) {
-			$payload = (array) json_decode(base64_decode($aekJson['payload'], true), true);
+			$payload = (array) json_decode(base64_decode(base64_decode($aekJson['payload'], true)), true);
 			$aekJson['payload'] = $payload;
 		}
 
