@@ -46,6 +46,7 @@ class ReplyModel extends Model {
 			$to_address			  = $row-> to_address;
 			$data['hash']		  = $hash;
 			$data['toHash']		  = $row-> to_hash;
+			$data['to_hash']	  = $row-> to_hash;
 			$data['replyType']	  = $row-> reply_type;
 			$data['replyHash']    = $row-> reply_hash;
 			$data['payload']	  = $this->DisposeModel-> delete_xss($row-> payload);

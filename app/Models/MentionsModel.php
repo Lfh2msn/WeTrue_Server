@@ -39,7 +39,7 @@ class MentionsModel extends ComModel
 		$data = [
 			'type'		=> topic\comment\reply,
 			'hash'		=> hash,
-			'toHash'	=> toHash,
+			'to_hash'	=> to_hash,
 			'content'   => 内容,
 			'sender_id' => 发送人,
 			'utctime'   => 时间戳
@@ -55,7 +55,7 @@ class MentionsModel extends ComModel
 					$msgData = [
 						'type'	   	   => 'mentions',
 						'hash' 		   => isset($data['hash']) ? $data['hash'] : '',
-						'to_hash' 	   => $data['toHash'],
+						'to_hash' 	   => $data['to_hash'],
 						'sender_id'	   => $data['sender_id'],
 						'recipient_id' => $address,
 						'utctime' 	   => $data['utctime']

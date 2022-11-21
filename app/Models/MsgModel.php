@@ -81,7 +81,7 @@ class MsgModel extends ComModel
 		if ($getResult) {
 			foreach ($getResult as $row) {
 				$hash    = $row->hash;
-				$toHash  = $row->to_hash;
+				$to_hash = $row->to_hash;
 				$type	 = $row->type;
 				$state	 = $row->state ? true : false;
 				$utctime = (int) $row->utctime;
@@ -91,9 +91,9 @@ class MsgModel extends ComModel
 					$isData['state']   = $state;
 					$isData['type']    = $type;
 					$isData['utctime'] = $utctime;
-					$isData['topic']   = $this->ContentPullModel-> simpleContent($toHash, $opt=[]);
-					$isShTipid = $this->DisposeModel-> checkSuperheroTipid($toHash);
-					if ($isShTipid) $isData['topic'] = $this->SuperheroContentModel-> simpleContent($toHash, $opt=[]);
+					$isData['topic']   = $this->ContentPullModel-> simpleContent($to_hash, $opt=[]);
+					$isShTipid = $this->DisposeModel-> checkSuperheroTipid($to_hash);
+					if ($isShTipid) $isData['topic'] = $this->SuperheroContentModel-> simpleContent($to_hash, $opt=[]);
 					$comment = $this->CommentModel-> simpleComment($hash, $opt);
 					$isData['comment'] = $comment ? $comment : [];
 					$isData['reply']   = [];
@@ -107,8 +107,8 @@ class MsgModel extends ComModel
 					$isData['state']   = $state;
 					$isData['type']    = $type;
 					$isData['utctime'] = $utctime;
-					$commentPayload    = $this->CommentModel-> simpleComment($toHash, $opt);
-					$topicHash		   = $commentPayload['toHash'];
+					$commentPayload    = $this->CommentModel-> simpleComment($to_hash, $opt);
+					$topicHash		   = $commentPayload['to_hash'];
 					$isData['topic']   = $this->ContentPullModel-> simpleContent($topicHash, $opt=[]);
 					$isData['comment'] = $commentPayload;
 					$isData['reply']   = $this->ReplyModel-> txReply($hash);
@@ -122,7 +122,7 @@ class MsgModel extends ComModel
 					$isData['state']   = $state;
 					$isData['type']    = $type;
 					$isData['utctime'] = $utctime;
-					$isData['topic']   = $this->ContentPullModel-> simpleContent($toHash, $opt=[]);
+					$isData['topic']   = $this->ContentPullModel-> simpleContent($to_hash, $opt=[]);
 					$isData['reward']  = $this->RewardModel-> simpleReward($hash);
 					$isData['comment'] = [];
 					$isData['reply']   = [];
@@ -197,24 +197,24 @@ class MsgModel extends ComModel
 
 	public function pushWecom($data)
 	{//推送到企业微信
-		$toHash 	= $data['to_hash'];
+		$to_hash 	= $data['to_hash'];
 		$reqAddress = $data['recipient_id'];
 		$type   	= $data['type'];
 
 		if ($type == 'comment') {
-			$toHash = $data['to_hash'];
-			$type = "评论";
+			$to_hash = $data['to_hash'];
+			$type 	 = "评论";
 		} elseif ($type == 'reply') {
 			$opt['substr'] = 45; //限制Payload长度
 			$opt = ['imgTx'=>true];
-			$comHash = $this->CommentModel-> simpleComment($toHash, $opt);
-			$toHash	 = $comHash['toHash'];
+			$comHash = $this->CommentModel-> simpleComment($to_hash, $opt);
+			$to_hash = $comHash['to_hash'];
 			$type    = "回复";
 		} else {
 			return;
 		}
 
-		$url 		 = "https://wetrue.cc/#/pages/index/detail?hash={$toHash}";
+		$url 		 = "https://wetrue.cc/#/pages/index/detail?hash={$to_hash}";
 		$description = "您收到一条来自WeTrue{$type},点击查看详情";
 		$weConfig    = $this->WecomConfig-> config();
 		$wetrueKey   = $weConfig['WETRUE_KEY_1'];
