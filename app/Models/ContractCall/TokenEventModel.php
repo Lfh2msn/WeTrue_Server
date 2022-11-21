@@ -26,16 +26,15 @@ class TokenEventModel
 
 		if ($payloadType == 'reward') {
 		// WTT 打赏
-			$to_hash = $json['payload']['content'];
-			return $this->RewardModel-> rewardPut($json, $to_hash);
+			return $this->RewardModel-> rewardPut($json);
 		}
 
-		if ($payloadType == 'open_vip' || $payloadType == 'openVip') {
+		if ($payloadType == 'open_vip') {
 		// WTT 开通VIP
 			return $this->OpenVipModel-> openVipPut($json);
 		}
 
-		if ($payloadType == 'random_avatar' || $payloadType == 'randomPortrait') {
+		if ($payloadType == 'random_avatar') {
 		// WTT 随机头像
 			return $this->RandomAvatarModel-> randomAvatarPut($json);
 		}

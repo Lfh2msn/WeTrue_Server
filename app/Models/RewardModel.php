@@ -65,75 +65,11 @@ class RewardModel extends Model {
 		$data['sender_id'] = $row->sender_id;
 		return $data;
 	}
-	
-	public function reward($hash, $to_hash)
-	{//打赏
-		$tp_type   = "reward";
-		$isRewardHash = $this->ValidModel-> isRewardHash($hash);
-		if ($isRewardHash) {
-			return $this->DisposeModel-> wetJsonRt(406, 'reward_hash_repeat');
-		}
 
-		$isTempHash = $this->ValidModel-> isTempHash($hash);
-		if ($isTempHash) {
-			echo $this->DisposeModel-> wetJsonRt(406, 'error_repeat_temp');
-		} else { //写入临时缓存
-			$insertTempSql = "INSERT INTO $this->wet_temp(tp_hash, tp_to_hash, tp_type) VALUES ('$hash', '$to_hash', '$tp_type')";
-			$this->db->query($insertTempSql);
-			echo $this->DisposeModel-> wetJsonRt(200);
-		}
-
-		$delTempSql = "DELETE FROM $this->wet_temp WHERE tp_time <= now()-interval '3 D' AND tp_type = '$tp_type'";
-		$this->db->query($delTempSql);
-
-		$hashSql = "SELECT tp_hash, tp_to_hash FROM $this->wet_temp WHERE tp_type = '$tp_type' ORDER BY tp_time DESC";
-		$hashqy  = $this->db-> query($hashSql);
-		$getRes  = $hashqy-> getResult();
-		foreach ($getRes as $row) {
-			$tp_hash   = $row-> tp_hash;
-			$tp_toHash = $row-> tp_to_hash;
-			$this->getReward($tp_hash, $tp_toHash);
-		}
-	}
-
-	public function getReward($hash, $to_hash)
-	{//打赏数据获取处理
-		$isRewardHash = $this->ValidModel-> isRewardHash($hash);
-		if ($isRewardHash) {
-			$this->deleteTemp($hash);
-			$logMsg = "error_reward_repeat--hash：{$hash}\r\nto_hash：{$to_hash}\r\n";
-			$logPath = "log/reward/{date('Y-m')}.txt";
-			$this->DisposeModel->wetFwriteLog($logMsg, $logPath);
-			return;
-		}
-
-		$json = $this->GetAeknowModel->tokenPayloadTx($hash);
-		if (empty($json)) {
-			$logMsg = "error_aeknow_api--hash：{$hash}\r\nto_hash：{$to_hash}\r\n";
-			$logPath = "log/reward/{date('Y-m')}.txt";
-			$this->DisposeModel->wetFwriteLog($logMsg, $logPath);
-			return;
-        }
-
-		$tokenName   = 'WTT';
-		$contractId  = $this->AeTokenConfig-> getContractId($tokenName);
-		$return_type = $json['return_type'];
-		$contract_id = $json['contract_id'];
-
-		if ($contract_id != $contractId || $return_type != 'ok') {
-			$this->deleteTemp($hash);
-			$logMsg = "error_reward_contractIdOrType--hash：{$hash}\r\nto_hash：{$to_hash}\r\n";
-			$logPath = "log/reward/{date('Y-m')}.txt";
-			$this->DisposeModel->wetFwriteLog($logMsg, $logPath);
-			return;
-		}
-
-		$this->rewardPut($json, $to_hash);
-	}
-
-	public function rewardPut($json, $to_hash)
+	public function rewardPut($json)
 	{//打赏入库处理
 		$hash		  = $json['txhash'];
+		$to_hash 	  = $json['payload']['to_hash'];
 		$sender_id    = $json['sender_id'];
 		$recipient_id = $json['recipient_id'];
 		$amount 	  = $json['amount'];

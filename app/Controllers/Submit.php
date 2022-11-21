@@ -56,21 +56,6 @@ class Submit extends BaseController {
 		}
 	}
 
-	public function reward()
-	{//打赏 -- 即将废弃
-		$hash  	  = $this->request->getPost('hash');
-		$to_hash  = $this->request->getPost('toHash');
-		$isHash   = $this->DisposeModel-> checkAddress($hash);
-		$isToHash = $this->DisposeModel-> checkAddress($to_hash);
-		$isShid   = $this->DisposeModel-> checkSuperheroTipid($to_hash);
-
-		if ($isHash && ($isToHash || $isShid)) {
-            (new RewardModel())-> reward($hash, $to_hash);
-        } else {
-			echo $this->DisposeModel-> wetJsonRt(406, 'error_hash');
-		}
-	}
-
 	public function complain()
 	{//投诉hash
 		$hash  = $this->request->getPost('hash');
