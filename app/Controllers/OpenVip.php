@@ -7,19 +7,6 @@ use App\Models\Config\OpenVipConfig;
 
 class OpenVip extends BaseController {
 
-	public function openVip()
-	{//开通VIP
-        $hash      = $this->request->getPost('hash');
-		$address   = $_SERVER['HTTP_KEY'];
-		$isHash    = $this->DisposeModel-> checkAddress($hash);
-		$isAddress = $this->DisposeModel-> checkAddress($address);
-		if ($isHash && $isAddress) {
-			echo (new OpenVipModel())-> openAccount($hash, $address);
-		} else {
-			echo $this->DisposeModel-> wetJsonRt(406,'error_hash');
-		}
-    }
-
 	public function state()
 	{//提交开通VIP状态
 		$address   = $_SERVER['HTTP_KEY'];

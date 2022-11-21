@@ -30,58 +30,6 @@ class OpenVipModel extends ComModel
 		$this->wet_users_vip = "wet_users_vip";
     }
 
-	public function openAccount($hash, $address)
-	{//新开户
-		$tp_type = "openvip";
-		$isTempHash = $this->ValidModel-> isTempHash($hash);
-		if ($isTempHash) {
-			echo $this->DisposeModel-> wetJsonRt(406, 'error_repeat');
-		} else {  //写入临时缓存
-			$insertTempSql = "INSERT INTO $this->wet_temp(tp_hash, tp_sender_id, tp_type) VALUES ('$hash', '$address', '$tp_type')";
-			$this->db->query($insertTempSql);
-			echo $this->DisposeModel-> wetJsonRt(200, 'success');
-		}
-
-		$delTempSql = "DELETE FROM $this->wet_temp WHERE tp_time <= now()-interval '5 D' AND tp_type = '$tp_type'";
-		$this->db->query($delTempSql);
-
-		$tempSql = "SELECT tp_hash FROM $this->wet_temp WHERE tp_type = '$tp_type' ORDER BY tp_time DESC LIMIT 30";
-		$tempQy  = $this->db-> query($tempSql);
-		$tempRes = $tempQy->getResult();
-		foreach ($tempRes as $row) {
-			$tp_hash = $row->tp_hash;
-			$this->getOpenAccount($tp_hash);
-		}
-	}
-
-
-	public function getOpenAccount($hash)
-	{//获取开通数据
-		$textTime = date("Y-m");
-		$json = $this->GetAeknowModel->tokenPayloadTx($hash);
-		if (empty($json)) {
-			$logMsg = "获取AEKnow-API错误: {$hash}\r\n";
-			$logPath = "log/vip_open/error-{$textTime}.txt";
-			$this->DisposeModel->wetFwriteLog($logMsg, $logPath);
-			return $this->DisposeModel-> wetJsonRt(406, 'error_unknown');
-        }
-
-		$tokenName   = 'WTT';
-		$contractId  = $this->AeTokenConfig-> getContractId($tokenName);
-		$return_type = $json['return_type'];
-		$contract_id = $json['contract_id'];
-
-		if ($contract_id != $contractId || $return_type != 'ok') {
-			$this->deleteTemp($hash);
-			$logMsg = "开通合约id或状态错误--hash: {$hash}\r\n";
-			$logPath = "log/vip_open/error-{$textTime}.txt";
-			$this->DisposeModel->wetFwriteLog($logMsg, $logPath);
-			return;
-		}
-
-		$this->openVipPut($json);
-	}
-
 	public function openVipPut($json)
 	{//开通vip 入库处理
 		$hash		 = $json['txhash'];
