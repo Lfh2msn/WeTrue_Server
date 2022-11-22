@@ -96,12 +96,12 @@ class GetAeknowModel {
 		$url = "https://aeknow.org/api/spendtx/".$address;
 		@$get = file_get_contents($url);
 		$json = (array) json_decode($get, true);
-		$send = $json['txs'][0]['sender_id'];
+		$send = $json['txs'][0]['sender_id'] ?? $json['txs'][1]['sender_id'];
 		$num  = 0;
 		while (!$send && $num < 5) {
 			@$get = file_get_contents($url);
 			$json = (array) json_decode($get, true);
-			$send = $json['txs'][0]['sender_id'];
+			$send = $json['txs'][0]['sender_id'] ?? $json['txs'][1]['sender_id'];
 			$num++;
 			sleep(5);
 		}
