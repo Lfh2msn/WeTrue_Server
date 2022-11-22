@@ -202,7 +202,7 @@ class TopicModel extends ComModel
 		if ($keywords) {
 			$count = count($keywords) <= 15 ? count($keywords) : 15;
 			for($i=0; $i<$count; $i++) {
-				$selectTag = "SELECT uid FROM $this->wet_topic_tag WHERE keywords ilike '%$keywords[$i]%' LIMIT 1";
+				$selectTag = "SELECT uid FROM $this->wet_topic_tag WHERE keywords ilike '$keywords[$i]' LIMIT 1";
 				$getTagRow = $this->db->query($selectTag)-> getRow();
 				if (!$getTagRow) {
 					$inTopicTag = [
@@ -226,7 +226,7 @@ class TopicModel extends ComModel
 								SET 
 									topic_sum = topic_sum + 1, 
 									read_sum  = read_sum + 1
-								WHERE keywords ilike '%$keywords[$i]%'";
+								WHERE keywords ilike '$keywords[$i]'";
 				$this->db->query($updateSql);
 			}
 		}
