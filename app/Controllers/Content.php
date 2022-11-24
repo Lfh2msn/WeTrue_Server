@@ -99,4 +99,10 @@ class Content extends BaseController
 		echo $data;
     }
 
+    public function getCount()
+    {//主贴总数
+		$data = $this->PagesModel-> contentCount();
+        echo $this->DisposeModel-> wetJsonRt(200,'success',$data);
+    }
+
 }

@@ -278,6 +278,16 @@ class PagesModel extends Model {
 		return $this->DisposeModel-> wetRt(200,'success',$data);
 	}
 
+	public function contentCount(){
+		$sql   = "SELECT count(hash) FROM wet_content";
+		$query = $this->db-> query($sql);
+		$row   = $query-> getRow();
+		$data  = [
+			'totalSize'	=> (int)$row->count //总数量
+		];
+		return $data;
+	}
+
 	private function pages($page, $size, $sql)
 	{
 		$query = $this->db-> query($sql);
