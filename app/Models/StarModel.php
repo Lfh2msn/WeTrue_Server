@@ -19,7 +19,7 @@ class StarModel extends Model {
 		$this->wet_behavior = "wet_behavior";
 	}
 
-	public function star($address, $hash, $select)
+	public function star($address, $hash, $action, $select)
 	{//收藏
 		$this->tablename = 'wet_content';
 		$whereHash = 'hash';
@@ -29,28 +29,24 @@ class StarModel extends Model {
 			$whereHash = 'tip_id';
 		}
 
-		$data = [];
 		$verify = $this->ValidModel-> isStar($hash, $address);
-		if (!$verify) {
+		if (!$verify && $action == 'true') {
 			$starSql    = "INSERT INTO $this->wet_star(hash, sender_id) VALUES ('$hash', '$address')";
 			$upContent  = "UPDATE $this->tablename SET star_sum = star_sum + 1 WHERE $whereHash = '$hash'";
 			$upUsers    = "UPDATE $this->wet_users SET star_sum = star_sum + 1 WHERE address = '$address'";
-			$isStar	    = true;
-		} else {
+		}
+
+		elseif ($verify && $action == 'false') {
 			$starSql    = "DELETE FROM $this->wet_star WHERE hash = '$hash' AND sender_id = '$address'";
 			$upContent  = "UPDATE $this->tablename SET star_sum = star_sum - 1 WHERE $whereHash = '$hash'";
 			$upUsers    = "UPDATE $this->wet_users SET star_sum = star_sum - 1 WHERE address = '$address'";
-			$isStar	    = false;
 		}
+
+		else die("star Error");
+
 		$this->db-> query($starSql);
 		$this->db-> query($upContent);
 		$this->db-> query($upUsers);
-		$getStarSql = "SELECT star_sum FROM $this->tablename WHERE $whereHash = '$hash' LIMIT 1";
-		$query 		= $this->db-> query($getStarSql);
-		$row		= $query-> getRow();
-		$data['star']   = (int)$row->star_sum;
-		$data['isStar'] = $isStar;
-		return $this->DisposeModel-> wetJsonRt(200,'success',$data);
 	}
 
 }

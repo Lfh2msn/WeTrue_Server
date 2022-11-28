@@ -81,24 +81,26 @@ class FocusModel extends Model {
 	}
 
 
-	public function focus($focus, $fans)
+	public function focus($focus, $fans, $action)
 	{//关注
 		$verify = $this->ValidModel-> isUser($fans);
 		if (!$verify) $this->UserModel-> userPut($fans);
 
 		$isFocus = $this->ValidModel-> isFocus($focus, $fans);
-		if (!$isFocus) {
+		if (!$isFocus && $action == 'true') {
 			$focusSql = "INSERT INTO $this->tablename(focus, fans) VALUES ('$focus', '$fans')";
 			$e = true;
-		} else {
+		}
+		
+		elseif ($isFocus && $action == 'false') {
 			$focusSql = "DELETE FROM $this->tablename WHERE focus = '$focus' AND fans = '$fans'";
 			$e = false;
-		}
+	 	}
+
+		else die("focus Error");
+
 		$this->db-> query($focusSql);
 		$this->UserModel-> userFocus($focus, $fans, $e);
-		$isFocus = $this->ValidModel-> isFocus($focus, $fans);
-		$data['isFocus'] = $isFocus;
-		return $this->DisposeModel-> wetJsonRt(200, 'success',$data);
 	}
 
 	public function autoFocus($focus ,$fans)

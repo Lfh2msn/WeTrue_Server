@@ -63,10 +63,11 @@ class AeChainPutModel extends Model {
 
 	public function decodeContent($json)
 	{//重构及内容分配
+		$logTime	= date('H:i:s'); //日志时间
 		$bsConfig 	= $this->ConfigModel-> backendConfig();
         $microBlock = $json['block_hash'];
 		if(!$microBlock){
-			$logMsg = "错误区块hash:$microBlock\r\n";
+			$logMsg = "{$logTime} - 错误区块hash:$microBlock\r\n";
 			$this->DisposeModel->wetFwriteLog($logMsg);
 			return $this->DisposeModel-> wetJsonRt(406,'error_block_hash');
 		}
@@ -81,11 +82,11 @@ class AeChainPutModel extends Model {
 		{  //版本号错误或低
 			if(!$WeTrue){ //非WeTrue
 				$this->deleteTemp($hash);
-				$logMsg = "非WeTrue格式:{$hash},版本号：{$WeTrue}\r\n";
+				$logMsg = "{$logTime} - 非WeTrue格式:{$hash},版本号：{$WeTrue}\r\n";
 				$this->DisposeModel->wetFwriteLog($logMsg);
 				return $this->DisposeModel-> wetJsonRt(406,'error_WeTrue');
 			}
-			$logMsg = "版本号异常:{$hash},版本号：{$WeTrue}\r\n";
+			$logMsg = "{$logTime} - 版本号异常:{$hash},版本号：{$WeTrue}\r\n";
 			$this->DisposeModel->wetFwriteLog($logMsg);
 			return $this->DisposeModel-> wetJsonRt(406,'error_version');
 		}
@@ -131,7 +132,7 @@ class AeChainPutModel extends Model {
 
 		if ($data['amount'] < $userAmount) {
 			$this->deleteTemp($hash);
-			$logMsg = "费用异常:{$hash}\r\n";
+			$logMsg = "{$logTime} - 费用异常:{$hash}\r\n";
 			$this->DisposeModel->wetFwriteLog($logMsg);
 			return $this->DisposeModel-> wetJsonRt(406,'error_amount');
 		}
@@ -143,7 +144,7 @@ class AeChainPutModel extends Model {
 				$isContentHash = $this->ValidModel-> isContentHash($data['hash']);
 				if ($isContentHash) {
 					$this->deleteTemp($hash);
-					$logMsg = "重复主贴Hash:{$hash}\r\n";
+					$logMsg = "{$logTime} - 重复主贴Hash:{$hash}\r\n";
 					$this->DisposeModel->wetFwriteLog($logMsg);
 					return $this->DisposeModel-> wetJsonRt(406,'error');
 				}
@@ -154,7 +155,7 @@ class AeChainPutModel extends Model {
 					$accountsAettos = $this->GetAeChainModel->accountsBalance($data['sender']);  //查询链上金额
 					if ($accountsAettos < $holdAettos) {
 						$this->deleteTemp($hash);
-						$logMsg  = date('Y-m-d')."-持有AE不足最低要求:{$hash}\r\n";
+						$logMsg  = "{$logTime} - 持有AE不足最低要求:{$hash}\r\n";
 						$logPath = "log/chain_read/holdAeLow-".date('Y-m').".txt";
 						$this->DisposeModel->wetFwriteLog($logMsg, $logPath);
 						return $this->DisposeModel-> wetJsonRt(406,'hold_aettos_low');
@@ -205,7 +206,7 @@ class AeChainPutModel extends Model {
 				$isCommentHash = $this->ValidModel-> isCommentHash($data['hash']);
 				if ($isCommentHash) {
 					$this->deleteTemp($hash);
-					$logMsg = "重复评论hash:{$data['hash']}\r\n";
+					$logMsg = "{$logTime} - 重复评论hash:{$data['hash']}\r\n";
 					$this->DisposeModel->wetFwriteLog($logMsg);
 					return $this->DisposeModel-> wetJsonRt(406,'error');
 				}
@@ -270,7 +271,7 @@ class AeChainPutModel extends Model {
 				$isReplyHash = $this->ValidModel-> isReplyHash($data['hash']);
 				if ($isReplyHash) {
 					$this->deleteTemp($hash);
-					$logMsg = "重复回复hash:{$data['hash']}\r\n";
+					$logMsg = "{$logTime} - 重复回复hash:{$data['hash']}\r\n";
 					$this->DisposeModel->wetFwriteLog($logMsg);
 					return $this->DisposeModel-> wetJsonRt(406,'error');
 				}
@@ -282,7 +283,7 @@ class AeChainPutModel extends Model {
 
 				if ($data['reply_type'] != "comment" && $data['reply_type'] != "reply") {
 					$this->deleteTemp($hash);
-					$logMsg = "无效格式{$data['reply_type']}-回复hash：{$data['hash']}\r\n";
+					$logMsg = "{$logTime} - 无效格式回复贴格式:{$data['reply_type']}:{$data['hash']}\r\n";
 					$this->DisposeModel->wetFwriteLog($logMsg);
 					return $this->DisposeModel-> wetJsonRt(406,'error');
 				}
@@ -353,7 +354,7 @@ class AeChainPutModel extends Model {
 				$isNickname = $this->ValidModel-> isNickname($data['content']);
 				if ($isNickname) {
 					$this->deleteTemp($hash);
-					$logMsg = "重复昵称hash:{$data['hash']}\r\n";
+					$logMsg = "{$logTime} - 重复昵称:{$data['hash']}\r\n";
 					$this->DisposeModel->wetFwriteLog($logMsg);
 					return $this->DisposeModel-> wetJsonRt(406,'error');
 				}
@@ -374,7 +375,7 @@ class AeChainPutModel extends Model {
 			{//性别
 				$data['content'] = (int)trim($payload['content']);
 				if (!is_numeric($data['content']) || $data['content'] >= 3){
-					$logMsg = "hash_err_sex:{$data['hash']}\r\n";
+					$logMsg = "{$logTime} - sex type Error:{$data['hash']}\r\n";
 					$this->DisposeModel->wetFwriteLog($logMsg);
 					$this->deleteTemp($hash);
 					return $this->DisposeModel-> wetJsonRt(406,'error');
@@ -388,21 +389,37 @@ class AeChainPutModel extends Model {
 
 			elseif ( $data['type'] == 'focus' )
 			{//关注
-				$data['content'] = $this->DisposeModel-> delete_xss($payload['content']);
-				$isUser = $this->ValidModel-> isUser($data['content']);
-				if (!$isUser){
-					$logMsg = "hash_err_focus:{$data['hash']}\r\n";
+				if ($payload['action'] != "true" && $payload['action'] !== "false"){
+					$logMsg = "{$logTime} - focus action Error:{$data['hash']}\r\n";
 					$this->DisposeModel->wetFwriteLog($logMsg);
 					$this->deleteTemp($hash);
-					return $this->DisposeModel-> wetJsonRt(406,'error');
+					return;
 				}
-				echo $this->FocusModel-> focus($data['content'], $data['sender']);
+				$data['action']  = $payload['action'];
+				$data['content'] = $payload['content'];
+				$isAddress = $this->DisposeModel-> checkAddress($data['content']);
+				$isUser    = $this->ValidModel-> isUser($data['content']);
+
+				if (!$isUser || !$isAddress){
+					$logMsg = "{$logTime} - focus isUser Error:{$data['hash']}\r\n";
+					$this->DisposeModel->wetFwriteLog($logMsg);
+					$this->deleteTemp($hash);
+					return;
+				}
+				$this->FocusModel-> focus($data['content'], $data['sender'], $data['action']);
 				$this->deleteTemp($hash);
 				return;
 			}
 
 			elseif ( $data['type'] == 'star' )
 			{//收藏
+				if ($payload['action'] != "true" && $payload['action'] != "false"){
+					$logMsg = "{$logTime} - star action Error:{$data['hash']}\r\n";
+					$this->DisposeModel->wetFwriteLog($logMsg);
+					$this->deleteTemp($hash);
+					return;
+				}
+				$data['action']  = $payload['action'];
 				$data['content'] = $this->DisposeModel-> delete_xss($payload['content']);
 				$isHash = $this->DisposeModel-> checkAddress($data['content']);
 				$isShTipid = $this->DisposeModel-> checkSuperheroTipid($data['content']);
@@ -412,12 +429,12 @@ class AeChainPutModel extends Model {
 					$select = "shTipidStar";
 				}
 				if (!$isCheck){
-					$logMsg = "hash_err_star:{$data['hash']}\r\n";
+					$logMsg = "{$logTime} - star isCheck Error:{$data['hash']}\r\n";
 					$this->DisposeModel->wetFwriteLog($logMsg);
 					$this->deleteTemp($hash);
 					return $this->DisposeModel-> wetJsonRt(406,'error');
 				}
-				echo $this->StarModel-> star($data['sender'], $data['content'], $select);
+				$this->StarModel-> star($data['sender'], $data['content'], $data['action'],$select);
 				$this->deleteTemp($hash);
 				return;
 			}
