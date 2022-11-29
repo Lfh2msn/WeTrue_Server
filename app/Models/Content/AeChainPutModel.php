@@ -418,7 +418,6 @@ class AeChainPutModel extends Model {
 				return;
 			} else {
 				$this->deleteTemp($hash);
-				$logMsg = ;
 				$this->DisposeModel->wetFwriteLog("Payload [type]标签错误:{$hash}");
 				return $this->DisposeModel-> wetJsonRt(406,'error');
 			}

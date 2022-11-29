@@ -204,7 +204,7 @@ class DisposeModel extends Model {
     public function wetFwriteLog($msg, $path = null)
     {//写入Log
         if(!$path){
-            $path = "log/chain/".date('Y-m-d').".txt";
+            $path = "log/chain_read/".date('Y-m-d').".txt";
         } else {
             $path = "log/".$path.".txt";
         }
