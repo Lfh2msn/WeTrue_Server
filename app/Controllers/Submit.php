@@ -10,11 +10,11 @@ use App\Models\SearchModel;
 
 class Submit extends BaseController {
 
-	public function praise()
-    {//点赞
+	public function praise(){
+	//点赞
         $hash   = $this->request->getPost('hash');
         $type   = $this->request->getPost('type');
-		if ($type == 'shTipid') {
+		if ($type == 'shTipid'){
 			$isHash = $this->DisposeModel-> checkSuperheroTipid($hash);
 		} else {
 			$isHash = $this->DisposeModel-> checkAddress($hash);
@@ -27,37 +27,32 @@ class Submit extends BaseController {
 			|| $type == 'reply' 
 			|| $type == 'shTipid'
 		) {
-            $data = (new PraiseModel())-> praise($hash, $type);
-		    echo $data;
+            echo (new PraiseModel())-> praise($hash, $type);
         } else {
 			echo $this->DisposeModel-> wetJsonRt(406, 'error');
 		}
     }
 
-	public function hash($gHash=null)
-	{//发布hash
+	public function hash($gHash=null){
+	//发布hash
 		$pHash   = $this->request->getPost('hash');
-		$await   = $this->request->getPost('await');
 		$chainId = $_SERVER['HTTP_CHAIN_ID'] ?? 457;
 		$hash    = $gHash ?? $pHash;
-		if ($await){
-			$await = true;
-		} else {
-			$await = false;
-		}
-		$isHash = $this->DisposeModel-> checkAddress($hash);
-		if ($isHash) {
-            $data = (new HashReadModel())-> split($hash, $await, $chainId);
-			echo $data;
-        } elseif (!$hash) {
-			echo $this->DisposeModel-> wetJsonRt(406, 'error_type');
-		} else {
+		$isHash  = $this->DisposeModel-> checkAddress($hash);
+		if ($isHash){
+            echo (new HashReadModel())-> split($hash, $chainId);
+        } else {
 			echo $this->DisposeModel-> wetJsonRt(406, 'error_hash');
 		}
 	}
 
-	public function complain()
-	{//投诉hash
+	public function hashEvent(){
+	//缓冲上链hash出库事件
+        echo (new HashReadModel())-> hashEvent();
+	}
+
+	public function complain(){
+	//投诉hash
 		$hash  = $this->request->getPost('hash');
 		$isHash = $this->DisposeModel-> checkAddress($hash);
 		if ($isHash) {
@@ -68,8 +63,8 @@ class Submit extends BaseController {
 		}
 	}
 
-	public function search()
-    {//搜索
+	public function search(){
+	//搜索
 		$page   = $this->request->getPost('page');
         $size   = $this->request->getPost('size');
         $offset = $this->request->getPost('offset');
