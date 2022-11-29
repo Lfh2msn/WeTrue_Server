@@ -24,8 +24,9 @@ class GetAeknowModel {
 		}
 
 		if (empty($s_id)) {
-			$logMsg = "获取AEKnow-API-tokenTx-错误:{$hash}\r\n";
-			$this->DisposeModel->wetFwriteLog($logMsg);
+			$logMsg = "API tokenTx json 读取失败:{$hash}";
+			$path   = "aeknow_read/".date('Y-m-d');
+			$this->DisposeModel->wetFwriteLog($logMsg, $path);
 			return;
         }
 		return $json;
@@ -47,8 +48,8 @@ class GetAeknowModel {
 		}
 
 		if (empty($r_id)) {
-			$path   = "log/aeknow_read/".date('Y-m').".txt";
-			$logMsg = "获取AEKnow-API-tokenPayloadTx-错误:{$hash}\r\n";
+			$logMsg = "API tokenPayloadTx json 读取失败:{$hash}";
+			$path   = "aeknow_read/".date('Y-m-d');
 			$this->DisposeModel->wetFwriteLog($logMsg, $path);
 			return;
         }
@@ -75,7 +76,8 @@ class GetAeknowModel {
 		}
 
         if (empty($send)) {
-			$logMsg = "获取最新N条发送人失败--:{$address}\r\n";
+			$logMsg = "latestSpendTx 最新N条发送人读取失败:{$address}";
+			$path   = "mdw_read/".date('Y-m-d');
 			$this->DisposeModel->wetFwriteLog($logMsg);
 			return;
         }
@@ -107,8 +109,9 @@ class GetAeknowModel {
 		}
 
         if (empty($send)) {
-			$logMsg = "获取最新N条发送人失败--:{$address}\r\n";
-			$this->DisposeModel->wetFwriteLog($logMsg);
+			$logMsg = "latestSpendTx 最新N条发送人读取失败:{$address}";
+			$path   = "aeknow_read/".date('Y-m-d');
+			$this->DisposeModel->wetFwriteLog($logMsg, $path);
 			return;
         }
 
@@ -141,8 +144,9 @@ class GetAeknowModel {
 		}
 
 		if (empty($s_id)) {
-			$logMsg = "获取AEKnow-API-Token-List错误:{$address}\r\n\r\n";
-			$this->DisposeModel->wetFwriteLog($logMsg);
+			$logMsg = "tokenList json 读取失败:{$address}";
+			$path   = "aeknow_read/".date('Y-m-d');
+			$this->DisposeModel->wetFwriteLog($logMsg, $path);
 			return;
         }
 		return $json;
@@ -163,8 +167,9 @@ class GetAeknowModel {
 		}
 
 		if (empty($json)) {
-			$logMsg = "获取AEKnow-API-Token-txs错误:{$param}\r\n\r\n";
-			$this->DisposeModel->wetFwriteLog($logMsg);
+			$logMsg = "spendTx json 读取失败:{$param}";
+			$path   = "aeknow_read/".date('Y-m-d');
+			$this->DisposeModel->wetFwriteLog($logMsg, $path);
 			return;
         }
 		return $json;
@@ -185,8 +190,9 @@ class GetAeknowModel {
 		}
 
 		if (empty($json)) {
-			$logMsg = "获取AEKnow-API-Token-txs错误:{$param}\r\n\r\n";
-			$this->DisposeModel->wetFwriteLog($logMsg);
+			$logMsg = "tokenTxs json 读取失败:{$param}";
+			$path   = "aeknow_read/".date('Y-m-d');
+			$this->DisposeModel->wetFwriteLog($logMsg, $path);
 			return;
         }
 		return $json;
@@ -207,8 +213,9 @@ class GetAeknowModel {
 		}
 
 		if (empty($json)) {
-			$logMsg = "获取AEKnow-API-MyToken错误:{$param}\r\n\r\n";
-			$this->DisposeModel->wetFwriteLog($logMsg);
+			$logMsg = "myToken json 读取失败:{$param}";
+			$path   = "aeknow_read/".date('Y-m-d');
+			$this->DisposeModel->wetFwriteLog($logMsg, $path);
 			return;
         }
 		return $json;

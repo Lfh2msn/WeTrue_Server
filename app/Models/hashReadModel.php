@@ -33,31 +33,32 @@ class HashReadModel extends Model {
 		$this->wet_temp = "wet_temp";
     }
 
-	public function split($hash, $await=false, $chainId=457)
-	{//上链内容入库
-		$tp_type    = "common";
-		$isTempHash = $this->ValidModel-> isTempHash($hash);
-		$bsConfig 	= $this->ConfigModel-> backendConfig();
-		if (!$isTempHash) {  //写入临时缓存
-			$insertTempSql = "INSERT INTO $this->wet_temp(tp_hash, tp_type, tp_chain_id) VALUES ('$hash', '$tp_type', '$chainId')";
-			$this->db->query($insertTempSql);
-			if (!$await) echo $this->DisposeModel-> wetJsonRt(200);
-		} else {
-			if (!$await) echo $this->DisposeModel-> wetJsonRt(406,'error_repeat');
+	public function split($hash, $chainId){
+	//上链hash入库
+		$repeatHash = $this->ValidModel-> isTempHash($hash); //重复检测
+		if ($repeatHash) {
+			return $this->DisposeModel-> wetJsonRt(406,'error_repeat');
 		}
+		//写入临时缓存
+		$insertTempSql = "INSERT INTO $this->wet_temp(tp_hash, tp_chain_id) VALUES ('$hash', '$chainId')";
+		$this->db->query($insertTempSql);
+		return $this->DisposeModel-> wetJsonRt(200);
+	}
 
-		$delTempSql = "DELETE FROM $this->wet_temp WHERE tp_time <= now()-interval '1 D' AND tp_type = '$tp_type'";
+	public function hashEvent(){
+	//上链内容出库事件
+		$bsConfig 	= $this->ConfigModel-> backendConfig();
+		$delTempSql = "DELETE FROM $this->wet_temp WHERE tp_time <= now()-interval '3 D'";
 		$this->db->query($delTempSql);
 
-		$tpSql   = "SELECT tp_hash FROM $this->wet_temp WHERE tp_type = '$tp_type' ORDER BY tp_time DESC LIMIT 30";
+		$tpSql   = "SELECT tp_hash FROM $this->wet_temp ORDER BY tp_time DESC LIMIT 30";
 		$tpquery = $this->db-> query($tpSql);
 		$result  = $tpquery-> getResult();
 		foreach ($result as $row) {
-			$tp_hash  = $row-> tp_hash;
-			$json 	  = $this->GetAeChainModel->transactions($tp_hash);
+			$tp_hash = $row-> tp_hash;
+			$json 	 = $this->GetAeChainModel->transactions($tp_hash);
 			if (!$json) {
-				$logMsg = "链上未获取到数据:{$tp_hash}\r\n";
-				$this->DisposeModel->wetFwriteLog($logMsg);
+				$this->DisposeModel->wetFwriteLog("未获取到链上数据:{$tp_hash}");
 				continue;
 			}
 
@@ -69,12 +70,15 @@ class HashReadModel extends Model {
 
 			$sender = $json['tx']['sender_id'];
 			$isContinue = $this->BloomModel-> userCheck($sender); //黑名单账户检查
-			if (!$isContinue) continue;
+			if (!$isContinue) {
+				$this->DisposeModel->wetFwriteLog("黑名单账户:{$sender}");
+				continue;
+			}
+			
 			$isBloomAddress = $this->ValidModel-> isBloomAddress($sender);
 			if ($isBloomAddress) {
-				$logMsg = "被bloom过滤账户:{$tp_hash}\r\n";
-				$this->DisposeModel->wetFwriteLog($logMsg);
-				$this->deleteTemp($hash);  //删除临时缓存
+				$this->DisposeModel->wetFwriteLog("被bloom过滤账户:{$tp_hash}");
+				$this->deleteTemp($tp_hash);  //删除临时缓存
 				$this->DeleteModel-> deleteAll($sender); //删除账户
 				continue;
 			}
@@ -85,9 +89,8 @@ class HashReadModel extends Model {
 				$json['tx']['payload'] == null || 
 				$json['tx']['payload'] == "ba_Xfbg4g=="
 			){
-				$this->deleteTemp($hash);  //删除临时缓存
-				$logMsg = "错误类型:{$hash}\r\n";
-				$this->DisposeModel->wetFwriteLog($logMsg);
+				$this->deleteTemp($tp_hash);  //删除临时缓存
+				$this->DisposeModel->wetFwriteLog("错误类型:{$tp_hash}");
 				continue;
 			}
 			$this->AeChainPutModel->decodeContent($json);

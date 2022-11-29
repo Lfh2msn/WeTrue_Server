@@ -21,8 +21,7 @@ class GetAeChainModel {
 		while ( !$get && $num < 20 ) {
 			@$get = file_get_contents($url);
 			$num++;
-			$logMsg = "读取micro_blocks失败:{$url}\r\n";
-			$this->DisposeModel->wetFwriteLog($logMsg);
+			$this->DisposeModel->wetFwriteLog("读取micro_blocks失败:{$url}");
 			sleep(6);
 		}
 
@@ -30,8 +29,7 @@ class GetAeChainModel {
 		$utcTime = $json['time'];
 
 		if (empty($utcTime)) {
-			$logMsg = "读取微块时间失败:{$url}\r\n";
-			$this->DisposeModel->wetFwriteLog($logMsg);
+			$this->DisposeModel->wetFwriteLog("读取微块时间失败:{$url}");
         	return "Get MicroBlock Time Error";
         }
 
@@ -55,8 +53,7 @@ class GetAeChainModel {
 		}
 
         if (!$get || $mh != "mh_") {
-			$logMsg = "节点读取错误:{$hash}\r\n";
-			$this->DisposeModel->wetFwriteLog($logMsg);
+			$this->DisposeModel->wetFwriteLog("节点读取错误:{$hash}");
         	return "Node Data Error";
         }
 
@@ -73,8 +70,7 @@ class GetAeChainModel {
 		while (!$get && $num < 20) {
 			@$get = file_get_contents($url);
 			$num++;
-			$logMsg = "读取accounts失败:{$url}\r\n";
-			$this->DisposeModel->wetFwriteLog($logMsg);
+			$this->DisposeModel->wetFwriteLog("读取accounts失败:{$url}");
 			sleep(6);
 		}
 
@@ -82,8 +78,7 @@ class GetAeChainModel {
 		$balance = $json['balance'];
 
 		if (empty($balance)) {
-			$logMsg = "读取账户AE金额失败:{$url}\r\n";
-			$this->DisposeModel->wetFwriteLog($logMsg);
+			$this->DisposeModel->wetFwriteLog("读取账户AE金额失败:{$url}");
         	return "Get Accounts Balance Error";
         }
 
@@ -95,8 +90,7 @@ class GetAeChainModel {
         $json   = $this->transactions($hash);
 		$caller = $json['tx']['sender_id'] ?? $json['tx']['caller_id'];
 		if (!$caller) {
-			$logMsg = "查不到发送人:{$hash}\r\n";
-			$this->DisposeModel->wetFwriteLog($logMsg);
+			$this->DisposeModel->wetFwriteLog("查不到发送人:{$hash}");
         	return "empty";
         }
 		return $caller;
@@ -117,8 +111,7 @@ class GetAeChainModel {
 		}
 
 		if (empty($json)) {
-			$logMsg = "获取链上高度失败--HASH:{$hash}\r\n\r\n";
-			$this->DisposeModel->wetFwriteLog($logMsg);
+			$this->DisposeModel->wetFwriteLog("获取链上高度失败:{$hash}");
 			return;
         }
 		return (int)$json['height'];
@@ -140,8 +133,7 @@ class GetAeChainModel {
 			sleep(6);
 		}
 		if (empty($owner)) {
-			$logMsg = "获取链上AENS失败--AENS:{$names}\r\n";
-			$this->DisposeModel->wetFwriteLog($logMsg);
+			$this->DisposeModel->wetFwriteLog("获取链上AENS失败:{$names}");
 			return;
         }
 		$pointers = $json['pointers'];

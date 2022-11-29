@@ -204,10 +204,13 @@ class DisposeModel extends Model {
     public function wetFwriteLog($msg, $path = null)
     {//写入Log
         if(!$path){
-            $path = "log/chain_read/".date('Y-m-d').".txt";
+            $path = "log/chain/".date('Y-m-d').".txt";
+        } else {
+            $path = "log/".$path.".txt";
         }
+        $logTime	= date('H:i:s'); //日志时间
         $textFile   = fopen($path, "a");
-        $appendText = $msg;
+        $appendText = "{$logTime} - {$msg}\r\n";
         fwrite($textFile, $appendText);
         fclose($textFile);
     }

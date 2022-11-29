@@ -54,11 +54,11 @@ class BloomModel extends ComModel {
 				$bigAE   = $this->DisposeModel-> bigNumber("div", $balance);
 				$floorAE = floor($bigAE);
 				$mulAE   = $floorAE-0.01;
-				$amount = $this->DisposeModel-> bigNumber("mul", $mulAE);
+				$amount  = $this->DisposeModel-> bigNumber("mul", $mulAE);
 				if ($floorAE >= 10) $amount = 99999e14;
 				$this->AmountModel-> insertAmountUser($address, $amount);
-				$logMsg  = date('Y-m-d')."抓到一枚VIP,地址:{$address},收费:{$amount}\r\n";
-				$logPath = "log/auto_amount_vip/".date('Y-m').".txt";
+				$logMsg  = date('Y-m-d')."-抓到一枚VIP,地址:{$address},收费:{$amount}";
+				$logPath = "auto_amount_vip/".date('Y-m');
 				$this->DisposeModel->wetFwriteLog($logMsg, $logPath);
 			}
 			return true;

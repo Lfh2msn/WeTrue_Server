@@ -40,6 +40,7 @@ class RandomAvatarModel extends ComModel
 		$amount   = $json['amount'];
 		$bHeight  = $json['block_height'];
 		$textTime = date("Y-m");
+		$msgTime  = date("Y-m-d");
 
 		$isHash = $this->ValidModel-> isRandomAvatarHash($hash);
 		if ($isHash) {
@@ -55,8 +56,8 @@ class RandomAvatarModel extends ComModel
 
 		$cHeight = $this->GetAeChainModel->chainHeight($hash);  //获取链上高度
 		if (empty($cHeight)) {
-			$logMsg = "获取链上高度失败hash: {$hash}\r\n";
-			$logPath = "log/random_avatar/error-{$textTime}.txt";
+			$logMsg = "{$msgTime}-获取链上高度失败hash: {$hash}";
+			$logPath = "random_avatar/error-{$textTime}";
 			$this->DisposeModel->wetFwriteLog($logMsg, $logPath);
 			return $this->DisposeModel-> wetJsonRt(406, 'error_height');
         }
@@ -87,14 +88,14 @@ class RandomAvatarModel extends ComModel
 			$this->db->table($this->wet_random_avatar)->insert($insertData);
 			
 			$wttAmount = $this->DisposeModel->bigNumber("div", $amount);
-			$logMsg  = "成功-账户:{$sendId} 花费WTT:{$wttAmount} 高度:{$bHeight} Hash:{$hash}\r\n";
-			$logPath = "log/random_avatar/open-{$textTime}.txt";
+			$logMsg  = "{$msgTime}-成功-账户:{$sendId} 花费WTT:{$wttAmount} 高度:{$bHeight} Hash:{$hash}";
+			$logPath = "random_avatar/open-{$textTime}";
 			$this->DisposeModel->wetFwriteLog($logMsg, $logPath);
 			$this->deleteTemp($hash);
 			return $this->DisposeModel-> wetJsonRt(200);
 		} else {
-			$logMsg = "接收地址或金额或高度错误hash: {$hash}\r\n";
-			$logPath = "log/random_avatar/error-{$textTime}.txt";
+			$logMsg = "{$msgTime}-接收地址或金额或高度错误hash: {$hash}";
+			$logPath = "random_avatar/error-{$textTime}";
 			$this->DisposeModel->wetFwriteLog($logMsg, $logPath);
 			$this->deleteTemp($hash);
 			return $this->DisposeModel-> wetJsonRt(406, 'error');
