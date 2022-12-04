@@ -14,7 +14,6 @@ class TokenEventModel
 {//AE智能合约TX处理模块
 
 	public function __construct(){
-		$this->DisposeModel = new DisposeModel();
 		$this->RewardModel  = new RewardModel();
 		$this->OpenVipModel = new OpenVipModel();
 		$this->RandomAvatarModel = new RandomAvatarModel();
@@ -39,7 +38,7 @@ class TokenEventModel
 			return $this->RandomAvatarModel-> randomAvatarPut($json);
 		}
 
-		return $this->DisposeModel-> wetJsonRt(406, 'error_type');
+		return DisposeModel::wetJsonRt(406, 'error_type');
 	}
 
 }

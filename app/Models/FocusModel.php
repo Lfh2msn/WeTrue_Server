@@ -14,7 +14,6 @@ class FocusModel extends Model {
 		//parent::__construct();
 		$this->db = \Config\Database::connect('default');
 		$this->UserModel    = new UserModel();
-		$this->DisposeModel = new DisposeModel();
 		$this->ValidModel   = new ValidModel();
 		$this->tablename    = "wet_focus";
 		$this->wet_behavior = "wet_behavior";
@@ -49,7 +48,7 @@ class FocusModel extends Model {
 		}
 		
 		$data = $this->cycle($page, $size, $countSql, $limitSql);
-		return $this->DisposeModel-> wetJsonRt(200, 'success', $data);
+		return DisposeModel::wetJsonRt(200, 'success', $data);
     }
 
 	private function cycle($page, $size, $countSql, $limitSql)

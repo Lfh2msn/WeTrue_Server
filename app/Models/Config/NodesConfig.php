@@ -1,7 +1,7 @@
 <?php namespace App\Models\Config;
 
-class NodesConfig {
-//节点配置
+class NodesConfig
+{//节点配置
 
 	public function urls()
 	{

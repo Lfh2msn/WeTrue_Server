@@ -1,12 +1,14 @@
 <?php
 namespace App\Controllers;
 
+use App\Models\DisposeModel;
+
 class Content extends BaseController
 {
     public function tx()
     {//主贴详情
         $hash   = $this->request->getPost('hash');
-        $isHash = $this->DisposeModel-> checkAddress($hash);
+        $isHash = DisposeModel::checkAddress($hash);
 		if($isHash){
             $type = 'content';
 		    $opt  =	['select' => $type,
@@ -15,7 +17,7 @@ class Content extends BaseController
             $data = $this->PagesModel-> alone($hash, $opt);
             echo $data;
         }else{
-            echo $this->DisposeModel-> wetJsonRt(406, 'error_hash');
+            echo DisposeModel::wetJsonRt(406, 'error_hash');
 		}
     }
 
@@ -58,7 +60,7 @@ class Content extends BaseController
         $size   = $this->request->getPost('size');
         $offset = $this->request->getPost('offset');
         $userAddress   = $this->request->getPost('userAddress');
-        $isUserAddress = $this->DisposeModel-> checkAddress($userAddress);
+        $isUserAddress = DisposeModel::checkAddress($userAddress);
         if ($isUserAddress) {
             $type = 'userStarContentList';
             $opt  =	[
@@ -68,7 +70,7 @@ class Content extends BaseController
             $data = $this->PagesModel-> limit($page, $size, $offset, $opt);
             echo $data;
         } else {
-            echo $this->DisposeModel-> wetJsonRt(406, 'error');
+            echo DisposeModel::wetJsonRt(406, 'error');
 		}
     }
 
@@ -84,7 +86,7 @@ class Content extends BaseController
             $data = $this->PagesModel-> alone($shTipid, $opt);
             echo $data;
         }else{
-            echo $this->DisposeModel-> wetJsonRt(406, 'error_superhero_tipid');
+            echo DisposeModel::wetJsonRt(406, 'error_superhero_tipid');
 		}
     }
 
@@ -102,7 +104,7 @@ class Content extends BaseController
     public function getCount()
     {//主贴总数
 		$data = $this->PagesModel-> contentCount();
-        echo $this->DisposeModel-> wetJsonRt(200,'success',$data);
+        echo DisposeModel::wetJsonRt(200,'success',$data);
     }
 
 }

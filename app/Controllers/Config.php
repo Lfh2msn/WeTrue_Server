@@ -1,7 +1,10 @@
 <?php
 namespace App\Controllers;
 
-use App\Models\ConfigModel;
+use App\Models\{
+	ConfigModel,
+	DisposeModel
+};
 use App\Models\Config\{
 	NodesConfig,
 	CompilerConfig,
@@ -12,11 +15,12 @@ use App\Models\Config\{
 	RandomAvatarConfig
 };
 
-class Config extends BaseController {
+class Config extends BaseController
+{
 
 	public function info()
 	{//获取前端配置
-		$userAddress  = $_SERVER['HTTP_KEY'];
+		$userAddress = isset($_SERVER['HTTP_KEY']);
 		$config  = (new ConfigModel())-> frontConfig($userAddress);
 		if($config){
 			$code = 200;
@@ -26,7 +30,7 @@ class Config extends BaseController {
 			$code = 406;
 			$msg  = 'error';
 		}
-		echo $this->DisposeModel-> wetJsonRt($code, $msg, $data);
+		echo DisposeModel::wetJsonRt($code, $msg, $data);
     }
 
 	public function url()
@@ -40,7 +44,7 @@ class Config extends BaseController {
 		
 		$code = 200;
 		$msg  = 'success';
-		echo $this->DisposeModel-> wetJsonRt($code, $msg, $data);
+		echo DisposeModel::wetJsonRt($code, $msg, $data);
     }
 
 	public function version()
@@ -63,7 +67,7 @@ class Config extends BaseController {
 		$code = 200;
 		$msg  = 'success';
 		$data = (new RandomAvatarConfig())-> config();
-		echo $this->DisposeModel-> wetJsonRt($code, $msg, $data);
+		echo DisposeModel::wetJsonRt($code, $msg, $data);
 	}
 
 }

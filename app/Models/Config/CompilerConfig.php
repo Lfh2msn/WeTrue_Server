@@ -1,7 +1,7 @@
 <?php namespace App\Models\Config;
 
-class CompilerConfig {
-//编译器配置
+class CompilerConfig
+{//编译器配置
 
 	public function urls()
 	{	

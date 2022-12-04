@@ -30,28 +30,28 @@ class MiningModel extends ComModel
 		$bsConfig   = (new ConfigModel())-> backendConfig();
 		$mappingWTT = $bsConfig['mappingWTT'];
 		if (!$mappingWTT) {
-			return $this->DisposeModel-> wetJsonRt(406, 'close_mapping');
+			return DisposeModel::wetJsonRt(406, 'close_mapping');
 		}
 
-		$isAddress    = $this->DisposeModel-> checkAddress($address);
+		$isAddress    = DisposeModel::checkAddress($address);
 		$isVipAddress = $this->ValidModel-> isVipAddress($address);
 		if (!$isAddress && !$isVipAddress) {
-			return $this->DisposeModel-> wetJsonRt(406, 'did_not_open_mapping');
+			return DisposeModel::wetJsonRt(406, 'did_not_open_mapping');
 		}
 
 		$isMapping = $this->ValidModel-> isMapState($address);
 		if ($isMapping) {
-			return $this->DisposeModel-> wetJsonRt(406, 'repeat_mapping');
+			return DisposeModel::wetJsonRt(406, 'repeat_mapping');
 		}
 
 		$accountsBalance = $this->GetAeknowModel->accountsBalance($address);  //查询链上金额
 		if (empty($getJson) && $accountsBalance <= $amount) {
-        	return $this->DisposeModel-> wetJsonRt(406, 'error_amount');
+        	return DisposeModel::wetJsonRt(406, 'error_amount');
         }
 	
 		$blockHeight = $this->GetAeknowModel->chainHeight();  //获取链上高度
 		if (empty($blockHeight)) {
-        	return $this->DisposeModel-> wetJsonRt(406, 'get_block_height_error');
+        	return DisposeModel::wetJsonRt(406, 'get_block_height_error');
         }
 
 		$isMapAddress = $this->ValidModel-> isMapAddress($address);
@@ -82,19 +82,19 @@ class MiningModel extends ComModel
 		$this->DisposeModel->wetFwriteLog($logMsg, $logPath);
 
 		$data['state'] = true;
-		return $this->DisposeModel-> wetJsonRt(200, 'success', $data);
+		return DisposeModel::wetJsonRt(200, 'success', $data);
 	}
 
 	public function unMapping($address)
 	{//用户解除映射
 		$checkRow = $this-> checkMapping($address);
 		if (!$checkRow) {
-			return $this->DisposeModel-> wetJsonRt(406, 'error_unknown');
+			return DisposeModel::wetJsonRt(406, 'error_unknown');
 		}
 
 		if ($checkRow['state'] == 0) {
 			$data['state'] = false;
-			return $this->DisposeModel-> wetJsonRt(406, 'no_mapping', $data);
+			return DisposeModel::wetJsonRt(406, 'no_mapping', $data);
 		}
 
 		$checEarning = $checkRow['earning'];
@@ -102,7 +102,7 @@ class MiningModel extends ComModel
 		if ($checEarning >= 1e17 && $earnLock == 0) {
 			$this->earningLock($address, 1); //打开锁
 			$hash = $this->AecliModel-> spendWTT($address, $checEarning);
-			$code = $this->DisposeModel-> checkAddress($hash) ? 200 : 406;
+			$code = DisposeModel::checkAddress($hash) ? 200 : 406;
 		} else {
 			$code = 200;
 		}
@@ -128,19 +128,19 @@ class MiningModel extends ComModel
 			$this->DisposeModel->wetFwriteLog($logMsg, $logPath);
 			$msg = 'success';
 		}
-		return $this->DisposeModel-> wetJsonRt($code, $msg, $data);
+		return DisposeModel::wetJsonRt($code, $msg, $data);
 	}
 
 	public function getEarning($address)
 	{//用户领取收益
 		$checkRow = $this-> checkMapping($address);
 		if (!$checkRow) {
-			return $this->DisposeModel-> wetJsonRt(406,'error_unknown1',[]);
+			return DisposeModel::wetJsonRt(406,'error_unknown1',[]);
 		}
 
 		if ($checkRow['state'] == 0) {
 			$data['state'] = false;
-			return $this->DisposeModel-> wetJsonRt(406,'no_mapping',$data);
+			return DisposeModel::wetJsonRt(406,'no_mapping',$data);
 		}
 
 		$checEarning = $checkRow['earning'];
@@ -148,7 +148,7 @@ class MiningModel extends ComModel
 		if ($checEarning >= 1e17 && $earnLock == 0) {
 			$this->earningLock($address, 1); //打开锁
 			$hash = $this->AecliModel-> spendWTT($address, $checEarning);
-			$code = $this->DisposeModel-> checkAddress($hash) ? 200 : 406;
+			$code = DisposeModel::checkAddress($hash) ? 200 : 406;
 			if ($code == 200) {
 				$upData = [
 					'earning' => 0
@@ -166,9 +166,9 @@ class MiningModel extends ComModel
 				$this->earningLock($address, 0); //关闭锁
 			}
 		} else {
-			return $this->DisposeModel-> wetJsonRt(406, 'error_earning');
+			return DisposeModel::wetJsonRt(406, 'error_earning');
 		}
-		return $this->DisposeModel-> wetJsonRt($code, 'success', $data);
+		return DisposeModel::wetJsonRt($code, 'success', $data);
 	}
 
 	public function checkMapping($address)
@@ -299,7 +299,7 @@ class MiningModel extends ComModel
 			if(isset($isData)) $detaila[] = $isData;
 			$data = $detaila;
 		}
-		return $this->DisposeModel-> wetJsonRt(200,'success',$data);
+		return DisposeModel::wetJsonRt(200,'success',$data);
 	}
 
 	public function adminOpenMapping($address)
@@ -316,7 +316,7 @@ class MiningModel extends ComModel
 		} else {
 			$data['isOpen'] = false;
 		}
-		return $this->DisposeModel-> wetJsonRt(200, 'success', $data);
+		return DisposeModel::wetJsonRt(200, 'success', $data);
 	}
 
 	private function getTotalAE()

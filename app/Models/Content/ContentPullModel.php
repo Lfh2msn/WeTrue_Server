@@ -63,10 +63,10 @@ class ContentPullModel extends ComModel
 			$data['star']			= (int) $row-> star_sum;
 			$data['read']			= (int) $row-> read_sum;
 			$data['reward']			= $row-> reward_sum;
-			if ($opt['rewardList']) {
+			if (isset($opt['rewardList'])) {
 				$data['rewardList']	= $this->RewardModel-> rewardList($hash);
 			}
-			if ($opt['userLogin']) {
+			if (isset($opt['userLogin'])) {
 				$data['isPraise']	= $this->ValidModel-> isPraise($hash, $opt['userLogin']);
 				$data['isStar']		= $this->ValidModel-> isStar($hash, $opt['userLogin']);
 				$data['isFocus']	= $this->ValidModel-> isFocus($sender_id, $opt['userLogin']);
@@ -78,7 +78,7 @@ class ContentPullModel extends ComModel
 			$data['source']			= $row->source ? $row->source : "WeTrue";
 			$data['chainId']		= $row->chain_id ? (int) $row->chain_id : 457;
 			$data['users']			= $this->UserModel-> getUser($sender_id);
-			if ($opt['read']) {
+			if (isset($opt['read'])) {
 				$upReadSql = "UPDATE $this->tablename SET read_sum = read_sum + 1 WHERE hash = '$hash'";
 				$this->db-> query($upReadSql);
 			}

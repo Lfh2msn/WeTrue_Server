@@ -37,12 +37,12 @@ class HashReadModel extends Model {
 	//上链hash入库
 		$repeatHash = $this->ValidModel-> isTempHash($hash); //重复检测
 		if ($repeatHash) {
-			return $this->DisposeModel-> wetJsonRt(406,'error_repeat');
+			return DisposeModel::wetJsonRt(406,'error_repeat');
 		}
 		//写入临时缓存
 		$insertTempSql = "INSERT INTO $this->wet_temp(tp_hash, tp_chain_id) VALUES ('$hash', '$chainId')";
 		$this->db->query($insertTempSql);
-		return $this->DisposeModel-> wetJsonRt(200);
+		return DisposeModel::wetJsonRt(200);
 	}
 
 	public function hashEvent(){

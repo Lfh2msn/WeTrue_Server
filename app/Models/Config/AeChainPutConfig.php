@@ -1,7 +1,7 @@
 <?php namespace App\Models\Config;
 
-class AeChainPutConfig {
-//AE上链收录 配置
+class AeChainPutConfig
+{//AE上链收录 配置
 
 	public function amount()
 	{//推荐因子

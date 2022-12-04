@@ -1,7 +1,7 @@
 <?php namespace App\Models\Config;
 
-class BaseApiConfig {
-//基础api配置
+class BaseApiConfig
+{//基础api配置
 
 	public function urls()
 	{

@@ -45,7 +45,7 @@ class OpenVipModel extends ComModel
 			$logMsg = "{$msgTime}-获取链上高度失败hash: {$hash}";
 			$logPath = "vip_open/error-{$textTime}";
 			$this->DisposeModel->wetFwriteLog($logMsg, $logPath);
-			return $this->DisposeModel-> wetJsonRt(406, 'error_height');
+			return DisposeModel::wetJsonRt(406, 'error_height');
         }
 		$poorHeight	= ($chainHeight - $blockHeight);
 		$opConfig = $this->OpenVipConfig->config();
@@ -72,13 +72,13 @@ class OpenVipModel extends ComModel
 			$logPath = "vip_open/open-vip-{$textTime}";
 			$this->DisposeModel->wetFwriteLog($logMsg, $logPath);
 			$this->deleteTemp($hash);
-			return $this->DisposeModel-> wetJsonRt(200, 'success');
+			return DisposeModel::wetJsonRt(200, 'success');
 		} else {
 			$logMsg = "{$msgTime}-接收地址或金额或高度错误hash: {$hash}";
 			$logPath = "vip_open/error-{$textTime}";
 			$this->DisposeModel->wetFwriteLog($logMsg, $logPath);
 			$this->deleteTemp($hash);
-			return $this->DisposeModel-> wetJsonRt(406, 'error');
+			return DisposeModel::wetJsonRt(406, 'error');
 		}
 		
 	}

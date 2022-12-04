@@ -1,7 +1,7 @@
 <?php namespace App\Models\Config;
 
-class ActiveConfig {
-//活跃度配置
+class ActiveConfig 
+{//活跃度配置
 
     public function config()
 	{//配置

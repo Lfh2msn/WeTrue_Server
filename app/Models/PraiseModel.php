@@ -16,7 +16,6 @@ class PraiseModel extends Model {
 		$this->db = \Config\Database::connect('default');
 		$this->UserModel    = new UserModel();
 		$this->ActiveConfig = new ActiveConfig();
-		$this->DisposeModel = new DisposeModel();
 		$this->ValidModel   = new ValidModel();
 		$this->wet_behavior = "wet_behavior";
     }
@@ -24,9 +23,9 @@ class PraiseModel extends Model {
 	public function praise($hash, $type)
 	{//点赞
 		$akToken = $_SERVER['HTTP_KEY'];
-		$isAkToken = $this->DisposeModel-> checkAddress($akToken);
+		$isAkToken = DisposeModel::checkAddress($akToken);
 		if ( !$isAkToken ) {
-			return $this->DisposeModel-> wetJsonRt(401, 'error_login');
+			return DisposeModel::wetJsonRt(401, 'error_login');
 		}
 		
 		$whereHash = 'hash';
@@ -43,7 +42,7 @@ class PraiseModel extends Model {
 			$this->tablename = 'wet_content_sh';
 			$whereHash = 'tip_id';
 		} else {
-			return $this->DisposeModel-> wetJsonRt(401, 'error_type');
+			return DisposeModel::wetJsonRt(401, 'error_type');
 		}
 
 		$data = [];
@@ -93,7 +92,7 @@ class PraiseModel extends Model {
 			$data['isPraise'] = $isPraise;
 			$msg = 'success';
 		}
-		return $this->DisposeModel-> wetJsonRt(200, $msg, $data);
+		return DisposeModel::wetJsonRt(200, $msg, $data);
 	}
 }
 

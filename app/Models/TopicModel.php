@@ -71,7 +71,7 @@ class TopicModel extends ComModel
 		$size   = max(1, (int)$size);
 		$offset = max(0, (int)$offset);
 		$akToken   = $_SERVER['HTTP_KEY'];
-		$isAkToken = $this->DisposeModel-> checkAddress($akToken);
+		$isAkToken = DisposeModel::checkAddress($akToken);
 		if ($isAkToken) $opt['userLogin'] = $akToken;
 		$opt['substr']	  = 160; //限制输出
 
@@ -145,7 +145,7 @@ class TopicModel extends ComModel
 			$code = 406;
 			$msg  = 'error';
 		}
-		return $this->DisposeModel-> wetRt($code, $msg, $data);
+		return DisposeModel::wetRt($code, $msg, $data);
 	}
 
 	public function hotRecTopic()
@@ -174,7 +174,7 @@ class TopicModel extends ComModel
 				$data['data'] = $detaila;
 			}
 		}
-		return $this->DisposeModel-> wetRt(200, 'success', $data);
+		return DisposeModel::wetRt(200, 'success', $data);
 	}
 
 	public function tagUidToKeyWord($uid)

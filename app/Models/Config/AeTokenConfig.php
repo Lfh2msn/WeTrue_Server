@@ -1,7 +1,7 @@
 <?php namespace App\Models\Config;
 
-class AeTokenConfig {
-//AEX-9 Token 配置
+class AeTokenConfig
+{//AEX-9 Token 配置
 
 	public function list()
 	{

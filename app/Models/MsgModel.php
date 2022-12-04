@@ -43,8 +43,8 @@ class MsgModel extends ComModel
 		$size   = max(1, (int)$size);
 		$offset = max(0, (int)$offset);
 		$akToken   = $_SERVER['HTTP_KEY'];
-		$isAkToken = $this->DisposeModel-> checkAddress($akToken);
-		if (!$isAkToken) return $this->DisposeModel-> wetJsonRt(401,'error_address');
+		$isAkToken = DisposeModel::checkAddress($akToken);
+		if (!$isAkToken) return DisposeModel::wetJsonRt(401,'error_address');
 
 		$countSql = "SELECT count(hash) FROM $this->wet_message WHERE recipient_id = '$akToken'";
 		$limitSql = "SELECT hash, 
@@ -133,7 +133,7 @@ class MsgModel extends ComModel
 				$data['data'] = $detaila;
 			}
 		}
-		return $this->DisposeModel-> wetJsonRt(200,'success',$data);
+		return DisposeModel::wetJsonRt(200,'success',$data);
 	}
 
 	public function addMsg($data=[])
@@ -149,15 +149,15 @@ class MsgModel extends ComModel
 		] */
 
 		if (!$data && !$data['hash']) {
-            return $this->DisposeModel-> wetRt(406, '数据不能为空');
+            return DisposeModel::wetRt(406, '数据不能为空');
         } elseif (!$data['type']) {
-            return $this->DisposeModel-> wetRt(406, 'type不能为空');
+            return DisposeModel::wetRt(406, 'type不能为空');
         } elseif (!$data['sender_id']) {
-            return $this->DisposeModel-> wetRt(406, 'sender_id不能为空');
+            return DisposeModel::wetRt(406, 'sender_id不能为空');
         } elseif (!$data['recipient_id']) {
-            return $this->DisposeModel-> wetRt(406, 'recipient_id不能为空');
+            return DisposeModel::wetRt(406, 'recipient_id不能为空');
         } elseif ($data['sender_id'] == $data['recipient_id']) {
-            return $this->DisposeModel-> wetRt(406, '不需要对自己提醒');
+            return DisposeModel::wetRt(406, '不需要对自己提醒');
         }
 
 		$insertData = [
@@ -233,8 +233,8 @@ class MsgModel extends ComModel
 
 	public function getStateSize()
 	{//获取未读消息数
-		$akToken   = $_SERVER['HTTP_KEY'];
-		$isAkToken = $this->DisposeModel-> checkAddress($akToken);
+		$akToken   = isset($_SERVER['HTTP_KEY']);
+		$isAkToken = DisposeModel::checkAddress($akToken);
 		if (!$isAkToken) return 'error_address';
 		$sql = "SELECT count(hash) FROM $this->wet_message WHERE recipient_id = '$akToken' AND state = '1' AND type <> 'reward' ";
 		$query = $this->db-> query($sql);

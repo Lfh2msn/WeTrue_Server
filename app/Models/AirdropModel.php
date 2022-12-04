@@ -63,7 +63,7 @@ class AirdropModel extends ComModel
 			$code    = $dejson['code'];*/
 			
 			$hash = $this->AecliModel-> spendAE($address, $amount);
-			$code = $this->DisposeModel-> checkAddress($hash) ? 200 : 406;
+			$code = DisposeModel::checkAddress($hash) ? 200 : 406;
 			if ($code == 200) {
 				$this->session ->set("NewUser","Repeat");
 				$inSql = "INSERT INTO $this->wet_bloom(bf_ip, bf_reason) VALUES ('$getIP','airdropAE')";
@@ -75,7 +75,7 @@ class AirdropModel extends ComModel
 	public function airdropWTT($opt = [])
 	{//空投WTT写入txt
 		$akToken   = $_SERVER['HTTP_KEY'];
-		$isAkToken = $this->DisposeModel-> checkAddress($akToken);
+		$isAkToken = DisposeModel::checkAddress($akToken);
 		$isAdmin   = $this->ValidModel-> isAdmin($akToken);
 		$data['code'] = 200;
 		if (!$isAkToken || !$isAdmin) {
@@ -116,7 +116,7 @@ class AirdropModel extends ComModel
 			}
 		}
 
-		return $this->DisposeModel-> wetJsonRt(200, 'success');
+		return DisposeModel::wetJsonRt(200, 'success');
 	}
 
 }

@@ -1,12 +1,15 @@
 <?php
 namespace App\Controllers;
 
-use App\Models\PraiseModel;
-use App\Models\StarModel;
-use App\Models\HashReadModel;
-use App\Models\RewardModel;
-use App\Models\ComplainModel;
-use App\Models\SearchModel;
+use App\Models\{
+	StarModel,
+	PraiseModel,
+	SearchModel,
+	RewardModel,
+	DisposeModel,
+	HashReadModel,
+	ComplainModel
+};
 
 class Submit extends BaseController {
 
@@ -17,7 +20,7 @@ class Submit extends BaseController {
 		if ($type == 'shTipid'){
 			$isHash = $this->DisposeModel-> checkSuperheroTipid($hash);
 		} else {
-			$isHash = $this->DisposeModel-> checkAddress($hash);
+			$isHash = DisposeModel::checkAddress($hash);
 		}
 
         if (
@@ -29,7 +32,7 @@ class Submit extends BaseController {
 		) {
             echo (new PraiseModel())-> praise($hash, $type);
         } else {
-			echo $this->DisposeModel-> wetJsonRt(406, 'error');
+			echo DisposeModel::wetJsonRt(406, 'error');
 		}
     }
 
@@ -38,11 +41,11 @@ class Submit extends BaseController {
 		$pHash   = $this->request->getPost('hash');
 		$chainId = $_SERVER['HTTP_CHAIN_ID'] ?? 457;
 		$hash    = $gHash ?? $pHash;
-		$isHash  = $this->DisposeModel-> checkAddress($hash);
+		$isHash  = DisposeModel::checkAddress($hash);
 		if ($isHash){
             echo (new HashReadModel())-> split($hash, $chainId);
         } else {
-			echo $this->DisposeModel-> wetJsonRt(406, 'error_hash');
+			echo DisposeModel::wetJsonRt(406, 'error_hash');
 		}
 	}
 
@@ -54,12 +57,12 @@ class Submit extends BaseController {
 	public function complain(){
 	//投诉hash
 		$hash  = $this->request->getPost('hash');
-		$isHash = $this->DisposeModel-> checkAddress($hash);
+		$isHash = DisposeModel::checkAddress($hash);
 		if ($isHash) {
             $data = (new ComplainModel())-> txHash($hash);
 			echo $data;
         } else {
-			echo $this->DisposeModel-> wetJsonRt(406, 'error_hash');
+			echo DisposeModel::wetJsonRt(406, 'error_hash');
 		}
 	}
 
@@ -79,7 +82,7 @@ class Submit extends BaseController {
             $data = (new SearchModel())-> search($page, $size, $offset, $opt);
 		    echo $data;
 		} else {
-			echo $this->DisposeModel-> wetJsonRt(406, 'error');
+			echo DisposeModel::wetJsonRt(406, 'error');
 		}
 		
     }

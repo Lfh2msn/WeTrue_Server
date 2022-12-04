@@ -5,9 +5,9 @@ use CodeIgniter\Model;
 class DisposeModel extends Model {
 //数据处理Model
 
-    public function checkAddress($address)
+    public static function checkAddress($address)
     {//校验地址
-        $hex = $this->base58_decode($address);
+        $hex = self::base58_decode($address);
         if (strlen($hex)!=72) {
             return false;
         }
@@ -28,7 +28,7 @@ class DisposeModel extends Model {
 
     public function addressToHex($address)
     {//地址转公钥
-        $hex = $this->base58_decode($address);
+        $hex = self::base58_decode($address);
         if (strlen($hex) != 72) {
              return false; 
         }
@@ -36,7 +36,7 @@ class DisposeModel extends Model {
         return $hex;
     }
 
-    public function base58_decode($address)
+    public static function base58_decode($address)
     {//ak_地址base58
         $base58 = str_replace("ak_","",$address);
         $base58 = str_replace("th_","",$base58);
@@ -102,7 +102,7 @@ class DisposeModel extends Model {
         return $json;
     }
 
-    public function randBase58()
+    public static function randBase58()
 	{//随机头像
         $rand   = mt_rand();
         $uniqid = uniqid($rand, true);
@@ -181,7 +181,7 @@ class DisposeModel extends Model {
 		return $a;
 	}
 
-    public function wetRt($code = 0, $msg = 'success', $data = null)
+    public static function wetRt($code = 0, $msg = 'success', $data = null)
     {//组装code及数据
         $rt = [
             'code' => $code,
@@ -191,13 +191,9 @@ class DisposeModel extends Model {
         return $rt;
     }
 
-    public function wetJsonRt($code = 0, $msg = 'success', $data = null)
+    public static function wetJsonRt($code = 0, $msg = 'success', $data = null)
     {//组装code及数据,返回json
-        $rt = [
-            'code' => $code,
-            'msg'  => $msg ? esc($msg) : '',
-            'data' => $data,
-        ];
+        $rt = self::wetRt($code, $msg, $data);
         return json_encode($rt);
     }
 

@@ -1,7 +1,7 @@
 <?php namespace App\Models\Config;
 
-class IpfsNodeConfig {
-//ipfs 节点配置
+class IpfsNodeConfig
+{//ipfs 节点配置
 
 	public function urls()
 	{

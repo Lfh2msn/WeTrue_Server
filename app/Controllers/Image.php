@@ -1,7 +1,10 @@
 <?php
 namespace App\Controllers;
 
-use App\Models\ConfigModel;
+use App\Models\{
+    DisposeModel,
+    ConfigModel
+};
 
 class Image extends BaseController
 {
@@ -17,7 +20,7 @@ class Image extends BaseController
 	
 	public function toimg($hash)
 	{//Tx转照片
-        $isHash = $this->DisposeModel-> checkAddress($hash);
+        $isHash = DisposeModel::checkAddress($hash);
 
         if (!$isHash) { 
 			echo '无效Hash';

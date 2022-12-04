@@ -133,18 +133,16 @@ class GetAeknowModel {
         $url  = 'https://www.aeknow.org/api/token/'.$address;
 		@$get = file_get_contents($url);
 		$json = (array) json_decode($get, true);
-		$s_id = $json['tokens'];
 		$num  = 0;
-		while (!$s_id && $num < 20) {
+		while (!$json && $num < 20) {
 			@$get = file_get_contents($url);
 			$json = (array) json_decode($get, true);
-			$s_id = $json['tokens'];
 			$num++;
 			sleep(6);
 		}
 
-		if (empty($s_id)) {
-			$logMsg = "tokenList json 读取失败:{$address}";
+		if (empty($json)) {
+			$logMsg = "spendTx json 读取失败:{$param}";
 			$path   = "aeknow_read/".date('Y-m-d');
 			$this->DisposeModel->wetFwriteLog($logMsg, $path);
 			return;

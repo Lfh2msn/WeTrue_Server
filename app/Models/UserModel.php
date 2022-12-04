@@ -104,8 +104,7 @@ class UserModel extends ComModel
 		$data['reward'] 	 = $userReward;
 		$data['userActive']  = $this->DisposeModel-> activeGrade($userActive);
 		$data['userReward']  = $this->DisposeModel-> rewardGrade($userReward);
-		$data['lastActive']  = ($userActive - $row->last_active) * $bsConfig['airdropWttRatio'];
-		$data['portrait']    = $avatar ?? ""; //即将废弃(2.5.0)(APP 2.8.5)
+		$data['lastActive']  = ($userActive - $row->last_active);// * $bsConfig['airdropWTTRatio'];
 		$data['avatar']      = $avatar ?? "";
 		$data['topic'] 		 = (int)$row->topic_sum;
 		$data['star'] 		 = (int)$row->star_sum;

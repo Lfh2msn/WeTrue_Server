@@ -18,7 +18,6 @@ class ComplainModel extends Model {
 	public function __construct(){
 		//parent::__construct();
 		$this->db = \Config\Database::connect('default');
-		$this->DisposeModel  = new DisposeModel();
 		$this->HashReadModel = new HashReadModel();
 		$this->ContentPullModel = new ContentPullModel();
 		$this->CommentModel  = new CommentModel();
@@ -47,7 +46,7 @@ class ComplainModel extends Model {
 	{//投诉hash入库
 		$data['code'] = 200;
 		$akToken   = $_SERVER['HTTP_KEY'];
-		$isAkToken = $this->DisposeModel-> checkAddress($akToken);
+		$isAkToken = DisposeModel::checkAddress($akToken);
 		if (!$isAkToken) {
 			$data['code'] = 401;
 			$data['msg'] = 'error_login';
@@ -102,11 +101,11 @@ class ComplainModel extends Model {
 		$size   = max(1, (int)$size);
 		$offset = max(0, (int)$offset);
 		$akToken   = $_SERVER['HTTP_KEY'];
-		$isAkToken = $this->DisposeModel-> checkAddress($akToken);
+		$isAkToken = DisposeModel::checkAddress($akToken);
 		$isAdmin   = $this->ValidModel-> isAdmin($akToken);
 		$data['data'] = [];
 		if (!$isAkToken || !$isAdmin) {
-			return $this->DisposeModel-> wetJsonRt(401, 'error_login');
+			return DisposeModel::wetJsonRt(401, 'error_login');
 		}
 		$opt['userLogin'] = $akToken;
 
@@ -114,7 +113,7 @@ class ComplainModel extends Model {
 		$limitSql = "SELECT hash FROM $this->wet_complain LIMIT $size OFFSET ".(($page-1) * $size + $offset);
 		$data = $this->cycle($page, $size, $countSql, $limitSql, $opt);
 
-		return $this->DisposeModel-> wetJsonRt(200, 'success', $data);
+		return DisposeModel::wetJsonRt(200, 'success', $data);
     }
 
 	private function cycle($page, $size, $countSql, $limitSql, $opt)

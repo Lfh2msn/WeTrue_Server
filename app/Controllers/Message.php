@@ -1,9 +1,14 @@
 <?php
 namespace App\Controllers;
 
-use App\Models\MsgModel;
+use App\Models\{
+	DisposeModel,
+	MsgModel
+};
 
-class Message extends BaseController {
+
+class Message extends BaseController
+{
 
 	public function list()
 	{//用户消息列表
@@ -14,7 +19,7 @@ class Message extends BaseController {
 		if($data){	
 			echo $data;
 		}else{
-			echo $this->DisposeModel-> wetJsonRt(406, 'error');
+			echo DisposeModel::wetJsonRt(406, 'error');
 		}
 	}
 
@@ -22,7 +27,7 @@ class Message extends BaseController {
 	{//用户主贴列表
 		$stateSize = (new MsgModel())-> getStateSize();
 		$data['stateSize'] = $stateSize;
-		echo $this->DisposeModel-> wetJsonRt(200, 'success', $data);
+		echo DisposeModel::wetJsonRt(200, 'success', $data);
 	}
 
 }

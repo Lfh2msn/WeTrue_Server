@@ -1,7 +1,10 @@
 <?php
 namespace App\Controllers;
 
-class Comment extends BaseController {
+use App\Models\DisposeModel;
+
+class Comment extends BaseController
+{
 
 	public function list()
     {//评论列表
@@ -15,26 +18,26 @@ class Comment extends BaseController {
                     'hash'       => $hash,
                     'replyLimit' => (int)$replyLimit
                 ];
-        $isHash = $this->DisposeModel-> checkAddress($hash);
+        $isHash = DisposeModel::checkAddress($hash);
         $isShid = $this->DisposeModel-> checkSuperheroTipid($hash);
         if ($isHash || $isShid) {
             $data = $this->PagesModel-> limit($page, $size, $offset, $opt);
             echo $data;
         } else {
-            echo $this->DisposeModel-> wetJsonRt(406,'error_hash');
+            echo DisposeModel::wetJsonRt(406,'error_hash');
 		}
     }
 
 	public function tx()
     {//评论详情
         $hash = $this->request->getPost('hash');
-        $isHash = $this->DisposeModel-> checkAddress($hash);
+        $isHash = DisposeModel::checkAddress($hash);
 		if ($isHash) {
             $opt  = ['select' => 'comment'];
             $data = $this->PagesModel-> alone($hash, $opt);
             echo $data;
         } else {
-            echo $this->DisposeModel-> wetJsonRt(406,'error_hash');
+            echo DisposeModel::wetJsonRt(406,'error_hash');
 		}
     }
 }

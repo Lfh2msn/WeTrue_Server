@@ -2,8 +2,8 @@
 
 use App\Models\Config\AeTokenConfig;
 
-class OpenVipConfig {
-//开通vip配置
+class OpenVipConfig
+{//开通vip配置
 
     public function config()
 	{//配置

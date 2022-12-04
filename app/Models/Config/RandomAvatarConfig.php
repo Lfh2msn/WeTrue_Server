@@ -2,8 +2,8 @@
 
 use App\Models\Config\AeTokenConfig;
 
-class RandomAvatarConfig {
-//随机头像配置
+class RandomAvatarConfig
+{//随机头像配置
 
     public function config()
 	{//配置

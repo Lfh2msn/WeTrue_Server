@@ -1,7 +1,10 @@
 <?php
 namespace App\Controllers;
 
-class Reply extends BaseController {
+use App\Models\DisposeModel;
+
+class Reply extends BaseController 
+{
 
 	public function list()
     {//回复列表
@@ -18,7 +21,7 @@ class Reply extends BaseController {
             $data = $this->PagesModel-> limit($page, $size, $offset, $opt);
             echo $data;
         } else {
-            echo $this->DisposeModel-> wetJsonRt(406, 'error_hash');
+            echo DisposeModel::wetJsonRt(406, 'error_hash');
 		}
     }
 }

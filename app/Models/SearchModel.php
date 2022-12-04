@@ -18,7 +18,6 @@ class SearchModel extends Model {
 		$this->UserModel  = new UserModel();
 		$this->ValidModel = new ValidModel();
 		$this->TopicModel = new TopicModel();
-		$this->DisposeModel = new DisposeModel();
 		$this->ContentPullModel = new ContentPullModel();
 	}
 
@@ -28,7 +27,7 @@ class SearchModel extends Model {
 		$size   = max(1, (int)$size);
 		$offset = max(0, (int)$offset);
 		$akToken   = $_SERVER['HTTP_KEY'];
-		$isAkToken = $this->DisposeModel-> checkAddress($akToken);
+		$isAkToken = DisposeModel::checkAddress($akToken);
 		if ( $isAkToken ) {
 			$opt['userLogin'] = $akToken;
 		}
@@ -66,7 +65,7 @@ class SearchModel extends Model {
 							WHERE keywords IN ($limitSql)";
 			$this->db-> query($upReadSql);
 		} else {
-			return $this->DisposeModel-> wetJsonRt(406,'error_type');
+			return DisposeModel::wetJsonRt(406,'error_type');
 		}
 
 		$data = $this->cycle($page, $size, $countSql, $limitSql, $opt);
@@ -115,7 +114,7 @@ class SearchModel extends Model {
 			}
 			$data['data'] = $detaila;
 		}
-		return $this->DisposeModel-> wetRt(200,'success',$data);
+		return DisposeModel::wetRt(200,'success',$data);
 	}
 
 	private function pages($page, $size, $sql)

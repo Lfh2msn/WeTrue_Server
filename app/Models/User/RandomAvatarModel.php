@@ -45,13 +45,13 @@ class RandomAvatarModel extends ComModel
 		$isHash = $this->ValidModel-> isRandomAvatarHash($hash);
 		if ($isHash) {
 			$this->deleteTemp($hash);
-			return $this->DisposeModel-> wetJsonRt(406, 'error_repeat');
+			return DisposeModel::wetJsonRt(406, 'error_repeat');
 		}
 
 		$isVipAddress = $this->ValidModel-> isVipAddress($sendId);
 		if (!$isVipAddress) {
 			$this->deleteTemp($hash);
-			return $this->DisposeModel-> wetJsonRt(406, 'error_noVip');
+			return DisposeModel::wetJsonRt(406, 'error_noVip');
 		}
 
 		$cHeight = $this->GetAeChainModel->chainHeight($hash);  //获取链上高度
@@ -59,7 +59,7 @@ class RandomAvatarModel extends ComModel
 			$logMsg = "{$msgTime}-获取链上高度失败hash: {$hash}";
 			$logPath = "random_avatar/error-{$textTime}";
 			$this->DisposeModel->wetFwriteLog($logMsg, $logPath);
-			return $this->DisposeModel-> wetJsonRt(406, 'error_height');
+			return DisposeModel::wetJsonRt(406, 'error_height');
         }
 		$pHeight = ($cHeight - $bHeight);
 
@@ -71,7 +71,7 @@ class RandomAvatarModel extends ComModel
 			$pHeight <= $raConfig['limitHeight']
 		) {
 			//开始创建随机数头像
-			$random = $this->DisposeModel-> randBase58();
+			$random = DisposeModel::randBase58();
 			//更新头像
 			$this->db->table($this->wet_users)->where('address', $sendId)->update( ['avatar' => $random] );
 			//更新活跃度
@@ -92,13 +92,13 @@ class RandomAvatarModel extends ComModel
 			$logPath = "random_avatar/open-{$textTime}";
 			$this->DisposeModel->wetFwriteLog($logMsg, $logPath);
 			$this->deleteTemp($hash);
-			return $this->DisposeModel-> wetJsonRt(200);
+			return DisposeModel::wetJsonRt(200);
 		} else {
 			$logMsg = "{$msgTime}-接收地址或金额或高度错误hash: {$hash}";
 			$logPath = "random_avatar/error-{$textTime}";
 			$this->DisposeModel->wetFwriteLog($logMsg, $logPath);
 			$this->deleteTemp($hash);
-			return $this->DisposeModel-> wetJsonRt(406, 'error');
+			return DisposeModel::wetJsonRt(406, 'error');
 		}
 	}
 

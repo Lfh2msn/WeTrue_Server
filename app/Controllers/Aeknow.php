@@ -3,8 +3,8 @@ namespace App\Controllers;
 
 use App\Models\Get\GetAeknowModel;
 
-class Aeknow extends BaseController {
-//Aeknow API 模块
+class Aeknow extends BaseController
+{//Aeknow API 模块
 	public function api($type, ...$param)
 	{	
 		//Token 列表

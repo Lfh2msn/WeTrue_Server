@@ -26,7 +26,7 @@ class DriftModel extends Model {
 		$offset = max(0, (int)$offset);
 		$data['code'] = 200;
 		$akToken   = $_SERVER['HTTP_KEY'];
-		$isAkToken = $this->DisposeModel-> checkAddress($akToken);
+		$isAkToken = DisposeModel::checkAddress($akToken);
 		if (!$isAkToken) {
 			$data['code'] = 401;
 			$data['msg']  = 'error_login';

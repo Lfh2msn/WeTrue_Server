@@ -1,7 +1,7 @@
 <?php namespace App\Models\Config;
 
-class AeknowConfig {
-//Aeknow地址配置
+class AeknowConfig
+{//Aeknow地址配置
 
 	public function urls()
 	{

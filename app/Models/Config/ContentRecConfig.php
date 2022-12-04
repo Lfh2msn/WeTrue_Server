@@ -1,7 +1,7 @@
 <?php namespace App\Models\Config;
 
-class ContentRecConfig {
-//内容推荐 配置
+class ContentRecConfig
+{//内容推荐 配置
 
 	public function factor()
 	{//推荐因子

@@ -184,7 +184,7 @@ class ValidModel extends Model {
 		$sql   = "SELECT is_vip FROM wet_users_vip WHERE address = '$address' LIMIT 1";
         $query = $this->db->query($sql);
 		$row   = $query->getRow();
-		return $row->is_vip ? true : false;
+		return isset($row->is_vip) ? true : false;
 	}
 
 	public function isVipAccount($address)

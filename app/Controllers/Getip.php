@@ -1,7 +1,8 @@
 <?php
 namespace App\Controllers;
 
-class Getip extends BaseController {
+class Getip
+{
 
 	public function index()
 	{//获取本地IP

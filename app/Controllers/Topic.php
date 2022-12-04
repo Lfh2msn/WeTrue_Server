@@ -1,7 +1,10 @@
 <?php
 namespace App\Controllers;
 
-use App\Models\TopicModel;
+use App\Models\{
+	TopicModel,
+	DisposeModel
+};
 
 class Topic extends BaseController {
 
@@ -11,9 +14,9 @@ class Topic extends BaseController {
 		$opt = ['read' => true];
 		$data	 = (new TopicModel())-> getTopicInfo($keyword, $opt);
 		if ($data) {
-			$data = $this->DisposeModel-> wetJsonRt(200, 'success', $data);
+			$data = DisposeModel::wetJsonRt(200, 'success', $data);
 		} else {
-			$data = $this->DisposeModel-> wetJsonRt(406,'error');
+			$data = DisposeModel::wetJsonRt(406,'error');
 		}
 		echo $data;
 	}

@@ -44,8 +44,8 @@ class PagesModel extends Model {
 		$page   = max(1, (int)$page);
 		$size   = max(1, (int)$size);
 		$offset = max(0, (int)$offset);
-		$akToken   = $_SERVER['HTTP_KEY'];
-		$isAkToken = $this->DisposeModel-> checkAddress($akToken);
+		$akToken   = isset($_SERVER['HTTP_KEY']);
+		$isAkToken = DisposeModel::checkAddress($akToken);
 		if ($isAkToken) $opt['userLogin'] = $akToken;
 		$opt['substr'] = 160; //限制输出
 
@@ -186,8 +186,8 @@ class PagesModel extends Model {
 
 	public function alone($hash, $opt=[])
 	{//内容单页
-		$akToken   = $_SERVER['HTTP_KEY'];
-		$isAkToken = $this->DisposeModel-> checkAddress($akToken);
+		$akToken   = $_SERVER['HTTP_KEY'] ?? false;
+		$isAkToken = DisposeModel::checkAddress($akToken);
 		if($isAkToken) {
 			$opt['userLogin'] = $akToken;
 		}
@@ -215,7 +215,7 @@ class PagesModel extends Model {
 			$msg  = 'error_hash_or_id';
 		}
 
-		return $this->DisposeModel-> wetJsonRt($code, $msg, $data);
+		return DisposeModel::wetJsonRt($code, $msg, $data);
     }
 
 	private function cycle($page, $size, $countSql, $limitSql, $opt)
@@ -275,7 +275,7 @@ class PagesModel extends Model {
 			}
 		}
 		
-		return $this->DisposeModel-> wetRt(200,'success',$data);
+		return DisposeModel::wetRt(200,'success',$data);
 	}
 
 	public function contentCount(){

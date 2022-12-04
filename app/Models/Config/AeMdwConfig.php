@@ -1,7 +1,7 @@
 <?php namespace App\Models\Config;
 
-class AeMdwConfig {
-//官方mdw地址配置
+class AeMdwConfig
+{//官方mdw地址配置
 
 	public function urls()
 	{

@@ -50,7 +50,7 @@ class ReceiveMsgTypeModel {
 
 		} elseif (substr($reqContent, 0, 6) == "绑定") {
 			$aeAddress = substr($reqContent, 6);
-			$isAddress = $this->DisposeModel-> checkAddress($aeAddress);
+			$isAddress = DisposeModel::checkAddress($aeAddress);
 			if ($isAddress) {
 				$mycontent = $this->CorpUserModel-> bindUser($aeAddress, $reqToUserName, $reqFromUserName);
 			}else {
@@ -83,7 +83,7 @@ class ReceiveMsgTypeModel {
 					$toAddress = $match[7]; //提取目标地址
 					$keyList   = explode("|", $upperKey); //匹配Token转数组
 					$isCoin    = in_array($coinToken, $keyList);
-					$isAddress = $this->DisposeModel-> checkAddress($toAddress);
+					$isAddress = DisposeModel::checkAddress($toAddress);
 					if ($isCoin && $isAddress) {
 						$offset = stripos($reqContent, $match[5]);
 						$amount = substr($reqContent, 6, $offset-6);

@@ -1,8 +1,11 @@
 <?php
 namespace App\Controllers;
 
-use App\Models\MiningModel;
-use App\Models\ValidModel;
+use App\Models\{
+	DisposeModel,
+	MiningModel,
+	ValidModel
+};
 
 class Mining extends BaseController {
 
@@ -10,12 +13,12 @@ class Mining extends BaseController {
 	{//映射挖矿
 		(int)$amount   = $this->request->getPost('amount');
 		$userAddress   = $_SERVER['HTTP_KEY'];
-		$isUserAddress = $this->DisposeModel-> checkAddress($userAddress);
+		$isUserAddress = DisposeModel::checkAddress($userAddress);
 		$isVipAccount  = (new ValidModel())-> isVipAccount($userAddress);
 		if ($isVipAccount && is_numeric($amount) && $isUserAddress) {
 			$data = (new MiningModel())-> inMapping($userAddress, $amount);
 		} else {
-			$data = $this->DisposeModel-> wetJsonRt(406,'error_amount');
+			$data = DisposeModel::wetJsonRt(406,'error_amount');
 		}
 		echo $data;
     }
@@ -23,12 +26,12 @@ class Mining extends BaseController {
 	public function earning()
 	{//领取收益
 		$userAddress   = $_SERVER['HTTP_KEY'];
-		$isUserAddress = $this->DisposeModel-> checkAddress($userAddress);
+		$isUserAddress = DisposeModel::checkAddress($userAddress);
 		$isVipAccount  = (new ValidModel())-> isVipAccount($userAddress);
 		if ($isUserAddress && $isVipAccount) {
 			$data = (new MiningModel())-> getEarning($userAddress);
 		} else {
-			$data = $this->DisposeModel-> wetJsonRt(406,'error_address');
+			$data = DisposeModel::wetJsonRt(406,'error_address');
 		}
 		echo $data;
     }
@@ -36,12 +39,12 @@ class Mining extends BaseController {
 	public function unMapping()
 	{//解除映射
 		$userAddress   = $_SERVER['HTTP_KEY'];
-		$isUserAddress = $this->DisposeModel-> checkAddress($userAddress);
+		$isUserAddress = DisposeModel::checkAddress($userAddress);
 		$isVipAccount  = (new ValidModel())-> isVipAccount($userAddress);
 		if ($isVipAccount && $isUserAddress) {
 			$data = (new MiningModel())-> unMapping($userAddress);
 		} else {
-			$data = $this->DisposeModel-> wetJsonRt(406,'error_amount');
+			$data = DisposeModel::wetJsonRt(406,'error_amount');
 		}
 		echo $data;
     }
@@ -49,17 +52,17 @@ class Mining extends BaseController {
 	public function mapInfo()
 	{//获取用户映射挖矿信息
 		$userAddress   = $_SERVER['HTTP_KEY'];
-		$isUserAddress = $this->DisposeModel-> checkAddress($userAddress);
+		$isUserAddress = DisposeModel::checkAddress($userAddress);
 		$isVipAccount  = (new ValidModel())-> isVipAccount($userAddress);
 		if ($isUserAddress && $isVipAccount) {
 			$userMiningInfo = (new MiningModel())-> checkMapping($userAddress);
 			if ($userMiningInfo) {
-				$data = $this->DisposeModel-> wetJsonRt(200, 'success', $userMiningInfo);
+				$data = DisposeModel::wetJsonRt(200, 'success', $userMiningInfo);
 			} else {
-				$data = $this->DisposeModel-> wetJsonRt(406, 'error_address');
+				$data = DisposeModel::wetJsonRt(406, 'error_address');
 			}
 		} else {
-			$data = $this->DisposeModel-> wetJsonRt(406, 'error_address');
+			$data = DisposeModel::wetJsonRt(406, 'error_address');
 		}
 		echo $data;
     }

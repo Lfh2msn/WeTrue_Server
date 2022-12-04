@@ -61,7 +61,7 @@ class AeSuperheroPutModel extends ComModel {
 		if (!$s_id) {
 			$code = 406;
 			$msg  = "GetUrlDataError";
-			return $this->DisposeModel-> wetJsonRt($code, $msg);
+			return DisposeModel::wetJsonRt($code, $msg);
 		}
 
 		/**获取完整tipID并装入数组
@@ -82,7 +82,7 @@ class AeSuperheroPutModel extends ComModel {
 		if (!$sqlResult) {
 			$code = 200;
 			$msg  = "Not_Update";
-			return $this->DisposeModel-> wetJsonRt($code, $msg);
+			return DisposeModel::wetJsonRt($code, $msg);
 		}
 
 		$lastResult = array();
@@ -116,7 +116,7 @@ class AeSuperheroPutModel extends ComModel {
 				}
 			}
 		}
-		return $this->DisposeModel-> wetJsonRt(200);
+		return DisposeModel::wetJsonRt(200);
 	}
 
 }

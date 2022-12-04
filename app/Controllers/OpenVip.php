@@ -1,26 +1,30 @@
 <?php
 namespace App\Controllers;
 
-use App\Models\ValidModel;
+use App\Models\{
+	DisposeModel,
+	ValidModel
+};
 use App\Models\User\OpenVipModel;
 use App\Models\Config\OpenVipConfig;
 
-class OpenVip extends BaseController {
+class OpenVip
+{
 
 	public function state()
 	{//提交开通VIP状态
 		$address   = $_SERVER['HTTP_KEY'];
-		$isAddress = $this->DisposeModel-> checkAddress($address);
+		$isAddress = DisposeModel::checkAddress($address);
 		if ($isAddress) {
 			$isOpenVipState = (new ValidModel())-> isOpenVipState($address);
 			$isVipAddress   = (new ValidModel())-> isVipAddress($address);
 			if ($isOpenVipState || $isVipAddress) {
-				$data = $this->DisposeModel-> wetJsonRt(200,'error_repeat',true);
+				$data = DisposeModel::wetJsonRt(200,'error_repeat',true);
 			} else {
-				$data = $this->DisposeModel-> wetJsonRt(200,'success',false);
+				$data = DisposeModel::wetJsonRt(200,'success',false);
 			}
 		} else {
-			$data = $this->DisposeModel-> wetJsonRt(406,'error_address');
+			$data = DisposeModel::wetJsonRt(406,'error_address');
 		}
 		echo $data;
     }
@@ -36,7 +40,7 @@ class OpenVip extends BaseController {
 			$code = 406;
 			$msg  = 'error';
 		}
-		echo $this->DisposeModel-> wetJsonRt($code, $msg, $data);
+		echo DisposeModel::wetJsonRt($code, $msg, $data);
     }
 
 }

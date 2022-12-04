@@ -2,6 +2,7 @@
 namespace App\Controllers;
 
 use App\Models\ComplainModel;
+use App\Models\DisposeModel;
 use App\Models\BloomModel;
 use App\Models\AirdropModel;
 use App\Models\MiningModel;
@@ -29,24 +30,24 @@ class Admin extends BaseController
 	public function bloom()
 	{//投诉hash屏蔽
 		$hash   = $this->request->getPost('hash');
-		$isHash = $this->DisposeModel-> checkAddress($hash);
+		$isHash = DisposeModel::checkAddress($hash);
         if ($isHash) {
             $data = (new BloomModel())-> bloomHash($hash);
 			echo $data;
         } else {
-			echo $this->DisposeModel-> wetJsonRt(406,'error_hash');
+			echo DisposeModel::wetJsonRt(406,'error_hash');
 		}
 	}
 
 	public function unBloom()
 	{//取消屏蔽
 		$hash   = $this->request->getPost('hash');
-		$isHash = $this->DisposeModel-> checkAddress($hash);
+		$isHash = DisposeModel::checkAddress($hash);
         if ($isHash) {
             $data = (new BloomModel())-> unBloom($hash);
 			echo $data;
         } else {
-			echo $this->DisposeModel-> wetJsonRt(406,'error_hash');
+			echo DisposeModel::wetJsonRt(406,'error_hash');
 		}
 	}
 
@@ -63,12 +64,12 @@ class Admin extends BaseController
 	public function openMapping()
 	{//管理员开启映射挖矿
 		$userAddress   = $this->request->getPost('userAddress');
-        $isUserAddress = $this->DisposeModel-> checkAddress($userAddress);
+        $isUserAddress = DisposeModel::checkAddress($userAddress);
 		if ($isUserAddress) {
             $data = (new MiningModel())-> adminOpenMapping($userAddress);
 			echo $data;
         } else {
-			echo $this->DisposeModel-> wetJsonRt(406,'error');
+			echo DisposeModel::wetJsonRt(406,'error');
 		}
 	}
 }

@@ -74,20 +74,20 @@ class BloomModel extends ComModel {
     public function bloomHash($hash)
     {//过滤TX入库bloom
         $akToken   = $_SERVER['HTTP_KEY'];
-		$isAkToken = $this->DisposeModel-> checkAddress($akToken);
+		$isAkToken = DisposeModel::checkAddress($akToken);
 		$isAdmin   = $this->ValidModel-> isAdmin($akToken);
 		if (!$isAkToken || !$isAdmin) {
-			return $this->DisposeModel-> wetJsonRt(401, 'error_login');
+			return DisposeModel::wetJsonRt(401, 'error_login');
 		}
 
         $isComplain = $this->ValidModel-> isComplain($hash);
         if (!$isComplain) {
-			return $this->DisposeModel-> wetJsonRt(401, 'error_no_complain');
+			return DisposeModel::wetJsonRt(401, 'error_no_complain');
         }
 
         $isBloomHash = $this->ValidModel-> isBloomHash($hash);
         if ($isBloomHash) {
-			return $this->DisposeModel-> wetJsonRt(200, 'error_repeat');
+			return DisposeModel::wetJsonRt(200, 'error_repeat');
         }
 
         $insertBloom = "INSERT INTO $this->wet_bloom(bf_hash,bf_reason) VALUES ('$hash','admin_bf')";
@@ -109,21 +109,21 @@ class BloomModel extends ComModel {
 		];
 		$this->db->table($this->wet_behavior)->insert($insetrBehaviorDate);
 
-		return $this->DisposeModel-> wetJsonRt(200, 'success');
+		return DisposeModel::wetJsonRt(200, 'success');
     }
 
     public function unBloom($hash)
     {//撤销过滤
         $akToken   = $_SERVER['HTTP_KEY'];
-		$isAkToken = $this->DisposeModel-> checkAddress($akToken);
+		$isAkToken = DisposeModel::checkAddress($akToken);
 		$isAdmin   = $this->ValidModel-> isAdmin($akToken);
 		if (!$isAkToken || !$isAdmin) {
-			return $this->DisposeModel-> wetJsonRt(401, 'error_login');
+			return DisposeModel::wetJsonRt(401, 'error_login');
 		}
 
         (new ComplainModel())-> deleteComplain($hash);
         $this-> deleteBloomHash($hash);
-        return $this->DisposeModel-> wetJsonRt(200, 'success');
+        return DisposeModel::wetJsonRt(200, 'success');
     }
 
     public function limit($page, $size, $offset, $opt=[])
@@ -132,10 +132,10 @@ class BloomModel extends ComModel {
 		$size   = max(1, (int)$size);
 		$offset = max(0, (int)$offset);
 		$akToken   = $_SERVER['HTTP_KEY'];
-		$isAkToken = $this->DisposeModel-> checkAddress($akToken);
+		$isAkToken = DisposeModel::checkAddress($akToken);
 		$isAdmin   = $this->ValidModel-> isAdmin($akToken);
 		if ( !$isAkToken || !$isAdmin ) {
-			return $this->DisposeModel-> wetJsonRt(401, 'error_login');
+			return DisposeModel::wetJsonRt(401, 'error_login');
 		}
 		$opt['userLogin'] = $akToken;
 
@@ -144,7 +144,7 @@ class BloomModel extends ComModel {
 		$data['data'] = [];
 		$data = $this->cycle($page, $size, $countSql, $limitSql, $opt);
 
-		return $this->DisposeModel-> wetJsonRt(200, 'success', $data);
+		return DisposeModel::wetJsonRt(200, 'success', $data);
     }
 
 	private function cycle($page, $size, $countSql, $limitSql, $opt)
