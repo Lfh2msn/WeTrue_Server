@@ -27,7 +27,6 @@ class AeChainPutModel extends Model {
 	private $FocusModel;
 	private $ConfigModel;
 	private $WetModel;
-	private $DisposeModel;
 	private $MentionsModel;
 	private $GetAeChainModel;
 	private $ActiveConfig;
@@ -68,7 +67,7 @@ class AeChainPutModel extends Model {
 			$microBlock = $json['block_hash'];
 			if(!$microBlock){
 				$this->DisposeModel->wetFwriteLog("错误区块Hash:{$microBlock}");
-				return $this->DisposeModel-> wetJsonRt(406,'error_block_hash');
+				return DisposeModel::wetJsonRt(406,'error_block_hash');
 			}
 			$utcTime = $this->GetAeChainModel->microBlockTime($microBlock);
 			$json['mb_time'] = $utcTime;
@@ -82,10 +81,10 @@ class AeChainPutModel extends Model {
 				if(!$WeTrue){ //非WeTrue
 					$this->deleteTemp($hash);
 					$this->DisposeModel->wetFwriteLog("非WeTrue格式:{$hash},版本号:{$WeTrue}");
-					return $this->DisposeModel-> wetJsonRt(406,'error_WeTrue');
+					return DisposeModel::wetJsonRt(406,'error_WeTrue');
 				}
 				$this->DisposeModel->wetFwriteLog("版本号异常:{$hash},版本号:{$WeTrue}");
-				return $this->DisposeModel-> wetJsonRt(406,'error_version');
+				return DisposeModel::wetJsonRt(406,'error_version');
 			}
 
 			$data['WeTrue']  = $WeTrue;
@@ -131,7 +130,7 @@ class AeChainPutModel extends Model {
 				$getActive  = $activeConfig['sexActive'];
 			}
 			elseif ( $data['type'] == 'star' ){ //收藏帖
-				$repeatHash = $this->ValidModel-> isStarHash();isStar($data['hash'], $data['sender']);
+				$repeatHash = $this->ValidModel-> isStar($data['hash'], $data['sender']);
 			}
 			elseif ( $data['type'] == 'focus' ){ //关注用户
 				$repeatHash = $this->ValidModel-> isFocus($data['content'], $data['sender']);
@@ -140,13 +139,13 @@ class AeChainPutModel extends Model {
 			if ($repeatHash) {
 				$this->deleteTemp($hash);
 				$this->DisposeModel->wetFwriteLog("重复Hash:{$hash}");
-				return $this->DisposeModel-> wetJsonRt(406,'error');
+				return DisposeModel::wetJsonRt(406,'error');
 			}
 
 			if ($data['amount'] < $userAmount) {
 				$this->deleteTemp($hash);
 				$this->DisposeModel->wetFwriteLog("费用异常:{$hash}");
-				return $this->DisposeModel-> wetJsonRt(406,'error_amount');
+				return DisposeModel::wetJsonRt(406,'error_amount');
 			}
 
 			//内容分配
@@ -161,7 +160,7 @@ class AeChainPutModel extends Model {
 						$logPath = "log/chain/holdAeLow-".date('Y-m').".txt";
 						$logMsg  = "持有AE不足最低要求:{$hash}";
 						$this->DisposeModel->wetFwriteLog($logMsg, $logPath);
-						return $this->DisposeModel-> wetJsonRt(406,'hold_aettos_low');
+						return DisposeModel::wetJsonRt(406,'hold_aettos_low');
 					}
 				}
 				$data['mediaList'] = json_encode($payload['media']);
@@ -271,7 +270,7 @@ class AeChainPutModel extends Model {
 				if ($data['reply_type'] != "comment" && $data['reply_type'] != "reply") {
 					$this->deleteTemp($hash);
 					$this->DisposeModel->wetFwriteLog("无效格式回复贴格式:{$data['reply_type']}:{$data['hash']}");
-					return $this->DisposeModel-> wetJsonRt(406,'error');
+					return DisposeModel::wetJsonRt(406,'error');
 				}
 
 				$insertData = [
@@ -356,7 +355,7 @@ class AeChainPutModel extends Model {
 				if (!is_numeric($data['content']) || $data['content'] >= 3){
 					$this->DisposeModel->wetFwriteLog("sex type Error:{$data['hash']}");
 					$this->deleteTemp($hash);
-					return $this->DisposeModel-> wetJsonRt(406,'error');
+					return DisposeModel::wetJsonRt(406,'error');
 				}
 
 				$verify = $this->ValidModel-> isUser($data['sender']);
@@ -374,7 +373,7 @@ class AeChainPutModel extends Model {
 				}
 				$data['action']  = $payload['action'];
 				$data['content'] = $payload['content'];
-				$isAddress = $this->DisposeModel-> checkAddress($data['content']);
+				$isAddress = DisposeModel::checkAddress($data['content']);
 				$isUser    = $this->ValidModel-> isUser($data['content']);
 
 				if (!$isUser || !$isAddress){
@@ -396,7 +395,7 @@ class AeChainPutModel extends Model {
 				}
 				$data['action']  = $payload['action'];
 				$data['content'] = $this->DisposeModel-> delete_xss($payload['content']);
-				$isHash = $this->DisposeModel-> checkAddress($data['content']);
+				$isHash = DisposeModel::checkAddress($data['content']);
 				$isShTipid = $this->DisposeModel-> checkSuperheroTipid($data['content']);
 				$isCheck   = $isShTipid ? $isShTipid : $isHash;
 				$select = 'contentStar';
@@ -406,7 +405,7 @@ class AeChainPutModel extends Model {
 				if (!$isCheck){
 					$this->DisposeModel->wetFwriteLog("star isCheck Error:{$data['hash']}");
 					$this->deleteTemp($hash);
-					return $this->DisposeModel-> wetJsonRt(406,'error');
+					return DisposeModel::wetJsonRt(406,'error');
 				}
 				$this->StarModel-> star($data['sender'], $data['content'], $data['action'],$select);
 				$this->deleteTemp($hash);
@@ -419,7 +418,7 @@ class AeChainPutModel extends Model {
 			} else {
 				$this->deleteTemp($hash);
 				$this->DisposeModel->wetFwriteLog("Payload [type]标签错误:{$hash}");
-				return $this->DisposeModel-> wetJsonRt(406,'error');
+				return DisposeModel::wetJsonRt(406,'error');
 			}
 
 			$this->UserModel-> userActive($data['sender'], $getActive, $e = true);
@@ -430,11 +429,11 @@ class AeChainPutModel extends Model {
 			}
 			$this->deleteTemp($hash);
 			if( $data['type'] == 'topic' ) $this->WetModel ->getNewContentList(); //通知中间件提示新内容
-			return $this->DisposeModel-> wetJsonRt(200,'success');
+			return DisposeModel::wetJsonRt(200,'success');
 		} catch (Exception $err) {
 			$this->deleteTemp($hash);
 			$this->DisposeModel->wetFwriteLog("未知错误:{$err}");
-			return $this->DisposeModel-> wetJsonRt(406,'error');
+			return DisposeModel::wetJsonRt(406,'error');
 		}
     }
 
