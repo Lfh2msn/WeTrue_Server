@@ -260,8 +260,8 @@ class DisposeModel extends Model {
 
 	public function versionCompare($versionA, $versionB)
 	{/*版本号比较
-	*    @param $version1 版本A 如:5.3.2 
-	*    @param $version2 版本B 如:5.3.0 
+	*    @param $version1 版本A 如:5.3.2
+	*    @param $version2 版本B 如:5.3.0
 	*    @return int -1版本A小于版本B , 0版本A等于版本B, 1版本A大于版本B
 	*
 	*    版本号格式注意：

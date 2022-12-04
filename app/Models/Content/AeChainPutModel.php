@@ -99,7 +99,7 @@ class AeChainPutModel extends Model {
 			$data['amount']  = $json['tx']['amount'];
 			$data['mb_time'] = $json['mb_time'];
 			$data['content'] = $payload['content'];
-			$data['chain_id']= 457;
+			$data['chainId']= 457;
 
 			//用户 活跃度及费用 设置检测
 			$ftConfig = $this->ConfigModel-> frontConfig($data['sender']);
@@ -174,7 +174,7 @@ class AeChainPutModel extends Model {
 								'payload' 	   => $data['content'],
 								'media_list'   => $data['mediaList'],
 								'source' 	   => $data['source'],
-								'chain_id'	   => $data['chain_id']
+								'chain_id'	   => $data['chainId']
 							];
 				$this->db->table($this->wet_content)->insert($insertData);
 				//是否话题
@@ -205,26 +205,26 @@ class AeChainPutModel extends Model {
 
 			elseif ( $data['type'] == 'comment' )
 			{//评论
-				$s_to_hash = $payload['toHash'] ?? $payload['to_hash']; //即将废弃toHash
-				$data['to_hash'] = $this->DisposeModel-> delete_xss($s_to_hash);
+				$s_to_hash = $payload['toHash'] ?? $payload['to_hash']; //即将废弃to_hash
+				$data['toHash'] = $this->DisposeModel-> delete_xss($s_to_hash);
 				$insertData = [
 					'hash'		   => $data['hash'],
-					'to_hash'	   => $data['to_hash'],
+					'to_hash'	   => $data['toHash'],
 					'sender_id'	   => $data['sender'],
 					'recipient_id' => $data['receipt'],
 					'utctime'	   => $data['mb_time'],
 					'amount'	   => $data['amount'],
 					'type' 		   => $data['type'],
 					'payload' 	   => $data['content'],
-					'chain_id'	   => $data['chain_id']
+					'chain_id'	   => $data['chainId']
 				];
 				$this->db->table($this->wet_comment)->insert($insertData);
 				//验证是否为Superhero ID
-				$isShTipid = $this->DisposeModel-> checkSuperheroTipid($data['to_hash']);
+				$isShTipid = $this->DisposeModel-> checkSuperheroTipid($data['toHash']);
 				if ($isShTipid) {
-					$upSql = "UPDATE $this->wet_content_sh SET comment_sum = comment_sum + 1 WHERE tip_id = '$data[to_hash]'";
+					$upSql = "UPDATE $this->wet_content_sh SET comment_sum = comment_sum + 1 WHERE tip_id = '$data[toHash]'";
 				} else {
-					$upSql = "UPDATE $this->wet_content SET comment_sum = comment_sum + 1 WHERE hash = '$data[to_hash]'";
+					$upSql = "UPDATE $this->wet_content SET comment_sum = comment_sum + 1 WHERE hash = '$data[toHash]'";
 				}
 				$this->db->query($upSql);
 				//写入消息
@@ -233,11 +233,11 @@ class AeChainPutModel extends Model {
 					$msgOpt = [ 'type'=>'shTipid' ];
 				}
 	
-				$toHashID = $this->MsgModel-> toHashSendID($data['to_hash'], $msgOpt);  //获取被评论ID
+				$toHashID = $this->MsgModel-> toHashSendID($data['toHash'], $msgOpt);  //获取被评论ID
 				if($toHashID) {
 					$msgData = [
 						'hash' 		   => $data['hash'],
-						'to_hash' 	   => $data['to_hash'],
+						'toHash' 	   => $data['toHash'],
 						'type'	   	   => $data['type'],
 						'sender_id'	   => $data['sender'],
 						'recipient_id' => $toHashID,
@@ -251,7 +251,7 @@ class AeChainPutModel extends Model {
 					$mentions = [
 						'type'		=> 'comment',
 						'hash'		=> $data['hash'],
-						'to_hash'	=> $data['to_hash'],
+						'toHash'	=> $data['toHash'],
 						'content'   => $data['content'],
 						'sender_id' => $data['sender'],
 						'utctime'   => $data['mb_time']
@@ -262,40 +262,45 @@ class AeChainPutModel extends Model {
 
 			elseif ( $data['type'] == 'reply' )
 			{//回复
-				$data['reply_type'] = $this->DisposeModel-> delete_xss($payload['reply_type']);
-				$data['to_hash']    = $this->DisposeModel-> delete_xss($payload['to_hash']);
-				$data['to_address'] = $this->DisposeModel-> delete_xss($payload['to_address']);
-				$data['reply_hash'] = $this->DisposeModel-> delete_xss($payload['reply_hash']);
+				$replyType = $payload['reply_type'] ?? $payload['replyType']; //即将废弃reply_type
+				$toHash = $payload['toHash'] ?? $payload['to_hash']; //即将废弃to_hash
+				$toAddress = $payload['to_address'] ?? $payload['toAddress']; //即将废弃to_address
+				$replyHash = $payload['reply_hash'] ?? $payload['replyHash']; //即将废弃reply_hash
 
-				if ($data['reply_type'] != "comment" && $data['reply_type'] != "reply") {
+				$data['replyType'] = $this->DisposeModel-> delete_xss($replyType);
+				$data['toHash']     = $this->DisposeModel-> delete_xss($toHash);
+				$data['toAddress'] = $this->DisposeModel-> delete_xss($toAddress);
+				$data['replyHash'] = $this->DisposeModel-> delete_xss($replyHash);
+
+				if ($data['replyType'] != "comment" && $data['replyType'] != "reply") {
 					$this->deleteTemp($hash);
-					$this->DisposeModel->wetFwriteLog("无效格式回复贴格式:{$data['reply_type']}:{$data['hash']}");
+					$this->DisposeModel->wetFwriteLog("无效格式回复贴格式:{$data['replyType']}:{$data['hash']}");
 					return DisposeModel::wetJsonRt(406,'error');
 				}
 
 				$insertData = [
 					'hash'		   => $data['hash'],
-					'to_hash'	   => $data['to_hash'],
-					'reply_hash'   => $data['reply_hash'],
-					'reply_type'   => $data['reply_type'],
-					'to_address'   => $data['to_address'],
+					'to_hash'	   => $data['toHash'],
+					'reply_hash'   => $data['replyHash'],
+					'reply_type'   => $data['replyType'],
+					'to_address'   => $data['toAddress'],
 					'sender_id'	   => $data['sender'],
 					'recipient_id' => $data['receipt'],
 					'utctime'	   => $data['mb_time'],
 					'amount'	   => $data['amount'],
 					'payload' 	   => $data['content'],
-					'chain_id'	   => $data['chain_id']
+					'chain_id'	   => $data['chainId']
 				];
 				$this->db->table($this->wet_reply)->insert($insertData);
-				$upSql = "UPDATE $this->wet_comment SET comment_sum = comment_sum + 1 WHERE hash = '$data[to_hash]'";
+				$upSql = "UPDATE $this->wet_comment SET comment_sum = comment_sum + 1 WHERE hash = '$data[toHash]'";
 				$this->db->query($upSql);
 				//写入消息
 				$msgOpt = [ 'type'=>$data['type'] ];
-				$toHashID = $this->MsgModel-> toHashSendID($data['to_hash'], $msgOpt);  //获取被评论ID
+				$toHashID = $this->MsgModel-> toHashSendID($data['toHash'], $msgOpt);  //获取被评论ID
 				if($toHashID) {
 					$msgData = [
 						'hash' 		   => $data['hash'],
-						'to_hash' 	   => $data['to_hash'],
+						'toHash' 	   => $data['toHash'],
 						'type'	   	   => $data['type'],
 						'sender_id'	   => $data['sender'],
 						'recipient_id' => $toHashID,
@@ -305,13 +310,13 @@ class AeChainPutModel extends Model {
 				}
 				
 				//@回复写入消息
-				if($data['reply_type'] == 'reply' && $data['to_address'] && $data['to_address'] != $toHashID) {
+				if($data['replyType'] == 'reply' && $data['toAddress'] && $data['toAddress'] != $toHashID) {
 					$msgData = [
 						'hash' 		   => $data['hash'],
-						'to_hash' 	   => $data['to_hash'],
+						'toHash' 	   => $data['toHash'],
 						'type'	   	   => $data['type'],
 						'sender_id'	   => $data['sender'],
-						'recipient_id' => $data['to_address'],
+						'recipient_id' => $data['toAddress'],
 						'utctime' 	   => $data['mb_time']
 					];
 					$this->MsgModel-> addMsg($msgData);
@@ -322,7 +327,7 @@ class AeChainPutModel extends Model {
 					$mentions = [
 						'type'		=> $data['type'],
 						'hash'		=> $data['hash'],
-						'to_hash'	=> $data['to_hash'],
+						'toHash'	=> $data['toHash'],
 						'content'   => $data['content'],
 						'sender_id' => $data['sender'],
 						'utctime'   => $data['mb_time']

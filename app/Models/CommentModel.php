@@ -39,8 +39,8 @@ class CommentModel extends Model {
 		$row   = $query-> getRow();
         if ($row) {
 			$data['hash']    	 = $hash;
-			$data['toHash']      = $row-> to_hash; //即将废弃
-			$data['to_hash']  	 = $row-> to_hash;
+			$data['toHash']      = $row-> to_hash;
+			$data['to_hash']  	 = $row-> to_hash; //即将废弃
 			$sender_id       	 = $row-> sender_id;
 			$data['payload']	 = $this->DisposeModel-> delete_xss($row-> payload);
 			$data['utcTime']	 = (int) $row-> utctime;

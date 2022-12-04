@@ -162,7 +162,7 @@ class MsgModel extends ComModel
 
 		$insertData = [
 			'hash' 		   => isset($data['hash']) 		   ? $data['hash'] 		   : '',
-			'to_hash' 	   => isset($data['to_hash']) 	   ? $data['to_hash'] 	   : '',
+			'to_hash' 	   => isset($data['toHash']) 	   ? $data['toHash'] 	   : '',
 			'type'	   	   => isset($data['type'])   	   ? $data['type']   	   : '',
 			'sender_id'	   => isset($data['sender_id'])    ? $data['sender_id']	   : '',
 			'recipient_id' => isset($data['recipient_id']) ? $data['recipient_id'] : '',
@@ -197,24 +197,24 @@ class MsgModel extends ComModel
 
 	public function pushWecom($data)
 	{//推送到企业微信
-		$to_hash 	= $data['to_hash'];
+		$toHash 	= $data['toHash'];
 		$reqAddress = $data['recipient_id'];
 		$type   	= $data['type'];
 
 		if ($type == 'comment') {
-			$to_hash = $data['to_hash'];
+			$toHash = $data['toHash'];
 			$type 	 = "评论";
 		} elseif ($type == 'reply') {
 			$opt['substr'] = 45; //限制Payload长度
 			$opt = ['imgTx'=>true];
-			$comHash = $this->CommentModel-> simpleComment($to_hash, $opt);
-			$to_hash = $comHash['to_hash'];
+			$comHash = $this->CommentModel-> simpleComment($toHash, $opt);
+			$toHash = $comHash['toHash'];
 			$type    = "回复";
 		} else {
 			return;
 		}
 
-		$url 		 = "https://wetrue.cc/#/pages/index/detail?hash={$to_hash}";
+		$url 		 = "https://wetrue.cc/#/pages/index/detail?hash={$toHash}";
 		$description = "您收到一条来自WeTrue{$type},点击查看详情";
 		$weConfig    = $this->WecomConfig-> config();
 		$wetrueKey   = $weConfig['WETRUE_KEY_1'];
