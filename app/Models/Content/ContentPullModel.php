@@ -16,7 +16,6 @@ class ContentPullModel extends ComModel
 	public function __construct()
 	{
         parent::__construct();
-		$this->DisposeModel	= new DisposeModel();
 		$this->ValidModel   = new ValidModel();
 		$this->UserModel	= new UserModel();
 		$this->RewardModel	= new RewardModel();
@@ -53,8 +52,8 @@ class ContentPullModel extends ComModel
 			$sender_id	  			= $row-> sender_id;
 			$operation				= mb_strlen($row->payload,'UTF8') >= $opt['substr'] ? $row->payload.'...' : $row->payload;
 			$isStrCount				= $strCount ? $operation : $row->payload;
-			$deleteXss				= $this->DisposeModel-> delete_xss($isStrCount);
-			$data['payload']		= $this->DisposeModel-> sensitive($deleteXss);
+			$deleteXss				= DisposeModel::delete_xss($isStrCount);
+			$data['payload']		= DisposeModel::sensitive($deleteXss);
 			//$data['imgTx']			= $row->img_tx ? "https://api.wetrue.io/Image/toimg/".$hash : "";
 			$data['mediaList']		= json_decode($row->media_list, true) ?? [];
 			$data['utcTime']		= (int) $row-> utctime;
@@ -109,8 +108,8 @@ class ContentPullModel extends ComModel
 			$sender_id  = $row-> sender_id;
 			$operation  = mb_strlen($row->payload,'UTF8') >= $opt['substr'] ? $row->payload.'...' : $row->payload;
 			$isStrCount = $strCount ? $operation : $row->payload;
-			$deleteXss  = $this->DisposeModel-> delete_xss($isStrCount);
-			$data['payload']   = $this->DisposeModel-> sensitive($deleteXss);
+			$deleteXss  = DisposeModel::delete_xss($isStrCount);
+			$data['payload']   = DisposeModel::sensitive($deleteXss);
 			$data['mediaList'] = json_decode($row->media_list, true) ?? [];
 			$data['users']['nickname'] = $this->UserModel-> getName($sender_id);
 			$data['users']['userAddress'] = $sender_id;	

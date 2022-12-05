@@ -77,7 +77,7 @@ class Content extends BaseController
     public function shTipid()
     {//Superhero主贴详情
         $shTipid   = $this->request->getPost('shTipid');
-        $isShTipid = $this->DisposeModel-> checkSuperheroTipid($shTipid);
+        $isShTipid = DisposeModel::checkSuperheroTipid($shTipid);
 		if($isShTipid){
             $type = 'shTipid';
 		    $opt  =	['select' => $type,

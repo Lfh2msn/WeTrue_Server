@@ -18,7 +18,6 @@ class CommentModel extends Model {
 		$this->UserModel	= new UserModel();
 		$this->ReplyModel	= new ReplyModel();
 		$this->ValidModel	= new ValidModel();
-		$this->DisposeModel	= new DisposeModel();
 		$this->wet_comment  = "wet_comment";
 		$this->wet_reply    = "wet_reply";
     }
@@ -42,7 +41,7 @@ class CommentModel extends Model {
 			$data['toHash']      = $row-> to_hash;
 			$data['to_hash']  	 = $row-> to_hash; //即将废弃
 			$sender_id       	 = $row-> sender_id;
-			$data['payload']	 = $this->DisposeModel-> delete_xss($row-> payload);
+			$data['payload']	 = DisposeModel::delete_xss($row-> payload);
 			$data['utcTime']	 = (int) $row-> utctime;
 			$data['replyNumber'] = (int) $row-> comment_sum;
 			$data['praise']		 = (int) $row-> praise;
@@ -94,8 +93,8 @@ class CommentModel extends Model {
 			$sender_id	  	 = $row-> sender_id;
 			$operation		 = mb_strlen($row->payload,'UTF8') >= $opt['substr'] ? $row->payload.'...' : $row->payload;
 			$isStrCount		 = $strCount ? $operation : $row->payload;
-			$deleteXss		 = $this->DisposeModel-> delete_xss($isStrCount);
-			$data['payload'] = $this->DisposeModel-> sensitive($deleteXss);
+			$deleteXss		 = DisposeModel::delete_xss($isStrCount);
+			$data['payload'] = DisposeModel::sensitive($deleteXss);
 			$data['users']   = $this->UserModel-> getUser($sender_id);
         }
     	return $data;

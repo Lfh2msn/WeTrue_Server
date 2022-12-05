@@ -5,7 +5,6 @@ use App\Models\DisposeModel;
 class GetAeknowModel {
 //获取Model
 	public function __construct(){
-		$this->DisposeModel = new DisposeModel();
     }
 
 	public function tokenTx($hash)
@@ -26,7 +25,7 @@ class GetAeknowModel {
 		if (empty($s_id)) {
 			$logMsg = "API tokenTx json 读取失败:{$hash}";
 			$path   = "aeknow_read/".date('Y-m-d');
-			$this->DisposeModel->wetFwriteLog($logMsg, $path);
+			DisposeModel::wetFwriteLog($logMsg, $path);
 			return;
         }
 		return $json;
@@ -50,7 +49,7 @@ class GetAeknowModel {
 		if (empty($r_id)) {
 			$logMsg = "API tokenPayloadTx json 读取失败:{$hash}";
 			$path   = "aeknow_read/".date('Y-m-d');
-			$this->DisposeModel->wetFwriteLog($logMsg, $path);
+			DisposeModel::wetFwriteLog($logMsg, $path);
 			return;
         }
 		
@@ -78,7 +77,7 @@ class GetAeknowModel {
         if (empty($send)) {
 			$logMsg = "latestSpendTx 最新N条发送人读取失败:{$address}";
 			$path   = "mdw_read/".date('Y-m-d');
-			$this->DisposeModel->wetFwriteLog($logMsg);
+			DisposeModel::wetFwriteLog($logMsg);
 			return;
         }
 
@@ -111,7 +110,7 @@ class GetAeknowModel {
         if (empty($send)) {
 			$logMsg = "latestSpendTx 最新N条发送人读取失败:{$address}";
 			$path   = "aeknow_read/".date('Y-m-d');
-			$this->DisposeModel->wetFwriteLog($logMsg, $path);
+			DisposeModel::wetFwriteLog($logMsg, $path);
 			return;
         }
 
@@ -144,7 +143,7 @@ class GetAeknowModel {
 		if (empty($json)) {
 			$logMsg = "spendTx json 读取失败:{$param}";
 			$path   = "aeknow_read/".date('Y-m-d');
-			$this->DisposeModel->wetFwriteLog($logMsg, $path);
+			DisposeModel::wetFwriteLog($logMsg, $path);
 			return;
         }
 		return $json;
@@ -167,7 +166,7 @@ class GetAeknowModel {
 		if (empty($json)) {
 			$logMsg = "spendTx json 读取失败:{$param}";
 			$path   = "aeknow_read/".date('Y-m-d');
-			$this->DisposeModel->wetFwriteLog($logMsg, $path);
+			DisposeModel::wetFwriteLog($logMsg, $path);
 			return;
         }
 		return $json;
@@ -190,7 +189,7 @@ class GetAeknowModel {
 		if (empty($json)) {
 			$logMsg = "tokenTxs json 读取失败:{$param}";
 			$path   = "aeknow_read/".date('Y-m-d');
-			$this->DisposeModel->wetFwriteLog($logMsg, $path);
+			DisposeModel::wetFwriteLog($logMsg, $path);
 			return;
         }
 		return $json;
@@ -213,7 +212,7 @@ class GetAeknowModel {
 		if (empty($json)) {
 			$logMsg = "myToken json 读取失败:{$param}";
 			$path   = "aeknow_read/".date('Y-m-d');
-			$this->DisposeModel->wetFwriteLog($logMsg, $path);
+			DisposeModel::wetFwriteLog($logMsg, $path);
 			return;
         }
 		return $json;

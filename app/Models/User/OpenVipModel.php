@@ -44,7 +44,7 @@ class OpenVipModel extends ComModel
 		if (empty($chainHeight)) {
 			$logMsg = "{$msgTime}-获取链上高度失败hash: {$hash}";
 			$logPath = "vip_open/error-{$textTime}";
-			$this->DisposeModel->wetFwriteLog($logMsg, $logPath);
+			DisposeModel::wetFwriteLog($logMsg, $logPath);
 			return DisposeModel::wetJsonRt(406, 'error_height');
         }
 		$poorHeight	= ($chainHeight - $blockHeight);
@@ -70,13 +70,13 @@ class OpenVipModel extends ComModel
 			$wttAmount = $this->DisposeModel->bigNumber("div", $amount);
 			$logMsg  = "{$msgTime}-开通成功-账户:{$senderId} 花费WTT:{$wttAmount} 高度:{$blockHeight} Hash:{$hash}";
 			$logPath = "vip_open/open-vip-{$textTime}";
-			$this->DisposeModel->wetFwriteLog($logMsg, $logPath);
+			DisposeModel::wetFwriteLog($logMsg, $logPath);
 			$this->deleteTemp($hash);
 			return DisposeModel::wetJsonRt(200, 'success');
 		} else {
 			$logMsg = "{$msgTime}-接收地址或金额或高度错误hash: {$hash}";
 			$logPath = "vip_open/error-{$textTime}";
-			$this->DisposeModel->wetFwriteLog($logMsg, $logPath);
+			DisposeModel::wetFwriteLog($logMsg, $logPath);
 			$this->deleteTemp($hash);
 			return DisposeModel::wetJsonRt(406, 'error');
 		}

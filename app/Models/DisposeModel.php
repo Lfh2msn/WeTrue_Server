@@ -20,7 +20,7 @@ class DisposeModel extends Model {
         return true;
     }
 
-    public function checkSuperheroTipid($tipid)
+    public static function checkSuperheroTipid($tipid)
     {//校验超级英雄Tipid
         $isTipid = preg_match("/([0-9]{1,8})_v[1-9]{1}/", $tipid);
 		return $isTipid ? true : false;
@@ -197,7 +197,7 @@ class DisposeModel extends Model {
         return json_encode($rt);
     }
 
-    public function wetFwriteLog($msg, $path = null)
+    public static function wetFwriteLog($msg, $path = null)
     {//写入Log
         if(!$path){
             $path = "log/chain_read/".date('Y-m-d').".txt";
@@ -324,7 +324,7 @@ class DisposeModel extends Model {
         return ($ip ? $ip : $_SERVER['REMOTE_ADDR']);
     }
 
-    public function delete_xss($string)
+    public static function delete_xss($string)
     {//xss删除函数
         $string = strip_tags($string,["<>","<br>"]);
         $string = htmlspecialchars($string, ENT_QUOTES);
@@ -361,7 +361,7 @@ class DisposeModel extends Model {
         return $string;
     }
 
-    public function sensitive($string)
+    public static function sensitive($string)
     {/*敏感词过滤
     * @todo 敏感词过滤，返回结果
     * @param array $list  定义敏感词一维数组

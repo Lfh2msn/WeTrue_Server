@@ -19,7 +19,7 @@ class Comment extends BaseController
                     'replyLimit' => (int)$replyLimit
                 ];
         $isHash = DisposeModel::checkAddress($hash);
-        $isShid = $this->DisposeModel-> checkSuperheroTipid($hash);
+        $isShid = DisposeModel::checkSuperheroTipid($hash);
         if ($isHash || $isShid) {
             $data = $this->PagesModel-> limit($page, $size, $offset, $opt);
             echo $data;

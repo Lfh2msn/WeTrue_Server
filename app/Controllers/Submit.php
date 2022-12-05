@@ -18,7 +18,7 @@ class Submit extends BaseController {
         $hash   = $this->request->getPost('hash');
         $type   = $this->request->getPost('type');
 		if ($type == 'shTipid'){
-			$isHash = $this->DisposeModel-> checkSuperheroTipid($hash);
+			$isHash = DisposeModel::checkSuperheroTipid($hash);
 		} else {
 			$isHash = DisposeModel::checkAddress($hash);
 		}

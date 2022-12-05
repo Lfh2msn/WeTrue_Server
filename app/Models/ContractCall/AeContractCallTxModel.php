@@ -38,7 +38,7 @@ class AeContractCallTxModel extends Model
 		$contractId = $this->AeTokenConfig-> getContractId($tokenName);
 		if ( $json['tx']['contract_id'] != $contractId ) {
 			$this->deleteTemp($hash);
-			$this->DisposeModel->wetFwriteLog("Token Contract_id 错误:{$hash}");
+			DisposeModel::wetFwriteLog("Token Contract_id 错误:{$hash}");
 			return DisposeModel::wetJsonRt(406,'error_token');
 		}
 
@@ -47,7 +47,7 @@ class AeContractCallTxModel extends Model
 
 		if ($aekJson['return_type'] != "ok") {
 			$this->deleteTemp($hash);
-			$this->DisposeModel->wetFwriteLog("Token Tx return_type 错误:{$hash}");
+			DisposeModel::wetFwriteLog("Token Tx return_type 错误:{$hash}");
 			return DisposeModel::wetJsonRt(406,'error_return_type');
 		}
 
@@ -65,10 +65,10 @@ class AeContractCallTxModel extends Model
 		{  //版本号错误或低
 			if(!$WeTrue){ //非WeTrue
 				$this->deleteTemp($hash);
-				$this->DisposeModel->wetFwriteLog("非WeTrue格式:{$hash}");
+				DisposeModel::wetFwriteLog("非WeTrue格式:{$hash}");
 				return DisposeModel::wetJsonRt(406,'error_WeTrue');
 			}
-			$this->DisposeModel->wetFwriteLog("版本号异常:{$hash},版本号：{$WeTrue}");
+			DisposeModel::wetFwriteLog("版本号异常:{$hash},版本号：{$WeTrue}");
 			return DisposeModel::wetJsonRt(406,'error_version');
 		}
 

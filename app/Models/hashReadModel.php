@@ -25,7 +25,6 @@ class HashReadModel extends Model {
 		$this->ValidModel  = new ValidModel();
 		$this->DeleteModel = new DeleteModel();
 		$this->ConfigModel = new ConfigModel();
-		$this->DisposeModel = new DisposeModel();
 		$this->GetAeChainModel = new GetAeChainModel();
 		$this->AeChainPutModel = new AeChainPutModel();
 		$this->AeSuperheroPutModel  = new AeSuperheroPutModel();
@@ -58,7 +57,7 @@ class HashReadModel extends Model {
 			$tp_hash = $row-> tp_hash;
 			$json 	 = $this->GetAeChainModel->transactions($tp_hash);
 			if (!$json) {
-				$this->DisposeModel->wetFwriteLog("未获取到链上数据:{$tp_hash}");
+				DisposeModel::wetFwriteLog("未获取到链上数据:{$tp_hash}");
 				continue;
 			}
 
@@ -71,13 +70,13 @@ class HashReadModel extends Model {
 			$sender = $json['tx']['sender_id'];
 			$isContinue = $this->BloomModel-> userCheck($sender); //黑名单账户检查
 			if (!$isContinue) {
-				$this->DisposeModel->wetFwriteLog("黑名单账户:{$sender}");
+				DisposeModel::wetFwriteLog("黑名单账户:{$sender}");
 				continue;
 			}
 			
 			$isBloomAddress = $this->ValidModel-> isBloomAddress($sender);
 			if ($isBloomAddress) {
-				$this->DisposeModel->wetFwriteLog("被bloom过滤账户:{$tp_hash}");
+				DisposeModel::wetFwriteLog("被bloom过滤账户:{$tp_hash}");
 				$this->deleteTemp($tp_hash);  //删除临时缓存
 				$this->DeleteModel-> deleteAll($sender); //删除账户
 				continue;
@@ -90,7 +89,7 @@ class HashReadModel extends Model {
 				$json['tx']['payload'] == "ba_Xfbg4g=="
 			){
 				$this->deleteTemp($tp_hash);  //删除临时缓存
-				$this->DisposeModel->wetFwriteLog("错误类型:{$tp_hash}");
+				DisposeModel::wetFwriteLog("错误类型:{$tp_hash}");
 				continue;
 			}
 			$this->AeChainPutModel->decodeContent($json);

@@ -24,7 +24,6 @@ class MsgModel extends ComModel
 
 	public function __construct(){
         parent::__construct();
-		$this->DisposeModel	= new DisposeModel();
 		$this->CommentModel = new CommentModel();
 		$this->ReplyModel 	= new ReplyModel();
 		$this->RewardModel	= new RewardModel();
@@ -92,7 +91,7 @@ class MsgModel extends ComModel
 					$isData['type']    = $type;
 					$isData['utctime'] = $utctime;
 					$isData['topic']   = $this->ContentPullModel-> simpleContent($to_hash, $opt=[]);
-					$isShTipid = $this->DisposeModel-> checkSuperheroTipid($to_hash);
+					$isShTipid = DisposeModel::checkSuperheroTipid($to_hash);
 					if ($isShTipid) $isData['topic'] = $this->SuperheroContentModel-> simpleContent($to_hash, $opt=[]);
 					$comment = $this->CommentModel-> simpleComment($hash, $opt);
 					$isData['comment'] = $comment ? $comment : [];

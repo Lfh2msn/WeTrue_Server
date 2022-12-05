@@ -106,7 +106,7 @@ class AirdropModel extends ComModel
 				if( $address != "" && !$isBloomAddress && $uactive >= $lastActive) {
 					$logMsg = $address.":".($uaValue * $bsConfig['airdropWTTRatio'])."\r\n";
 					$logPath = "airdrop/WTT/".date("Y-m-d").".txt"
-					$this->DisposeModel->wetFwriteLog($logMsg, $logPath);
+					DisposeModel::wetFwriteLog($logMsg, $logPath);
 				}
 
 				if($uactive >= $lastActive && !$isBloomAddress) {

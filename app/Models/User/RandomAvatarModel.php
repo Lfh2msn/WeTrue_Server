@@ -58,7 +58,7 @@ class RandomAvatarModel extends ComModel
 		if (empty($cHeight)) {
 			$logMsg = "{$msgTime}-获取链上高度失败hash: {$hash}";
 			$logPath = "random_avatar/error-{$textTime}";
-			$this->DisposeModel->wetFwriteLog($logMsg, $logPath);
+			DisposeModel::wetFwriteLog($logMsg, $logPath);
 			return DisposeModel::wetJsonRt(406, 'error_height');
         }
 		$pHeight = ($cHeight - $bHeight);
@@ -90,13 +90,13 @@ class RandomAvatarModel extends ComModel
 			$wttAmount = $this->DisposeModel->bigNumber("div", $amount);
 			$logMsg  = "{$msgTime}-成功-账户:{$sendId} 花费WTT:{$wttAmount} 高度:{$bHeight} Hash:{$hash}";
 			$logPath = "random_avatar/open-{$textTime}";
-			$this->DisposeModel->wetFwriteLog($logMsg, $logPath);
+			DisposeModel::wetFwriteLog($logMsg, $logPath);
 			$this->deleteTemp($hash);
 			return DisposeModel::wetJsonRt(200);
 		} else {
 			$logMsg = "{$msgTime}-接收地址或金额或高度错误hash: {$hash}";
 			$logPath = "random_avatar/error-{$textTime}";
-			$this->DisposeModel->wetFwriteLog($logMsg, $logPath);
+			DisposeModel::wetFwriteLog($logMsg, $logPath);
 			$this->deleteTemp($hash);
 			return DisposeModel::wetJsonRt(406, 'error');
 		}

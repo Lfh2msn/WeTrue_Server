@@ -38,7 +38,7 @@ class UserModel extends ComModel
 		$row = $query->getRow();
 		if ($row) {
 			$data['userAddress'] = $address;
-			$nickname = $this->DisposeModel-> delete_xss($row->nickname);
+			$nickname = DisposeModel::delete_xss($row->nickname);
 			$nickname = mb_substr($nickname, 0, 15);
 			$defaultAens  = $row->default_aens;
 			$data['nickname']   = $nickname ?? "";
@@ -93,7 +93,7 @@ class UserModel extends ComModel
 		$userActive  = (int)$row->uactive ?? 0;
 		$userReward  = $row->reward_sum ?? 0;
 		$avatar 	 = $row->avatar;
-		$nickname    = $this->DisposeModel-> delete_xss($row->nickname);
+		$nickname    = DisposeModel::delete_xss($row->nickname);
 		$nickname 	 = mb_substr($nickname, 0, 15);
 		$defaultAens = $row->default_aens;
 		$data['userAddress'] = $address;
@@ -126,7 +126,7 @@ class UserModel extends ComModel
         $query = $this->db->query($sql);
 		$row   = $query->getRow();
 		if ($row) {
-			$nickname = $this->DisposeModel-> delete_xss($row->nickname);
+			$nickname = DisposeModel::delete_xss($row->nickname);
 			$nickname = mb_substr($nickname, 0, 15);
 			$data = $nickname ?? "";
         } else {

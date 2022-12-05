@@ -20,7 +20,6 @@ class RewardModel extends Model {
 		$this->ConfigModel  = new ConfigModel();
 		$this->ValidModel   = new ValidModel();
 		$this->UserModel    = new UserModel();
-		$this->DisposeModel = new DisposeModel();
 		$this->GetAeknowModel = new GetAeknowModel();
 		$this->AeTokenConfig  = new AeTokenConfig();
 		$this->wet_temp     = "wet_temp";
@@ -32,10 +31,10 @@ class RewardModel extends Model {
 
 	public function rewardList($hash)
 	{//打赏列表
-		$sql   = "SELECT hash,
-						 amount,
-						 sender_id,
-						 block_height
+		$sql = "SELECT hash,
+						amount,
+						sender_id,
+						block_height
 					FROM $this->wet_reward WHERE to_hash = '$hash' ORDER BY block_height DESC LIMIT 50";
         $query     = $this->db->query($sql);
 		$getResult = $query->getResult();
@@ -53,9 +52,9 @@ class RewardModel extends Model {
 
 	public function simpleReward($hash)
 	{//简单打赏信息
-		$sql   = "SELECT hash,
-						 amount,
-						 sender_id
+		$sql = "SELECT hash,
+						amount,
+						sender_id
 					FROM $this->wet_reward WHERE hash = '$hash' LIMIT 1";
         $query = $this->db->query($sql);
 		$row   = $query->getRow();
@@ -69,7 +68,7 @@ class RewardModel extends Model {
 	public function rewardPut($json)
 	{//打赏入库处理
 		$hash		  = $json['txhash'];
-		$to_hash 	  = $json['payload']['to_hash'];
+		$toHash 	  = $json['payload']['toHash'] ?? $json['payload']['to_hash'];
 		$sender_id    = $json['sender_id'];
 		$recipient_id = $json['recipient_id'];
 		$amount 	  = $json['amount'];
@@ -81,11 +80,11 @@ class RewardModel extends Model {
 			return;
 		}
 
-		$isShid = $this->DisposeModel-> checkSuperheroTipid($to_hash);
+		$isShid = DisposeModel::checkSuperheroTipid($toHash);
 		if ($isShid) { //SH ID 处理
-			$sql = "SELECT sender_id FROM $this->wet_content_sh WHERE tip_id = '$to_hash' LIMIT 1";
+			$sql = "SELECT sender_id FROM $this->wet_content_sh WHERE tip_id = '$toHash' LIMIT 1";
 		} else {
-			$sql = "SELECT sender_id FROM $this->wet_content WHERE hash = '$to_hash' LIMIT 1";
+			$sql = "SELECT sender_id FROM $this->wet_content WHERE hash = '$toHash' LIMIT 1";
 		}
 		$query = $this->db->query($sql);
 		$row   = $query->getRow();
@@ -94,16 +93,16 @@ class RewardModel extends Model {
 		if ($row && $conID == $recipient_id) {
 			$inData = [
 				'hash'	       => $hash,
-				'to_hash'      => $to_hash,
+				'to_hash'      => $toHash,
 				'amount' 	   => $amount,
 				'sender_id'    => $sender_id,
 				'block_height' => $block_height
 			];
 			$this->db->table($this->wet_reward)->insert($inData);
 			if ($isShid) { //SH ID 处理
-				$upContSql = "UPDATE $this->wet_content_sh SET reward_sum = (reward_sum + $amount) WHERE tip_id = '$to_hash'";
+				$upContSql = "UPDATE $this->wet_content_sh SET reward_sum = (reward_sum + $amount) WHERE tip_id = '$toHash'";
 			} else {
-				$upContSql = "UPDATE $this->wet_content SET reward_sum = (reward_sum + $amount) WHERE hash = '$to_hash'";
+				$upContSql = "UPDATE $this->wet_content SET reward_sum = (reward_sum + $amount) WHERE hash = '$toHash'";
 			}
 			
 			$upUserSql = "UPDATE $this->wet_users SET reward_sum = (reward_sum + $amount) WHERE address = '$sender_id'";
@@ -114,7 +113,7 @@ class RewardModel extends Model {
 			//写入消息
 			$msgData = [
 				'hash' 		   => $hash,
-				'to_hash' 	   => $to_hash,
+				'toHash' 	   => $toHash,
 				'type'	   	   => 'reward',
 				'sender_id'	   => $sender_id,
 				'recipient_id' => $conID

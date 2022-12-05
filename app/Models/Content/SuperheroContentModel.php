@@ -17,7 +17,6 @@ class SuperheroContentModel extends ComModel
 	public function __construct()
 	{
         parent::__construct();
-		$this->DisposeModel	= new DisposeModel();
 		$this->ValidModel   = new ValidModel();
 		$this->UserModel	= new UserModel();
 		$this->RewardModel	= new RewardModel();
@@ -62,8 +61,8 @@ class SuperheroContentModel extends ComModel
 			$sender_id	  			= $row-> sender_id;
 			$operation				= mb_strlen($row->payload,'UTF8') >= $opt['substr'] ? $row->payload.'...' : $row->payload;
 			$isStrCount				= $strCount ? $operation : $row->payload;
-			$deleteXss				= $this->DisposeModel-> delete_xss($isStrCount);
-			$data['payload']		= $this->DisposeModel-> sensitive($deleteXss);
+			$deleteXss				= DisposeModel::delete_xss($isStrCount);
+			$data['payload']		= DisposeModel::sensitive($deleteXss);
 			$data['contractId']		= $row-> contract_id;
 			$data['type']			= $row-> type;
 			$data['image']   		= $row->image ? "{$shApiUrl}{$row->image}" : $row->media;
@@ -126,8 +125,8 @@ class SuperheroContentModel extends ComModel
 			$sender_id	  	 = $row-> sender_id;
 			$operation		 = mb_strlen($row->payload,'UTF8') >= $opt['substr'] ? $row->payload.'...' : $row->payload;
 			$isStrCount		 = $strCount ? $operation : $row->payload;
-			$deleteXss		 = $this->DisposeModel-> delete_xss($isStrCount);
-			$data['payload'] = $this->DisposeModel-> sensitive($deleteXss);
+			$deleteXss		 = DisposeModel::delete_xss($isStrCount);
+			$data['payload'] = DisposeModel::sensitive($deleteXss);
 			$data['image']   = $row->image ? "{$shApiUrl}{$row->image}" : $row->media;
 			$data['media']   = $row->media ?? "";
 			$data['users']['nickname'] = $this->UserModel-> getName($sender_id);

@@ -59,7 +59,7 @@ class BloomModel extends ComModel {
 				$this->AmountModel-> insertAmountUser($address, $amount);
 				$logMsg  = date('Y-m-d')."-抓到一枚VIP,地址:{$address},收费:{$amount}";
 				$logPath = "auto_amount_vip/".date('Y-m');
-				$this->DisposeModel->wetFwriteLog($logMsg, $logPath);
+				DisposeModel::wetFwriteLog($logMsg, $logPath);
 			}
 			return true;
 		}

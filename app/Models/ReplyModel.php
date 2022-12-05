@@ -15,7 +15,6 @@ class ReplyModel extends Model {
 		$this->db = \Config\Database::connect('default');
 		$this->UserModel	= new UserModel();
 		$this->ValidModel	= new ValidModel();
-		$this->DisposeModel	= new DisposeModel();
 		$this->tablename    = "wet_reply";
     }
 
@@ -49,7 +48,7 @@ class ReplyModel extends Model {
 			$data['to_hash']	  = $row-> to_hash; //即将废弃
 			$data['replyType']	  = $row-> reply_type;
 			$data['replyHash']    = $row-> reply_hash;
-			$data['payload']	  = $this->DisposeModel-> delete_xss($row-> payload);
+			$data['payload']	  = DisposeModel::delete_xss($row-> payload);
 			$data['toAddress']    = $to_address;
 			$data['receiverName'] = $to_address ? $this->UserModel-> getName($to_address) : '';
 			$data['receiverIsAuth'] = $to_address ? $this->ValidModel-> isAuthUser($to_address) : false;

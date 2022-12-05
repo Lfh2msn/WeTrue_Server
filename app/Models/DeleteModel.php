@@ -7,7 +7,6 @@ class DeleteModel extends ComModel
 {//删除Model
 	public function __construct(){
         parent::__construct();
-		$this->DisposeModel = new DisposeModel();
     }
 
 	public function deleteAll($address)
@@ -24,7 +23,7 @@ class DeleteModel extends ComModel
 		$this->deleteUser($address);
 		$logMsg  = date('Y-m-d')."用户被自动删除,地址:{$address}";
 		$logPath = "auto_delete_user/".date('Y-m');
-		$this->DisposeModel->wetFwriteLog($logMsg, $logPath);
+		DisposeModel::wetFwriteLog($logMsg, $logPath);
 		return "ok";
 	}
 
