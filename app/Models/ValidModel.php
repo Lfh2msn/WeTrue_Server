@@ -2,7 +2,7 @@
 
 use CodeIgniter\Model;
 use Config\Database;
-use App\Models\ConfigModel;
+use App\Models\Config\AdminConfig;
 
 
 class ValidModel extends Model {
@@ -113,7 +113,7 @@ class ValidModel extends Model {
 
 	public function isAdmin($address)
 	{//管理员校验
-		$bsConfig = ConfigModel::backendConfig();
+		$bsConfig = AdminConfig::config();
 		$admin_1  = $bsConfig['adminUser_1'];
 		$admin_2  = $bsConfig['adminUser_2'];
 		$admin_3  = $bsConfig['adminUser_3'];
