@@ -89,7 +89,7 @@ class AeSuperheroPutModel
 
 		foreach ($lastResult as $key => $value) {
 			if ($value == $json[$key]['id']) {
-				$isBloomAddress = $this->ValidModel ->isBloomAddress($json[$key]['sender']);
+				$isBloomAddress = ValidModel::isBloomAddress($json[$key]['sender']);
 				$isAmountVip = ValidModel::isAmountVip($json[$key]['sender']);
 				if (!$isBloomAddress && !$isAmountVip) { //地址过滤
 					$insertData = [
