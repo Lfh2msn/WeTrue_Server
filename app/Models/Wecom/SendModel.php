@@ -1,12 +1,13 @@
 <?php namespace App\Models\Wecom;
 
+use Config\Database;
 use App\Models\Config\WecomConfig;
 
 class SendModel {
 //企业微信发送 Model
 
 	public function __construct() {
-		$this->db = \Config\Database::connect('default');
+		$this->db = Database::connect('default');
 		$this->WecomConfig = new WecomConfig();
 		$this->wecom_token = "wet_wecom_token";
     }

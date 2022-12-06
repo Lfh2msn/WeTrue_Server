@@ -8,9 +8,9 @@ class ReceiveModel {
 //企业微信被动回复 Model
 
 	public function __construct(){
-		$this->$WecomConfig  = new WecomConfig();
+		$this->$WecomConfig = new WecomConfig();
 		$weConfig      = $this->$WecomConfig-> config();
-		$wecomCid_1      = $weConfig['WECOM_CID_1'];
+		$wecomCid_1    = $weConfig['WECOM_CID_1'];
 		$wecomToken_1  = $weConfig['WECOM_TOKEN_1'];
 		$wecomAesKey_1 = $weConfig['WECOM_AESKEY_1'];
 
