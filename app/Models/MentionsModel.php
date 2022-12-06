@@ -13,7 +13,6 @@ class MentionsModel extends ComModel
 
 	public function __construct(){
         parent::__construct();
-		$this->GetAeChainModel = new GetAeChainModel();
 		$this->MsgModel   = new MsgModel();
 		$this->ValidModel = new ValidModel();
 		$this->AensModel  = new AensModel();
@@ -29,7 +28,7 @@ class MentionsModel extends ComModel
 	public function getAddressByAensPoint($aens)
 	{//AENS获取AE地址
 		$aens    = str_replace("@", "" ,$aens);
-		$address = $this->GetAeChainModel->addressByNamePoint($aens);
+		$address = GetAeChainModel::addressByNamePoint($aens);
 		$this->AensModel-> insertUserAens($address, $aens);
 		return $address;
 	}

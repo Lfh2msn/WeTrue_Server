@@ -9,8 +9,7 @@ use App\Models\Config\{
 	OpenVipConfig
 };
 use App\Models\Get\{
-	GetAeChainModel,
-	GetAeknowModel
+	GetAeChainModel
 };
 
 class OpenVipModel extends ComModel
@@ -20,8 +19,6 @@ class OpenVipModel extends ComModel
 	{
 		parent::__construct();
 		$this->ValidModel    = new ValidModel();
-		$this->GetAeChainModel = new GetAeChainModel();
-		$this->GetAeknowModel  = new GetAeknowModel();
 		$this->wet_temp      = "wet_temp";
 		$this->wet_users_vip = "wet_users_vip";
     }
@@ -36,7 +33,7 @@ class OpenVipModel extends ComModel
 		$textTime    = date("Y-m");
 		$msgTime     = date("Y-m-d");
 
-		$chainHeight = $this->GetAeChainModel->chainHeight($hash);  //获取链上高度
+		$chainHeight = GetAeChainModel::chainHeight($hash);  //获取链上高度
 		if (empty($chainHeight)) {
 			$logMsg = "{$msgTime}-获取链上高度失败hash: {$hash}";
 			$logPath = "vip_open/error-{$textTime}";

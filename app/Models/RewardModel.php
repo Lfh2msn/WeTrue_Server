@@ -8,7 +8,6 @@ use App\Models\{
 	DisposeModel,
 	MsgModel
 };
-use App\Models\Get\GetAeknowModel;
 
 class RewardModel extends Model {
 //打赏Model
@@ -18,7 +17,6 @@ class RewardModel extends Model {
 		$this->db = Database::connect('default');
 		$this->ValidModel   = new ValidModel();
 		$this->UserModel    = new UserModel();
-		$this->GetAeknowModel = new GetAeknowModel();
 		$this->wet_temp     = "wet_temp";
 		$this->wet_content  = "wet_content";
 		$this->wet_content_sh = "wet_content_sh";

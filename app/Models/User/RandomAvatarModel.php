@@ -20,7 +20,6 @@ class RandomAvatarModel extends ComModel
 	{
 		parent::__construct();
 		$this->ValidModel = new ValidModel();
-		$this->GetAeChainModel = new GetAeChainModel();
 		$this->wet_temp  = "wet_temp";
 		$this->wet_users = "wet_users";
 		$this->wet_random_avatar = "wet_random_avatar";
@@ -49,7 +48,7 @@ class RandomAvatarModel extends ComModel
 			return DisposeModel::wetJsonRt(406, 'error_noVip');
 		}
 
-		$cHeight = $this->GetAeChainModel->chainHeight($hash);  //获取链上高度
+		$cHeight = GetAeChainModel::chainHeight($hash);  //获取链上高度
 		if (empty($cHeight)) {
 			$logMsg = "{$msgTime}-获取链上高度失败hash: {$hash}";
 			$logPath = "random_avatar/error-{$textTime}";

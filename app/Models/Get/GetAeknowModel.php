@@ -2,12 +2,12 @@
 
 use App\Models\DisposeModel;
 
-class GetAeknowModel {
-//获取Model
+class GetAeknowModel
+{//获取Model
 	public function __construct(){
     }
 
-	public function tokenTx($hash)
+	public static function tokenTx($hash)
 	{//获取Aeknow API AEX9合约Token信息
         $url  = 'https://www.aeknow.org/api/contracttx/'.$hash;
 		@$get = file_get_contents($url);
@@ -31,7 +31,7 @@ class GetAeknowModel {
 		return $json;
 	}
 
-	public function tokenPayloadTx($hash)
+	public static function tokenPayloadTx($hash)
 	{//获取Aeknow API AEX9合约Token 带Payload信息
         $url  = 'https://www.aeknow.org/api/tokentx/'.$hash;
 		@$get = file_get_contents($url);
@@ -56,7 +56,7 @@ class GetAeknowModel {
 		return $json;
 	}
 
-	public function latestSpendTx($address)
+	public static function latestSpendTx($address)
 	{//获取最新十条tx发送人
 	/*
 	//从 mdw 获取
@@ -126,7 +126,7 @@ class GetAeknowModel {
 		return $sender;
 	}
 
-	public function tokenList($address)
+	public static function tokenList($address)
 	{//获取Aeknow API Token 列表
 		// token/ak_ID
         $url  = 'https://www.aeknow.org/api/token/'.$address;
@@ -149,7 +149,7 @@ class GetAeknowModel {
 		return $json;
 	}
 
-	public function spendTx($param)
+	public static function spendTx($param)
 	{//获取Aeknow API Token 交易记录
 		// spendtx/ak_ID/20/0
         $url  = 'https://www.aeknow.org/api/spendtx/'.$param[0].'/'.$param[1].'/'.$param[2];
@@ -172,7 +172,7 @@ class GetAeknowModel {
 		return $json;
 	}
 	
-	public function tokenTxs($param)
+	public static function tokenTxs($param)
 	{//获取Aeknow API Token 交易记录
 		// tokentxs/ak_ID/ct_ID/20/0
         $url  = 'https://www.aeknow.org/api/tokentxs/'.$param[0].'/'.$param[1].'/'.$param[2].'/'.$param[3];
@@ -195,7 +195,7 @@ class GetAeknowModel {
 		return $json;
 	}
 
-	public function myToken($param)
+	public static function myToken($param)
 	{//获取Aeknow API Token 交易记录
 		// mytoken/ak_ID/ct_ID
         $url  = 'https://www.aeknow.org/api/mytoken/'.$param[0].'/'.$param[1];

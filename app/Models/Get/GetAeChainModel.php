@@ -10,7 +10,7 @@ class GetAeChainModel
 	public function __construct(){
     }
 
-	public function microBlockTime($microBlockHash)
+	public static function microBlockTime($microBlockHash)
 	{//微块时间
         $bsConfig = ConfigModel::backendConfig();
         $url	  = $bsConfig['backendServiceNode'].'/v3/micro-blocks/hash/'.$microBlockHash.'/header';
@@ -34,7 +34,7 @@ class GetAeChainModel
 		return $utcTime;
 	}
 
-	public function transactions($hash)
+	public static function transactions($hash)
 	{//获取tx 详情
 		$bsConfig = ConfigModel::backendConfig();
 		$url  = $bsConfig['backendServiceNode'].'/v3/transactions/'.$hash;
@@ -59,7 +59,7 @@ class GetAeChainModel
 		return $json;
 	}
 
-	public function accountsBalance($address)
+	public static function accountsBalance($address)
 	{//获取账户AE金额
 		$bsConfig = ConfigModel::backendConfig();
 		$url  = $bsConfig['backendServiceNode'].'/v3/accounts/'.$address;
@@ -83,9 +83,9 @@ class GetAeChainModel
 		return $balance;
 	}
 
-	public function txSenderId($hash)
+	public static function txSenderId($hash)
 	{//获取tx 发送人ID
-        $json   = $this->transactions($hash);
+        $json   = self::transactions($hash);
 		$caller = $json['tx']['sender_id'] ?? $json['tx']['caller_id'];
 		if (!$caller) {
 			DisposeModel::wetFwriteLog("查不到发送人:{$hash}");
@@ -94,7 +94,7 @@ class GetAeChainModel
 		return $caller;
 	}
 
-	public function chainHeight($hash="null")
+	public static function chainHeight($hash="null")
 	{//获取链上高度
 		$bsConfig  = ConfigModel::backendConfig();
         $url  = $bsConfig['backendServiceNode'].'/v3/key-blocks/current/height';
@@ -115,7 +115,7 @@ class GetAeChainModel
 		return (int)$json['height'];
 	}
 
-	public function addressByNamePoint($names)
+	public static function addressByNamePoint($names)
 	{//AENS获取AE指向地址
 		$bsConfig  = ConfigModel::backendConfig();
         $url   = $bsConfig['backendServiceNode'].'/v3/names/'.$names;

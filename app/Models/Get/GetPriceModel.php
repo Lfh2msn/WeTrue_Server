@@ -8,7 +8,7 @@ class GetPriceModel
 
     }
 
-	public function gateioPrice($coin = "AE", $trading = "usdt"){
+	public static function gateioPrice($coin = "AE", $trading = "usdt"){
 		//AE价格获取
 			// https://data.gateapi.io/api2/1/pairs 所有交易对
 			@$json = file_get_contents("https://data.gateapi.io/api2/1/ticker/{$coin}_{$trading}");

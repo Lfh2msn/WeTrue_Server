@@ -24,7 +24,6 @@ class HashReadModel extends Model {
 		$this->BloomModel  = new BloomModel();
 		$this->ValidModel  = new ValidModel();
 		$this->DeleteModel = new DeleteModel();
-		$this->GetAeChainModel = new GetAeChainModel();
 		$this->AeChainPutModel = new AeChainPutModel();
 		$this->AeSuperheroPutModel  = new AeSuperheroPutModel();
 		$this->AeContractCallTxModel = new AeContractCallTxModel();
@@ -54,7 +53,7 @@ class HashReadModel extends Model {
 		$result  = $tpquery-> getResult();
 		foreach ($result as $row) {
 			$tp_hash = $row-> tp_hash;
-			$json 	 = $this->GetAeChainModel->transactions($tp_hash);
+			$json 	 = GetAeChainModel::transactions($tp_hash);
 			if (!$json) {
 				DisposeModel::wetFwriteLog("未获取到链上数据:{$tp_hash}");
 				continue;

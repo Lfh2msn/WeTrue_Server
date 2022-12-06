@@ -14,13 +14,11 @@ use App\Models\ContractCall\TokenEventModel;
 class AeContractCallTxModel extends Model
 {//AE智能合约TX处理模块
 
-	private $GetAeknowModel;
 	private $TokenEventModel;
 	private $wet_temp;
 
 	public function __construct(){
 		$this->db = Database::connect('default');
-		$this->GetAeknowModel = new GetAeknowModel();
 		$this->TokenEventModel = new TokenEventModel();
 		$this->wet_temp = "wet_temp";
     }
@@ -39,7 +37,7 @@ class AeContractCallTxModel extends Model
 		}
 
 		//从 AEKnow 获取数据
-		$aekJson = $this->GetAeknowModel-> tokenPayloadTx($hash);
+		$aekJson = GetAeknowModel::tokenPayloadTx($hash);
 
 		if ($aekJson['return_type'] != "ok") {
 			$this->deleteTemp($hash);

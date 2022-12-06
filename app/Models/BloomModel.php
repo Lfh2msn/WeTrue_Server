@@ -23,11 +23,9 @@ class BloomModel extends ComModel {
 	public function __construct()
 	{
 		parent::__construct();
-		$this->GetAeChainModel = new GetAeChainModel();
 		$this->UserModel	= new UserModel();
 		$this->ValidModel	= new ValidModel();
 		$this->AmountModel	= new AmountModel();
-		$this->GetAeknowModel = new GetAeknowModel();
 		$this->wet_reply    = "wet_reply";
 		$this->wet_bloom    = "wet_bloom";
         $this->wet_content  = "wet_content";
@@ -41,13 +39,13 @@ class BloomModel extends ComModel {
 		if (!$isNewUser) return true;
 		$isAmountVip = $this->ValidModel-> isAmountVip($address);
 		if ($isAmountVip) return true;
-		$senderList = $this->GetAeknowModel-> latestSpendTx($address);
+		$senderList = GetAeknowModel::atestSpendTx($address);
 		if (!$senderList) return false;
 		foreach ($senderList as $sender) {
 			$isBloomAddress = $this->ValidModel-> isBloomAddress($sender);
 			$isAmountVip = $this->ValidModel-> isAmountVip($sender);
 			if ($isBloomAddress || $isAmountVip) {
-				$balance = $this->GetAeChainModel-> accountsBalance($address);
+				$balance = GetAeChainModel::accountsBalance($address);
 				if (!$balance) return false;
 				$bigAE   = DisposeModel::bigNumber("div", $balance);
 				$floorAE = floor($bigAE);

@@ -28,7 +28,6 @@ class AeChainPutModel extends Model {
 	private $FocusModel;
 	private $WetModel;
 	private $MentionsModel;
-	private $GetAeChainModel;
 	private $wet_content;
 	private $wet_comment;
 	private $wet_reply;
@@ -45,7 +44,6 @@ class AeChainPutModel extends Model {
 		$this->FocusModel = new FocusModel();
 		$this->ConfigModel   = new ConfigModel();
 		$this->MentionsModel = new MentionsModel();
-		$this->GetAeChainModel = new GetAeChainModel();
 		$this->wet_temp 	 = "wet_temp";
 		$this->wet_behavior  = "wet_behavior";
 		$this->wet_content 	 = "wet_content";
@@ -66,7 +64,7 @@ class AeChainPutModel extends Model {
 				DisposeModel::wetFwriteLog("错误区块Hash:{$microBlock}");
 				return DisposeModel::wetJsonRt(406,'error_block_hash');
 			}
-			$utcTime = $this->GetAeChainModel->microBlockTime($microBlock);
+			$utcTime = GetAeChainModel::microBlockTime($microBlock);
 			$json['mb_time'] = $utcTime;
 			$payload = DisposeModel::decodePayload($json['tx']['payload']);
 			$hash	 = $json['hash'];
@@ -151,7 +149,7 @@ class AeChainPutModel extends Model {
 				$holdAE = $bsConfig['usableHoldAE'];  //要求最低持有AE开关
 				if ($holdAE) {
 					$holdAettos     = $bsConfig['usableHoldAettos'];  //要求最低持有AE
-					$accountsAettos = $this->GetAeChainModel->accountsBalance($data['sender']);  //查询链上金额
+					$accountsAettos = GetAeChainModel::accountsBalance($data['sender']);  //查询链上金额
 					if ($accountsAettos < $holdAettos) {
 						$this->deleteTemp($hash);
 						$logPath = "log/chain/holdAeLow-".date('Y-m').".txt";

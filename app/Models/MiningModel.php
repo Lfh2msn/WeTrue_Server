@@ -8,7 +8,7 @@ use App\Models\{
 	ConfigModel,
 	DisposeModel
 };
-use App\Models\Get\GetAeknowModel;
+use App\Models\Get\GetAeChainModel;
 
 class MiningModel extends ComModel
 {//挖矿Model
@@ -19,7 +19,6 @@ class MiningModel extends ComModel
 		$this->AecliModel   = new AecliModel();
 		$this->UserModel    = new UserModel();
 		$this->ValidModel   = new ValidModel();
-		$this->GetAeknowModel = new GetAeknowModel();
 		$this->wet_mapping  = "wet_mapping";
 		$this->wet_temp     = "wet_temp";
     }
@@ -43,12 +42,12 @@ class MiningModel extends ComModel
 			return DisposeModel::wetJsonRt(406, 'repeat_mapping');
 		}
 
-		$accountsBalance = $this->GetAeknowModel->accountsBalance($address);  //查询链上金额
+		$accountsBalance = GetAeChainModel::accountsBalance($address);  //查询链上金额
 		if (empty($getJson) && $accountsBalance <= $amount) {
         	return DisposeModel::wetJsonRt(406, 'error_amount');
         }
 	
-		$blockHeight = $this->GetAeknowModel->chainHeight();  //获取链上高度
+		$blockHeight = GetAeChainModel::chainHeight();  //获取链上高度
 		if (empty($blockHeight)) {
         	return DisposeModel::wetJsonRt(406, 'get_block_height_error');
         }
@@ -195,7 +194,7 @@ class MiningModel extends ComModel
 			return $mapInfo;
 		}
 		
-		$blockHeight    = $this->GetAeknowModel->chainHeight($hash);  //获取链上高度
+		$blockHeight    = GetAeknowModel::chainHeight($hash);  //获取链上高度
 		$mapInfo 		= $this->getUserMapInfo($address);
 		$heightCheckOld = $mapInfo['height_check'];
 		$heightMap	    = $mapInfo['height_map'];
@@ -211,7 +210,7 @@ class MiningModel extends ComModel
 				$heightCheckOld	= $heightMap;
 			}
 
-			$accountsBalance = $this->GetAeknowModel->accountsBalance($address);  //查询链上金额
+			$accountsBalance = GetAeChainModel::accountsBalance($address);  //查询链上金额
 			$mapAmount = $mapInfo['amount'];  //映射金额
 			if ($accountsBalance && $accountsBalance < $mapAmount) {  //对比[映射]及[链上]金额
 			//小黑屋判断
