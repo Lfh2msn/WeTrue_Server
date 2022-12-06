@@ -8,12 +8,11 @@ use App\Models\{
 class GetAeChainModel {
 //获取Model
 	public function __construct(){
-		$this->ConfigModel  = new ConfigModel();
     }
 
 	public function microBlockTime($microBlockHash)
 	{//微块时间
-        $bsConfig = $this->ConfigModel-> backendConfig();
+        $bsConfig = ConfigModel::backendConfig();
         $url	  = $bsConfig['backendServiceNode'].'/v3/micro-blocks/hash/'.$microBlockHash.'/header';
         @$get	  = file_get_contents($url);
 		$num = 0;
@@ -37,7 +36,7 @@ class GetAeChainModel {
 
 	public function transactions($hash)
 	{//获取tx 详情
-		$bsConfig = $this->ConfigModel-> backendConfig();
+		$bsConfig = ConfigModel::backendConfig();
 		$url  = $bsConfig['backendServiceNode'].'/v3/transactions/'.$hash;
 		@$get = file_get_contents($url);
 		$json = (array) json_decode($get, true);
@@ -62,7 +61,7 @@ class GetAeChainModel {
 
 	public function accountsBalance($address)
 	{//获取账户AE金额
-		$bsConfig = $this->ConfigModel-> backendConfig();
+		$bsConfig = ConfigModel::backendConfig();
 		$url  = $bsConfig['backendServiceNode'].'/v3/accounts/'.$address;
 		@$get = file_get_contents($url);
 		$num  = 0;
@@ -97,7 +96,7 @@ class GetAeChainModel {
 
 	public function chainHeight($hash="null")
 	{//获取链上高度
-		$bsConfig  = $this->ConfigModel-> backendConfig();
+		$bsConfig  = ConfigModel::backendConfig();
         $url  = $bsConfig['backendServiceNode'].'/v3/key-blocks/current/height';
 		@$get = file_get_contents($url);
 		$json = (array) json_decode($get, true);
@@ -118,7 +117,7 @@ class GetAeChainModel {
 
 	public function addressByNamePoint($names)
 	{//AENS获取AE指向地址
-		$bsConfig  = $this->ConfigModel-> backendConfig();
+		$bsConfig  = ConfigModel::backendConfig();
         $url   = $bsConfig['backendServiceNode'].'/v3/names/'.$names;
 		@$get  = file_get_contents($url);
 		$json  = (array) json_decode($get, true);

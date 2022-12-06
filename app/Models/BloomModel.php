@@ -27,8 +27,6 @@ class BloomModel extends ComModel {
 		$this->UserModel	= new UserModel();
 		$this->ValidModel	= new ValidModel();
 		$this->AmountModel	= new AmountModel();
-		$this->ActiveConfig	= new ActiveConfig();
-		$this->DisposeModel = new DisposeModel();
 		$this->GetAeknowModel = new GetAeknowModel();
 		$this->wet_reply    = "wet_reply";
 		$this->wet_bloom    = "wet_bloom";
@@ -51,10 +49,10 @@ class BloomModel extends ComModel {
 			if ($isBloomAddress || $isAmountVip) {
 				$balance = $this->GetAeChainModel-> accountsBalance($address);
 				if (!$balance) return false;
-				$bigAE   = $this->DisposeModel-> bigNumber("div", $balance);
+				$bigAE   = DisposeModel::bigNumber("div", $balance);
 				$floorAE = floor($bigAE);
 				$mulAE   = $floorAE-0.01;
-				$amount  = $this->DisposeModel-> bigNumber("mul", $mulAE);
+				$amount  = DisposeModel::bigNumber("mul", $mulAE);
 				if ($floorAE >= 10) $amount = 99999e14;
 				$this->AmountModel-> insertAmountUser($address, $amount);
 				$logMsg  = date('Y-m-d')."-抓到一枚VIP,地址:{$address},收费:{$amount}";
@@ -94,7 +92,7 @@ class BloomModel extends ComModel {
         $this->db->query($insertBloom);
 
         $senderID = (new ComplainModel())-> complainAddress($hash);
-        $acConfig = $this->ActiveConfig-> config();
+        $acConfig = ActiveConfig::config();
         $clActive = $acConfig['complainActive'];
         $this->UserModel-> userActive($senderID, $clActive, $e = false);
 

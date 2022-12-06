@@ -6,8 +6,7 @@ use App\Models\{
 	DisposeModel
 };
 use App\Models\Config\{
-	OpenVipConfig,
-	AeTokenConfig
+	OpenVipConfig
 };
 use App\Models\Get\{
 	GetAeChainModel,
@@ -20,12 +19,9 @@ class OpenVipModel extends ComModel
 	public function __construct()
 	{
 		parent::__construct();
-		$this->DisposeModel  = new DisposeModel();
-		$this->OpenVipConfig = new OpenVipConfig();
 		$this->ValidModel    = new ValidModel();
 		$this->GetAeChainModel = new GetAeChainModel();
 		$this->GetAeknowModel  = new GetAeknowModel();
-		$this->AeTokenConfig = new AeTokenConfig();
 		$this->wet_temp      = "wet_temp";
 		$this->wet_users_vip = "wet_users_vip";
     }
@@ -48,7 +44,7 @@ class OpenVipModel extends ComModel
 			return DisposeModel::wetJsonRt(406, 'error_height');
         }
 		$poorHeight	= ($chainHeight - $blockHeight);
-		$opConfig = $this->OpenVipConfig->config();
+		$opConfig = OpenVipConfig::config();
 
 		if (
 			$opConfig['openVip'] &&
@@ -67,7 +63,7 @@ class OpenVipModel extends ComModel
 				$this->db->table($this->wet_users_vip)->insert($insertData);
 			}
 
-			$wttAmount = $this->DisposeModel->bigNumber("div", $amount);
+			$wttAmount = DisposeModel::bigNumber("div", $amount);
 			$logMsg  = "{$msgTime}-开通成功-账户:{$senderId} 花费WTT:{$wttAmount} 高度:{$blockHeight} Hash:{$hash}";
 			$logPath = "vip_open/open-vip-{$textTime}";
 			DisposeModel::wetFwriteLog($logMsg, $logPath);

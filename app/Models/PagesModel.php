@@ -1,6 +1,7 @@
 <?php namespace App\Models;
 
 use CodeIgniter\Model;
+use Config\Database;
 use App\Models\{
 	ValidModel,
 	CommentModel,
@@ -20,12 +21,10 @@ class PagesModel extends Model {
 
 	public function __construct(){
         //parent::__construct();
-		$this->db = \Config\Database::connect('default');
+		$this->db = Database::connect('default');
 		$this->ValidModel   = new ValidModel();
 		$this->CommentModel = new CommentModel();
 		$this->ReplyModel 	= new ReplyModel();
-		$this->DisposeModel = new DisposeModel();
-		$this->ContentRecConfig = new ContentRecConfig();
 		$this->ContentPullModel = new ContentPullModel();
 		$this->SuperheroContentModel = new SuperheroContentModel();
 		
@@ -102,7 +101,7 @@ class PagesModel extends Model {
 		if ( $opt['type'] == 'hotRecList' )
 		{//热点推荐
 			$this->tablename = "wet_content";
-			$crConfig   	 = $this->ContentRecConfig-> factor();
+			$crConfig   	 = ContentRecConfig::factor();
 			$hotRecDay  	 = $crConfig['hotDay'];
 			$factorPraise	 = $crConfig['praise'];
 			$factorComment	 = $crConfig['comment'];
@@ -232,7 +231,7 @@ class PagesModel extends Model {
 
 			$addList = [];
 			if($addList && $opt['type'] == 'contentList' && $page=1) {
-				$arrList = $this->DisposeModel-> arrayToArray($addList, $arrList);
+				$arrList = DisposeModel::arrayToArray($addList, $arrList);
 				$arrList = array_unique($arrList);
 				$arrList = array_values($arrList);
 			}

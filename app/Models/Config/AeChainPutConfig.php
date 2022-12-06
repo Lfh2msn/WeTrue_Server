@@ -3,7 +3,7 @@
 class AeChainPutConfig
 {//AE上链收录 配置
 
-	public function amount()
+	public static function amount()
 	{//推荐因子
 		return array(
 			'topic'    => "1000000000000000",      //默认1e15，发帖消耗AE 1e15 = 1000000000000000 = 0.001ae

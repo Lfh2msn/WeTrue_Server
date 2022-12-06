@@ -1,6 +1,7 @@
 <?php namespace App\Models\Content;
 
 use CodeIgniter\Model;
+use Config\Database;
 
 use App\Models\{
 	MsgModel,
@@ -25,18 +26,16 @@ class AeChainPutModel extends Model {
 	private $TopicModel;
 	private $ValidModel;
 	private $FocusModel;
-	private $ConfigModel;
 	private $WetModel;
 	private $MentionsModel;
 	private $GetAeChainModel;
-	private $ActiveConfig;
 	private $wet_content;
 	private $wet_comment;
 	private $wet_reply;
 	private $wet_users;
 
 	public function __construct(){
-		$this->db = \Config\Database::connect('default');
+		$this->db = Database::connect('default');
 		$this->WetModel   = new WetModel();
 		$this->MsgModel   = new MsgModel();
 		$this->UserModel  = new UserModel();
@@ -44,9 +43,7 @@ class AeChainPutModel extends Model {
 		$this->TopicModel = new TopicModel();
 		$this->ValidModel = new ValidModel();
 		$this->FocusModel = new FocusModel();
-		$this->ActiveConfig  = new ActiveConfig();
 		$this->ConfigModel   = new ConfigModel();
-		$this->DisposeModel  = new DisposeModel();
 		$this->MentionsModel = new MentionsModel();
 		$this->GetAeChainModel = new GetAeChainModel();
 		$this->wet_temp 	 = "wet_temp";
@@ -63,7 +60,7 @@ class AeChainPutModel extends Model {
 	public function decodeContent($json)
 	{//重构及内容分配
 		try{
-			$bsConfig 	= $this->ConfigModel-> backendConfig();
+			$bsConfig 	= ConfigModel::backendConfig();
 			$microBlock = $json['block_hash'];
 			if(!$microBlock){
 				DisposeModel::wetFwriteLog("错误区块Hash:{$microBlock}");
@@ -71,11 +68,11 @@ class AeChainPutModel extends Model {
 			}
 			$utcTime = $this->GetAeChainModel->microBlockTime($microBlock);
 			$json['mb_time'] = $utcTime;
-			$payload = $this->DisposeModel-> decodePayload($json['tx']['payload']);
+			$payload = DisposeModel::decodePayload($json['tx']['payload']);
 			$hash	 = $json['hash'];
 			$WeTrue  = $payload['WeTrue'];
 			$require = $bsConfig['requireVersion'];
-			$version = $this->DisposeModel-> versionCompare($WeTrue, $require);  //版本检测
+			$version = DisposeModel::versionCompare($WeTrue, $require);  //版本检测
 			if (!$version)
 			{  //版本号错误或低
 				if(!$WeTrue){ //非WeTrue
@@ -103,7 +100,7 @@ class AeChainPutModel extends Model {
 
 			//用户 活跃度及费用 设置检测
 			$ftConfig = $this->ConfigModel-> frontConfig($data['sender']);
-			$activeConfig = $this->ActiveConfig->config();
+			$activeConfig = ActiveConfig::config();
 
 			if ($data['type'] == 'topic'){ //主贴
 				$userAmount = $ftConfig['topicAmount'];

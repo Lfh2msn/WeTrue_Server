@@ -7,13 +7,11 @@ class WetModel extends ComModel {
 //WeTrue MDW交互
 	public function __construct(){
 		parent::__construct();
-		//$this->db = \Config\Database::connect('default');
-		$this->ConfigModel = new ConfigModel();
     }
 
 	public function getNewContentList()
 	{//通知中间件，有新的消息
-		$bsConfig = $this->ConfigModel-> backendConfig();
+		$bsConfig = ConfigModel::backendConfig();
 		$url  = $bsConfig['wetrueMdw'].'/Content/list';
 		@$get = file_get_contents($url);
 		$json = (array) json_decode($get, true);

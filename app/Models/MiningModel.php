@@ -18,7 +18,6 @@ class MiningModel extends ComModel
 		parent::__construct();
 		$this->AecliModel   = new AecliModel();
 		$this->UserModel    = new UserModel();
-		$this->DisposeModel = new DisposeModel();
 		$this->ValidModel   = new ValidModel();
 		$this->GetAeknowModel = new GetAeknowModel();
 		$this->wet_mapping  = "wet_mapping";
@@ -76,7 +75,7 @@ class MiningModel extends ComModel
 			$this->db->table($this->wet_mapping)->insert($insertData);
 		}
 		//写入日志
-		$aettos  = $this->DisposeModel->bigNumber("div", $amount);
+		$aettos  = DisposeModel::bigNumber("div", $amount);
 		$logMsg  = "开启映射--账户:{$address}\r\n映射AE:{$aettos}\r\n时间:{$blockHeight}--".date('Y-m-d')."\r\n";
 		$logPath = "mining/".date('Y-m-d');
 		DisposeModel::wetFwriteLog($logMsg, $logPath);
@@ -121,8 +120,8 @@ class MiningModel extends ComModel
 			$this->db->table($this->wet_mapping)->where('address', $address)->update($upData);
 			$data['earning'] = $checEarning;
 			$ymdhTime = date("Y-m-d h:i:s");
-			$aettos   = $this->DisposeModel->bigNumber("div", $checkRow['amount']);
-			$wtt_ttos = $this->DisposeModel->bigNumber("div", $checEarning);
+			$aettos   = DisposeModel::bigNumber("div", $checkRow['amount']);
+			$wtt_ttos = DisposeModel::bigNumber("div", $checEarning);
 			$logMsg   = "解除映射--账户:{$address}\r\n映射AE:{$aettos}\r\n领取WTT:{$wtt_ttos}\r\n时间:{$ymdhTime}\r\n";
 			$logPath  = "mining/".date('Y-m-d');
 			DisposeModel::wetFwriteLog($logMsg, $logPath);
@@ -157,8 +156,8 @@ class MiningModel extends ComModel
 				$this->earningLock($address, 0); //关闭锁
 				$data['earning'] = $checEarning;
 				$ymdhTime = date("Y-m-d h:i:s");
-				$aettos   = $this->DisposeModel->bigNumber("div", $checkRow['amount']);
-				$wtt_ttos = $this->DisposeModel->bigNumber("div", $checEarning);
+				$aettos   = DisposeModel::bigNumber("div", $checkRow['amount']);
+				$wtt_ttos = DisposeModel::bigNumber("div", $checEarning);
 				$logMsg   = "领取收益--账户:{$address}\r\n映射AE:{$aettos}\r\n领取WTT:{$wtt_ttos}\r\n时间:{$ymdhTime}\r\n";
 				$logPath  = "mining/".date('Y-m-d');
 				DisposeModel::wetFwriteLog($logMsg, $logPath);
@@ -217,8 +216,8 @@ class MiningModel extends ComModel
 			if ($accountsBalance && $accountsBalance < $mapAmount) {  //对比[映射]及[链上]金额
 			//小黑屋判断
 				$ymdhTime  = date("Y-m-d h:i:s");
-				$chainTtos = $this->DisposeModel->bigNumber("div", $accountsBalance);
-				$aettos    = $this->DisposeModel->bigNumber("div", $mapAmount);
+				$chainTtos = DisposeModel::bigNumber("div", $accountsBalance);
+				$aettos    = DisposeModel::bigNumber("div", $mapAmount);
 				$logMsg    = "小黑屋--账户:{$address}\r\n链上AE:{$chainTtos}\r\n映射AE:{$aettos}\r\n时间:{$blockHeight}--{$ymdhTime}\r\n";
 				$logPath   = "mining/black-house-".date('Y-m-d');
 				DisposeModel::wetFwriteLog($logMsg, $logPath);
@@ -236,17 +235,17 @@ class MiningModel extends ComModel
 				return $mapInfo;
 			}
 
-			$pastHeight = $this->DisposeModel->bigNumber("sub", $blockHeight, $heightCheckOld);
-			$aettos    	= $this->DisposeModel->bigNumber("div", $mapAmount);
+			$pastHeight = DisposeModel::bigNumber("sub", $blockHeight, $heightCheckOld);
+			$aettos    	= DisposeModel::bigNumber("div", $mapAmount);
 			$earningOld = $mapInfo['earning'];
 			if ($pastHeight <= 960) {
-				$mapAettos  = $this->DisposeModel->bigNumber("mul", $pastHeight, $aettos);
-				$eaAettos   = $this->DisposeModel->bigNumber("mul", $mapAettos, 3000000000000);
-				$earningNew = $this->DisposeModel->bigNumber("add", $earningOld, $eaAettos);
+				$mapAettos  = DisposeModel::bigNumber("mul", $pastHeight, $aettos);
+				$eaAettos   = DisposeModel::bigNumber("mul", $mapAettos, 3000000000000);
+				$earningNew = DisposeModel::bigNumber("add", $earningOld, $eaAettos);
 			} else {
-				$mapAettos  = $this->DisposeModel->bigNumber("mul", 960, $aettos);
-				$eaAettos   = $this->DisposeModel->bigNumber("mul", $mapAettos, 3000000000000);
-				$earningNew = $this->DisposeModel->bigNumber("add", $earningOld, $eaAettos);
+				$mapAettos  = DisposeModel::bigNumber("mul", 960, $aettos);
+				$eaAettos   = DisposeModel::bigNumber("mul", $mapAettos, 3000000000000);
+				$earningNew = DisposeModel::bigNumber("add", $earningOld, $eaAettos);
 			}
 			$upData = [
 				'height_check' => $blockHeight,

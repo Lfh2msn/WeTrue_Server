@@ -35,12 +35,12 @@ class Config extends BaseController
 
 	public function url()
 	{//获取各Url配置
-		$data['baseApi']  = (new BaseApiConfig())-> urls();
-		$data['nodes']    = (new NodesConfig())-> urls();
-		$data['compiler'] = (new CompilerConfig())-> urls();
-		$data['aeknow']   = (new AeknowConfig())-> urls();
-		$data['aeMdw']    = (new AeMdwConfig())-> urls();
-		$data['webClient'] = (new WebClientConfig())-> urls();
+		$data['baseApi']  = BaseApiConfig::urls();
+		$data['nodes']    = NodesConfig::urls();
+		$data['compiler'] = CompilerConfig::urls();
+		$data['aeknow']   = AeknowConfig::urls();
+		$data['aeMdw']    = AeMdwConfig::urls();
+		$data['webClient'] = WebClientConfig::urls();
 		
 		$code = 200;
 		$msg  = 'success';
@@ -66,7 +66,7 @@ class Config extends BaseController
 	{//随机头像配置
 		$code = 200;
 		$msg  = 'success';
-		$data = (new RandomAvatarConfig())-> config();
+		$data = RandomAvatarConfig::config();
 		echo DisposeModel::wetJsonRt($code, $msg, $data);
 	}
 

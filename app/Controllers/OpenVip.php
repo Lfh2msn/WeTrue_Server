@@ -31,7 +31,7 @@ class OpenVip
 
 	public function configInfo()
 	{//获取前端配置
-		$configInfo = (new OpenVipConfig())-> config();
+		$configInfo = OpenVipConfig::config();
 		if($configInfo){
 			$code = 200;
 			$msg  = 'success';

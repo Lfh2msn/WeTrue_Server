@@ -1,6 +1,7 @@
 <?php namespace App\Models;
 
 use CodeIgniter\Model;
+use Config\Database;
 use App\Models\{
 	DisposeModel,
 	UserModel,
@@ -14,7 +15,7 @@ class SearchModel extends Model {
 
 	public function __construct(){
 		//parent::__construct();
-		$this->db = \Config\Database::connect('default');
+		$this->db = Database::connect('default');
 		$this->UserModel  = new UserModel();
 		$this->ValidModel = new ValidModel();
 		$this->TopicModel = new TopicModel();

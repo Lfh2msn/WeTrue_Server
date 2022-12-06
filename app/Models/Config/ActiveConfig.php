@@ -3,7 +3,7 @@
 class ActiveConfig 
 {//活跃度配置
 
-    public function config()
+    public static function config()
 	{//配置
 		return array(
 			'topicActive'        => 5,  //发帖 +活跃度

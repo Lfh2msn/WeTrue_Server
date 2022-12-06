@@ -3,7 +3,7 @@
 class AeTokenConfig
 {//AEX-9 Token 配置
 
-	public function list()
+	public static function list()
 	{
 		$data[] = array(
 			'symbol'      => 'WTT',
@@ -32,9 +32,9 @@ class AeTokenConfig
 		return $data;
 	}
 
-	public function getContractId($name)
+	public static function getContractId($name)
 	{
-		$tokenList = $this-> list();
+		$tokenList = self::list();
 		$count = count($tokenList);
 
 		for($i=0; $i<$count; $i++) {

@@ -1,18 +1,18 @@
 <?php namespace App\Models;
 
 use CodeIgniter\Model;
+use Config\Database;
 use App\Models\{
 	DisposeModel,
 	ValidModel
 };
 
-class DriftModel extends Model {
-//Drift模型
+class DriftModel extends Model
+{//Drift模型
 
 	public function __construct(){
         //parent::__construct();
-		$this->db = \Config\Database::connect('default');
-		$this->DisposeModel	   = new DisposeModel();
+		$this->db = Database::connect('default');
 		$this->ValidModel	   = new ValidModel();
 		$this->wet_drift_topic = "wet_drift_topic";
 		$this->wet_drift_reply = "wet_drift_reply";

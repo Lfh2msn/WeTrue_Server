@@ -14,7 +14,6 @@ class TopicModel extends ComModel
         parent::__construct();
 		$this->ContentPullModel  = new ContentPullModel();
 		$this->ValidModel 		 = new ValidModel();
-		$this->DisposeModel 	 = new DisposeModel();
 		$this->UserModel 	 	 = new UserModel();
         $this->wet_topic_tag     = "wet_topic_tag";
 		$this->wet_topic_content = "wet_topic_content";
@@ -114,7 +113,7 @@ class TopicModel extends ComModel
 	
 				if($page <= 1){
 					$addList = [];
-					$arrList = $this->DisposeModel-> arrayToArray($addList, $arrList);
+					$arrList = DisposeModel::arrayToArray($addList, $arrList);
 				}
 
 				$data['data'] = [];

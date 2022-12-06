@@ -3,7 +3,7 @@
 class AeknowConfig
 {//Aeknow地址配置
 
-	public function urls()
+	public static function urls()
 	{
 		$data[] = array(
 			'url'	=> 'https://www.aeknow.org',

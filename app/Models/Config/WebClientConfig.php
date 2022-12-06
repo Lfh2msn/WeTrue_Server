@@ -3,7 +3,7 @@
 class WebClientConfig
 {//官方mdw地址配置
 
-	public function urls()
+	public static function urls()
 	{
 		$data[] = array(
 			'url'	=> 'https://wetrue.io/#',

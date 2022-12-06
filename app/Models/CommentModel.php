@@ -1,6 +1,7 @@
 <?php namespace App\Models;
 
 use CodeIgniter\Model;
+use Config\Database;
 use App\Models\{
 	UserModel,
 	ReplyModel,
@@ -14,7 +15,7 @@ class CommentModel extends Model {
 	public function __construct()
 	{
         //parent::__construct();
-		$this->db 			= \Config\Database::connect('default');
+		$this->db 			= Database::connect('default');
 		$this->UserModel	= new UserModel();
 		$this->ReplyModel	= new ReplyModel();
 		$this->ValidModel	= new ValidModel();

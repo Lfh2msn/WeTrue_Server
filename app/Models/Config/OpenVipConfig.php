@@ -5,10 +5,10 @@ use App\Models\Config\AeTokenConfig;
 class OpenVipConfig
 {//开通vip配置
 
-    public function config()
+    public static function config()
 	{//配置
 		$tokenName  = 'WTT';
-		$contractId = (NEW AeTokenConfig())-> getContractId($tokenName);
+		$contractId = AeTokenConfig::getContractId($tokenName);
 		
 		return array(
 			'openVip'     	   => true, //vip可开通状态

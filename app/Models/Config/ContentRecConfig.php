@@ -3,7 +3,7 @@
 class ContentRecConfig
 {//内容推荐 配置
 
-	public function factor()
+	public static function factor()
 	{//推荐因子
 		return array(
 			'hotDay'  => 4,  //热点推荐天数

@@ -16,7 +16,6 @@ class ReceiveMsgTypeModel {
 
 	public function __construct(){
 		$this->db = \Config\Database::connect('default');
-		$this->DisposeModel  = new DisposeModel();
 		$this->GetPriceModel = new GetPriceModel();
 		$this->CorpUserModel = new CorpUserModel();
 		$this->AeWallet 	 = new AeWallet();

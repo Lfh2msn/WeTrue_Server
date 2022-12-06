@@ -1,8 +1,8 @@
 <?php namespace App\Models;
 
 use CodeIgniter\Model;
+use Config\Database;
 use App\Models\{
-	DisposeModel,
 	ValidModel
 };
 
@@ -11,8 +11,7 @@ class StarModel extends Model {
 
 	public function __construct(){
 		//parent::__construct();
-		$this->db = \Config\Database::connect('default');
-		$this->DisposeModel = new DisposeModel();
+		$this->db = Database::connect('default');
 		$this->ValidModel   = new ValidModel();
 		$this->wet_star     = "wet_star";
 		$this->wet_users	= "wet_users";

@@ -3,7 +3,7 @@
 class BaseApiConfig
 {//基础api配置
 
-	public function urls()
+	public static function urls()
 	{
 		$data[] = array(
 			'url'	=> 'https://api.wetrue.io',

@@ -17,7 +17,6 @@ namespace App\Controllers;
 use CodeIgniter\Controller;
 use App\Models\PagesModel;
 use App\Models\FocusModel;
-use App\Models\DisposeModel;
 use App\Models\UserModel;
 use CodeIgniter\HTTP\RequestInterface;
 use CodeIgniter\HTTP\ResponseInterface;
@@ -54,7 +53,6 @@ class BaseController extends Controller {
 		$this->response 	= $response;
 		$this->PagesModel   = new PagesModel();
 		$this->FocusModel   = new FocusModel();
-		$this->DisposeModel = new DisposeModel();
 		$this->UserModel	= new UserModel();
 		$this->response->setHeader('Access-Control-Allow-Origin', '*');
 		$this->response->setHeader('Access-Control-Allow-Headers', 'ak-token, chain-id, key');

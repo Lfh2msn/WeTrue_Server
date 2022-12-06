@@ -15,15 +15,13 @@ class AeSuperheroPutModel extends ComModel {
 		parent::__construct();
 		$this->UserModel    = new UserModel();
 		$this->ValidModel   = new ValidModel();
-		$this->DisposeModel = new DisposeModel();
-		$this->ActiveConfig = new ActiveConfig();
 		$this->wet_content_sh = "wet_content_sh";
 		$this->wet_users 	  = "wet_users";
     }
 
 	public function putContent($page)
 	{ //获取TipID及内容，并写入数据库
-		$acConfig  = $this->ActiveConfig-> config();
+		$acConfig  = ActiveConfig::config();
 		$getActive = $acConfig['topicActive'];
 		$shApiUrl =  'https://raendom-backend.z52da5wt.xyz'; //超级英雄API节点路径
 
@@ -74,7 +72,7 @@ class AeSuperheroPutModel extends ComModel {
 			$getTipIdArr[] = $value['id'];
 		}
 
-		$toPgArr = $this->DisposeModel->to_pg_val_array($getTipIdArr); //转换为pgsql所需数组
+		$toPgArr = DisposeModel::to_pg_val_array($getTipIdArr); //转换为pgsql所需数组
 		$sql     = "SELECT tmp.tip_id FROM (VALUES $toPgArr) AS tmp(tip_id) WHERE tmp.tip_id NOT IN(SELECT tip_id FROM wet_content_sh ORDER BY uid DESC LIMIT 100)";
 		$query   = $this->db-> query($sql);
 		$sqlResult = $query-> getResult();

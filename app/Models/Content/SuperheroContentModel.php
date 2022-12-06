@@ -20,13 +20,12 @@ class SuperheroContentModel extends ComModel
 		$this->ValidModel   = new ValidModel();
 		$this->UserModel	= new UserModel();
 		$this->RewardModel	= new RewardModel();
-		$this->ConfigModel	= new ConfigModel();
 		$this->tablename 	= "wet_content_sh";
     }
 
 	public function txContent($tip_id, $opt = [])
 	{//获取主贴内容
-		$bsConfig = $this->ConfigModel-> backendConfig();
+		$bsConfig = ConfigModel::backendConfig();
 		$shApiUrl = $bsConfig['superheroApiUrl'];
 		
 		if ( (int) $opt['substr'] ) {
@@ -101,7 +100,7 @@ class SuperheroContentModel extends ComModel
 
 	public function simpleContent($tip_id, $opt=[])
 	{//获取简单主贴内容
-		$bsConfig = $this->ConfigModel-> backendConfig();
+		$bsConfig = ConfigModel::backendConfig();
 		$shApiUrl = $bsConfig['superheroApiUrl'];
 
 		if ( (int) $opt['substr'] ) {

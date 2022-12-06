@@ -1,14 +1,15 @@
 <?php namespace App\Models;
 
 use CodeIgniter\Model;
+use Config\Database;
 use App\Models\ConfigModel;
+
 
 class ValidModel extends Model {
 //验证Model
 
 	public function __construct(){
-		$this->db = \Config\Database::connect('default');
-		$this->ConfigModel  = new ConfigModel();
+		$this->db = Database::connect('default');
     }
 
 	public function isContentHash($hash)
@@ -112,7 +113,7 @@ class ValidModel extends Model {
 
 	public function isAdmin($address)
 	{//管理员校验
-		$bsConfig = $this->ConfigModel-> backendConfig();
+		$bsConfig = ConfigModel::backendConfig();
 		$admin_1  = $bsConfig['adminUser_1'];
 		$admin_2  = $bsConfig['adminUser_2'];
 		$admin_3  = $bsConfig['adminUser_3'];

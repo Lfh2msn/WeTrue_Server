@@ -7,13 +7,11 @@ class AeWallet extends ComModel {
 //WeTrue MDW 钱包交互
 	public function __construct(){
 		parent::__construct();
-		//$this->db = \Config\Database::connect('default');
-		$this->ConfigModel = new ConfigModel();
     }
 
 	public function newCreateWallet()
 	{ //通过中间件，创建一个新钱包
-		$bsConfig = $this->ConfigModel-> backendConfig();
+		$bsConfig = ConfigModel::backendConfig();
 		$url  = $bsConfig['wetrueMdw'].'/aesdk/v1/createWallet';
 		@$get = file_get_contents($url);
 		$json = (array) json_decode($get, true);
@@ -31,7 +29,7 @@ class AeWallet extends ComModel {
 
 	public function spendAE($data)
 	{ //发送AE转账
-		$bsConfig = $this->ConfigModel-> backendConfig();
+		$bsConfig = ConfigModel::backendConfig();
 		$url = $bsConfig['wetrueMdw'].'/aesdk/v1/spendAE';
 		$data['node'] = $bsConfig['backendServiceNode'];
 		$res = $this->curlPost($data, $url);
@@ -40,7 +38,7 @@ class AeWallet extends ComModel {
 
 	public function transferToken($data)
 	{ //发送AEX-9 Token转账
-		$bsConfig = $this->ConfigModel-> backendConfig();
+		$bsConfig = ConfigModel::backendConfig();
 		$url = $bsConfig['wetrueMdw'].'/aesdk/v1/transferToken';
 		$data['node'] = $bsConfig['backendServiceNode'];
 		$res = $this->curlPost($data, $url);

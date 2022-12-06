@@ -1,6 +1,7 @@
 <?php 
 namespace App\Models;
 
+use Config\Services;
 use App\Models\{
 	ComModel,
 	AecliModel,
@@ -14,10 +15,9 @@ class AirdropModel extends ComModel
 	public function __construct()
 	{
 		parent::__construct();
-		$this->session      = \Config\Services::session();
+		$this->session      = Services::session();
 		$this->AecliModel   = new AecliModel();
 		$this->ValidModel   = new ValidModel();
-		$this->DisposeModel = new DisposeModel();
 		$this->wet_bloom    = "wet_bloom";
 		$this->wet_users    = "wet_users";
     }
@@ -28,8 +28,8 @@ class AirdropModel extends ComModel
 		$isAirdrop = $bsConfig['airdropAE'];
 		$amount    = $bsConfig['airdropAeAmount'];
 		$NewUser   = $this->session-> get('NewUser');
-		$getIP	   = $this->DisposeModel-> getRealIP();
-		$isBloomIp   = $this->ValidModel-> isBloomIp($getIP);
+		$getIP	   = DisposeModel::getRealIP();
+		$isBloomIp = $this->ValidModel-> isBloomIp($getIP);
 
 		if ($isBloomIp || $NewUser == 'Repeat' || !$isAirdrop) {
 			if ($isAirdrop) {

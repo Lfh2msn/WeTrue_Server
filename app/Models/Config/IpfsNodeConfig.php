@@ -3,7 +3,7 @@
 class IpfsNodeConfig
 {//ipfs 节点配置
 
-	public function urls()
+	public static function urls()
 	{
 		$data[] = array(
 			'url'	=> 'https://dweb.link/ipfs/',

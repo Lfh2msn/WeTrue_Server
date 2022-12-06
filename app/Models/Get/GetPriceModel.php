@@ -1,12 +1,11 @@
 <?php namespace App\Models\Get;
 
-use App\Models\ComModel;
 use App\Models\DisposeModel;
 
-class GetPriceModel extends ComModel {
-//获取Model
+class GetPriceModel
+{//获取Model
 	public function __construct(){
-		$this->DisposeModel = new DisposeModel();
+
     }
 
 	public function gateioPrice($coin = "AE", $trading = "usdt"){
@@ -23,7 +22,7 @@ class GetPriceModel extends ComModel {
 			$high24hr    = $arr['high24hr'] ?? 0;
 			$low24hr	 = $arr['low24hr'] ?? 0;
 			$percentChange = $arr['percentChange'] ?? 0;
-			$newQuote	 = $this->DisposeModel-> numberFormat($quoteVolume);
+			$newQuote	 = DisposeModel::numberFormat($quoteVolume);
 			$content = "
 			{$coin} Gateio Price
 			当前价格: {$last}

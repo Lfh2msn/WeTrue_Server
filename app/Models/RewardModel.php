@@ -1,6 +1,7 @@
 <?php namespace App\Models;
 
 use CodeIgniter\Model;
+use Config\Database;
 use App\Models\{
 	UserModel,
 	ConfigModel,
@@ -9,19 +10,16 @@ use App\Models\{
 	MsgModel
 };
 use App\Models\Get\GetAeknowModel;
-use App\Models\Config\AeTokenConfig;
 
 class RewardModel extends Model {
 //打赏Model
 
 	public function __construct(){
         //parent::__construct();
-		$this->db = \Config\Database::connect('default');
-		$this->ConfigModel  = new ConfigModel();
+		$this->db = Database::connect('default');
 		$this->ValidModel   = new ValidModel();
 		$this->UserModel    = new UserModel();
 		$this->GetAeknowModel = new GetAeknowModel();
-		$this->AeTokenConfig  = new AeTokenConfig();
 		$this->wet_temp     = "wet_temp";
 		$this->wet_content  = "wet_content";
 		$this->wet_content_sh = "wet_content_sh";

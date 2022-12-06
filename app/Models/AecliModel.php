@@ -60,7 +60,7 @@ class AecliModel extends ComModel
 	public function spendWTT($address, $amount)
 	{	
 		$bsConfig		 = (new ConfigModel())-> backendConfig();
-		$cpUrls		     = (new CompilerConfig())-> urls();
+		$cpUrls		     = CompilerConfig::urls();
 		$nodeUrl		 = $bsConfig['backendServiceNode'];
 		$compilerUrl	 = $cpUrls[0]['url'];
 		$wallet		     = $bsConfig['walletPath_2'];

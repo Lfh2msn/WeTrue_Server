@@ -3,7 +3,7 @@
 class CompilerConfig
 {//编译器配置
 
-	public function urls()
+	public static function urls()
 	{	
 		$data[] = array(
 			'url'	=> 'https://compiler.wetrue.io',

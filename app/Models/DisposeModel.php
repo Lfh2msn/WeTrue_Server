@@ -1,9 +1,8 @@
 <?php namespace App\Models;
 
-use CodeIgniter\Model;
 
-class DisposeModel extends Model {
-//数据处理Model
+class DisposeModel
+{//数据处理Model
 
     public static function checkAddress($address)
     {//校验地址
@@ -26,7 +25,7 @@ class DisposeModel extends Model {
 		return $isTipid ? true : false;
     }
 
-    public function addressToHex($address)
+    public static function addressToHex($address)
     {//地址转公钥
         $hex = self::base58_decode($address);
         if (strlen($hex) != 72) {
@@ -57,7 +56,7 @@ class DisposeModel extends Model {
             return $return;
     }
 
-    public function hexToAddress($hex)
+    public static function hexToAddress($hex)
     {//公钥 转 ak_地址
         $str = hex2bin($hex);
         $bs = substr($str, 0, 64);
@@ -93,7 +92,7 @@ class DisposeModel extends Model {
         return (string) $output;
     }
 
-    public function decodePayload($payload)
+    public static function decodePayload($payload)
 	{//解码Payload内容
         $str  = str_replace("ba_","",$payload);
         $hex  = bin2hex(base64_decode($str));
@@ -107,11 +106,11 @@ class DisposeModel extends Model {
         $rand   = mt_rand();
         $uniqid = uniqid($rand, true);
         $sha256 = hash('sha256', $uniqid);
-        $address = $this-> hexToAddress($sha256);
+        $address = self::hexToAddress($sha256);
         return $address;
     }
     
-    public function bigNumber($x, string $m, string $n = "1000000000000000000")
+    public static function bigNumber($x, string $m, string $n = "1000000000000000000")
     {/**大数计算--注意必须为string
         * 使用方法:
         * $x = out 原数输出
@@ -129,7 +128,7 @@ class DisposeModel extends Model {
         if ( $x == 'out' ) {
             return (string) $m;
         }
-        $m = $this->convert_scientific_number_to_normal($m);
+        $m = self::convert_scientific_number_to_normal($m);
         switch($x){
             case 'add':
                 $t = bcadd($m, $n);
@@ -169,7 +168,7 @@ class DisposeModel extends Model {
         return $t;
     }
 
-    public function arrayToArray($a1, $a2)
+    public static function arrayToArray($a1, $a2)
 	{//组装数组
 		$a = [];
 		$a = $a1 ? $a1 : $a;
@@ -211,7 +210,7 @@ class DisposeModel extends Model {
         fclose($textFile);
     }
 
-    public function activeGrade($number)
+    public static function activeGrade($number)
 	{//活跃度等级划分
 		(int)$number;
         if ($number >= 50000) {
@@ -236,10 +235,10 @@ class DisposeModel extends Model {
 		return $Grade;
     }
 
-    public function rewardGrade($number)
+    public static function rewardGrade($number)
 	{//打赏金额等级划分
         if (!$number) return 0;
-		$number = $this->bigNumber('div', $number);
+		$number = self::bigNumber('div', $number);
         if ($number >= 10000000) {
             $Grade = 6;
         } elseif ($number >= 5000000) {
@@ -258,7 +257,7 @@ class DisposeModel extends Model {
 		return (int)$Grade;
     }
 
-	public function versionCompare($versionA, $versionB)
+	public static function versionCompare($versionA, $versionB)
 	{/*版本号比较
 	*    @param $version1 版本A 如:5.3.2
 	*    @param $version2 版本B 如:5.3.0
@@ -302,7 +301,7 @@ class DisposeModel extends Model {
 		}
 	}
 
-    public function getRealIP()
+    public static function getRealIP()
     {//获取IP
         $ip = FALSE;
         if ( !empty($_SERVER["HTTP_CLIENT_IP"]) ){
@@ -335,7 +334,7 @@ class DisposeModel extends Model {
         return $string;
     }
 
-    public function remove_xss($string)
+    public static function remove_xss($string)
     {/*xss过滤函数
     *   @param $string
     *   @return string
@@ -391,13 +390,13 @@ class DisposeModel extends Model {
         return $log;
     }
 
-    public function to_pg_array($arr)
+    public static function to_pg_array($arr)
     {//PHP数组转PG_SQL数组
 		settype($arr, 'array'); //可以用标量或数组调用
 		$result = array();
 		foreach ($arr as $t) {
 			if (is_array($t)) {
-				$result[] = $this->to_pg_array($t);
+				$result[] = self::to_pg_array($t);
 			} else {
 				$t = str_replace('"', '\\"', $t); //逃避双引号
 				if (! is_numeric($t)) //非数字值
@@ -408,13 +407,13 @@ class DisposeModel extends Model {
 		return  implode(",", $result) ; //格式化
 	}
 
-    public function to_pg_val_array($arr)
+    public static function to_pg_val_array($arr)
     {//PHP数组转PG_SQL数组
 		settype($arr, 'array'); //可以用标量或数组调用
 		$result = array();
 		foreach ($arr as $t) {
 			if (is_array($t)) {
-				$result[] = $this->to_pg_array($t);
+				$result[] = self::to_pg_array($t);
 			} else {
 				$t = str_replace('"', '\\"', $t); //逃避双引号
 				if (! is_numeric($t)) //非数字值
@@ -425,7 +424,7 @@ class DisposeModel extends Model {
 		return  implode(",", $result) ; //格式化
 	}
     
-    public function convert_scientific_number_to_normal($number) {
+    public static function convert_scientific_number_to_normal($number) {
     //将科学计数法的数字转换为正常的数字
         if(stripos($number, 'e') === false) {  //判断是否为科学计数法
             return $number;
@@ -494,7 +493,7 @@ class DisposeModel extends Model {
         return trim($data, ".");
     }
 
-    public function numberFormat($number, $declen = 2)
+    public static function numberFormat($number, $declen = 2)
     {//将一个数字转为带单位数字
 		$number = number_format($number, $declen, '.', '');
 		$integerStr = substr($number, 0, -1-$declen);// 整数部分数字

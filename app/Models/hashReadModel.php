@@ -1,6 +1,7 @@
 <?php namespace App\Models;
 
 use CodeIgniter\Model;
+use Config\Database;
 use App\Models\{
 	BloomModel,
 	ValidModel,
@@ -19,12 +20,10 @@ class HashReadModel extends Model {
 //链上hash入库Model
 
 	public function __construct(){
-		$this->db = \Config\Database::connect('default');
-
+		$this->db = Database::connect('default');
 		$this->BloomModel  = new BloomModel();
 		$this->ValidModel  = new ValidModel();
 		$this->DeleteModel = new DeleteModel();
-		$this->ConfigModel = new ConfigModel();
 		$this->GetAeChainModel = new GetAeChainModel();
 		$this->AeChainPutModel = new AeChainPutModel();
 		$this->AeSuperheroPutModel  = new AeSuperheroPutModel();
@@ -46,7 +45,7 @@ class HashReadModel extends Model {
 
 	public function hashEvent(){
 	//上链内容出库事件
-		$bsConfig 	= $this->ConfigModel-> backendConfig();
+		$bsConfig 	= ConfigModel::backendConfig();
 		$delTempSql = "DELETE FROM $this->wet_temp WHERE tp_time <= now()-interval '3 D'";
 		$this->db->query($delTempSql);
 

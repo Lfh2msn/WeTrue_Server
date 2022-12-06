@@ -27,7 +27,7 @@ class Image extends BaseController
 			return;
         }
 
-        $bsConfig = (NEW ConfigModel())-> backendConfig();
+        $bsConfig = ConfigModel::backendConfig();
         $url = $bsConfig['backendServiceNode'].'/v3/transactions/'.$hash;
 		//屏蔽错误,防止节点暴露（屏蔽符：@ ）
         @$json_data = file_get_contents($url);

@@ -1,6 +1,7 @@
 <?php namespace App\Models;
 
 use CodeIgniter\Model;
+use Config\Database;
 use App\Models\{
 	UserModel,
 	DisposeModel,
@@ -13,9 +14,8 @@ class PraiseModel extends Model {
 
 	public function __construct(){
         //parent::__construct();
-		$this->db = \Config\Database::connect('default');
+		$this->db = Database::connect('default');
 		$this->UserModel    = new UserModel();
-		$this->ActiveConfig = new ActiveConfig();
 		$this->ValidModel   = new ValidModel();
 		$this->wet_behavior = "wet_behavior";
     }
@@ -65,7 +65,7 @@ class PraiseModel extends Model {
 			$this->db->query($updateSql);
 			$this->db->query($praiseSql);
 			//用户活跃入库
-			$acConfig  = $this->ActiveConfig-> config();
+			$acConfig  = ActiveConfig::config();
 			$psActive  = $acConfig['praiseActive'];
 			$countSql  = "SELECT count(hash) AS count_pick FROM wet_praise WHERE sender_id = '$akToken' AND praise_time >= now()-interval '1 D'";
 			$countqy   = $this->db-> query($countSql);

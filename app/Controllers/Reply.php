@@ -12,7 +12,7 @@ class Reply extends BaseController
         $size   = $this->request->getPost('size');
         $offset = $this->request->getPost('offset');
 		$hash   = $this->request->getPost('hash');
-        $isHash = $this->DisposeModel-> checkAddress($hash);
+        $isHash = DisposeModel::checkAddress($hash);
 		if ($isHash) {
             $opt  = [
                 'type' => 'replyList',

@@ -1,6 +1,7 @@
 <?php namespace App\Models;
 
 use CodeIgniter\Model;
+use Config\Database;
 use App\Models\{
 	UserModel,
 	DisposeModel,
@@ -12,7 +13,7 @@ class FocusModel extends Model {
 
 	public function __construct(){
 		//parent::__construct();
-		$this->db = \Config\Database::connect('default');
+		$this->db = Database::connect('default');
 		$this->UserModel    = new UserModel();
 		$this->ValidModel   = new ValidModel();
 		$this->tablename    = "wet_focus";

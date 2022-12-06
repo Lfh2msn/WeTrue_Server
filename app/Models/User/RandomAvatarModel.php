@@ -7,7 +7,6 @@ use App\Models\{
 };
 use App\Models\Config\{
 	RandomAvatarConfig,
-	AeTokenConfig,
 	ActiveConfig
 };
 use App\Models\Get\{
@@ -21,11 +20,7 @@ class RandomAvatarModel extends ComModel
 	{
 		parent::__construct();
 		$this->ValidModel = new ValidModel();
-		$this->DisposeModel = new DisposeModel();
-		$this->ActiveConfig = new ActiveConfig();
-		$this->AeTokenConfig = new AeTokenConfig();
 		$this->GetAeChainModel = new GetAeChainModel();
-		$this->RandomAvatarConfig = new RandomAvatarConfig();
 		$this->wet_temp  = "wet_temp";
 		$this->wet_users = "wet_users";
 		$this->wet_random_avatar = "wet_random_avatar";
@@ -63,7 +58,7 @@ class RandomAvatarModel extends ComModel
         }
 		$pHeight = ($cHeight - $bHeight);
 
-		$raConfig = $this->RandomAvatarConfig-> config();
+		$raConfig = RandomAvatarConfig::config();
 		if (
 			$raConfig['randomAvatar'] &&
 			$recId   == $raConfig['recAddress'] &&
@@ -75,8 +70,8 @@ class RandomAvatarModel extends ComModel
 			//更新头像
 			$this->db->table($this->wet_users)->where('address', $sendId)->update( ['avatar' => $random] );
 			//更新活跃度
-			$ActiveConfig = $this->ActiveConfig-> config();
-			$avatarActive = $bsConfig['avatarActive'];
+			$acConfig = ActiveConfig::config();
+			$avatarActive = $acConfig['avatarActive'];
 			$updateSql = "UPDATE $this->wet_users SET uactive = uactive + '$avatarActive' WHERE address = '$sendId'";
 			$this->db->query($updateSql);
 			//入库头像列表
@@ -87,7 +82,7 @@ class RandomAvatarModel extends ComModel
 			];
 			$this->db->table($this->wet_random_avatar)->insert($insertData);
 			
-			$wttAmount = $this->DisposeModel->bigNumber("div", $amount);
+			$wttAmount = DisposeModel::bigNumber("div", $amount);
 			$logMsg  = "{$msgTime}-成功-账户:{$sendId} 花费WTT:{$wttAmount} 高度:{$bHeight} Hash:{$hash}";
 			$logPath = "random_avatar/open-{$textTime}";
 			DisposeModel::wetFwriteLog($logMsg, $logPath);
