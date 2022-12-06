@@ -27,7 +27,6 @@ class AeChainPutModel
 		$this->StarModel  = new StarModel();
 		$this->TopicModel = new TopicModel();
 		$this->FocusModel = new FocusModel();
-		$this->ConfigModel   = new ConfigModel();
 		$this->MentionsModel = new MentionsModel();
 		$this->wet_temp 	 = "wet_temp";
 		$this->wet_behavior  = "wet_behavior";
@@ -82,7 +81,7 @@ class AeChainPutModel
 			$data['chainId']= 457;
 
 			//用户 活跃度及费用 设置检测
-			$ftConfig = $this->ConfigModel-> frontConfig($data['sender']);
+			$ftConfig = ConfigModel::frontConfig($data['sender']);
 			$activeConfig = ActiveConfig::config();
 
 			if ($data['type'] == 'topic'){ //主贴
