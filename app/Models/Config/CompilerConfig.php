@@ -1,4 +1,5 @@
-<?php namespace App\Models\Config;
+<?php 
+namespace App\Models\Config;
 
 class CompilerConfig
 {//编译器配置

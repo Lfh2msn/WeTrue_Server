@@ -1,15 +1,13 @@
-<?php namespace App\Models;
+<?php 
+namespace App\Models;
 
 use App\Models\{
-	ComModel,
-	UserModel,
-	ValidModel
+	ComModel
 };
 
-class AmountModel extends ComModel {
-//Amount Model
+class AmountModel
+{//Amount Model
 	public function __construct(){
-		parent::__construct();
 		$this->tablename  = "wet_amount";
 	}
 
@@ -21,7 +19,7 @@ class AmountModel extends ComModel {
 			'comment' => $amount,
 			'reply'   => $amount
 		];
-		$this->db->table($this->tablename)->insert($data);
+		ComModel::db()->table($this->tablename)->insert($data);
 	}
 
 }

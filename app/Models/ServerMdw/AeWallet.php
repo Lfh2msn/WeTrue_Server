@@ -1,13 +1,10 @@
-<?php namespace App\Models\ServerMdw;
+<?php 
+namespace App\Models\ServerMdw;
 
-use App\Models\ComModel;
 use App\Models\ConfigModel;
 
-class AeWallet extends ComModel {
-//WeTrue MDW 钱包交互
-	public function __construct(){
-		parent::__construct();
-    }
+class AeWallet
+{//WeTrue MDW 钱包交互
 
 	public function newCreateWallet()
 	{ //通过中间件，创建一个新钱包

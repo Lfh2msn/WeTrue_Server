@@ -1,4 +1,5 @@
-<?php namespace App\Models\Config;
+<?php 
+namespace App\Models\Config;
 
 class NodesConfig
 {//节点配置

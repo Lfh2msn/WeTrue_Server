@@ -1,4 +1,5 @@
-<?php namespace App\Models\Config;
+<?php 
+namespace App\Models\Config;
 
 class WecomConfig
 {//企业微信配置

@@ -1,4 +1,5 @@
-<?php namespace App\Models\Content;
+<?php 
+namespace App\Models\Content;
 
 use App\Models\{
 	ComModel,
@@ -9,15 +10,13 @@ use App\Models\{
 	ConfigModel
 };
 
-class SuperheroContentModel extends ComModel
+class SuperheroContentModel
 {//主贴Model
 
 	private $tablename;
 
 	public function __construct()
 	{
-        parent::__construct();
-		$this->ValidModel   = new ValidModel();
 		$this->UserModel	= new UserModel();
 		$this->RewardModel	= new RewardModel();
 		$this->tablename 	= "wet_content_sh";
@@ -53,7 +52,7 @@ class SuperheroContentModel extends ComModel
 		FROM $this->tablename 
 		WHERE tip_id = '$tip_id' LIMIT 1";
 
-        $query = $this-> db-> query($sql);
+        $query = ComModel::db()-> query($sql);
 		$row   = $query-> getRow();
         if ($row) {
 			$data['shTipid'] 		= $tip_id;
@@ -79,9 +78,9 @@ class SuperheroContentModel extends ComModel
 				$data['rewardList']	= $this->RewardModel-> rewardList($tip_id);
 			}
 			if ($opt['userLogin']) {
-				$data['isPraise']	= $this->ValidModel-> isPraise($tip_id, $opt['userLogin']);
-				$data['isStar']		= $this->ValidModel-> isStar($tip_id, $opt['userLogin']);
-				$data['isFocus']	= $this->ValidModel-> isFocus($sender_id, $opt['userLogin']);
+				$data['isPraise']	= ValidModel::isPraise($tip_id, $opt['userLogin']);
+				$data['isStar']		= ValidModel::isStar($tip_id, $opt['userLogin']);
+				$data['isFocus']	= ValidModel::isFocus($sender_id, $opt['userLogin']);
 			} else {
 				$data['isPraise']	= false;
 				$data['isStar']		= false;
@@ -91,7 +90,7 @@ class SuperheroContentModel extends ComModel
 			$data['users']			= $this->UserModel-> getUser($sender_id);
 			if ($opt['read']) {
 				$upReadSql = "UPDATE $this->tablename SET read_sum = read_sum + 1 WHERE tip_id = '$tip_id'";
-				$this->db-> query($upReadSql);
+				ComModel::db()-> query($upReadSql);
 			}
 			
         }
@@ -117,7 +116,7 @@ class SuperheroContentModel extends ComModel
 				FROM $this->tablename 
 				WHERE tip_id='$tip_id' LIMIT 1";
 
-        $query = $this-> db-> query($sql);
+        $query = ComModel::db()-> query($sql);
 		$row   = $query-> getRow();
         if ($row) {
 			$data['shTipid'] = $tip_id;

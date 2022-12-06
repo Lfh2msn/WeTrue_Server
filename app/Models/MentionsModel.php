@@ -3,18 +3,15 @@ namespace App\Models;
 
 use App\Models\{
 	MsgModel,
-	ValidModel,
 	AensModel
 };
 use App\Models\Get\GetAeChainModel;
 
-class MentionsModel extends ComModel
+class MentionsModel
 {//@模块 Model
 
 	public function __construct(){
-        parent::__construct();
 		$this->MsgModel   = new MsgModel();
-		$this->ValidModel = new ValidModel();
 		$this->AensModel  = new AensModel();
     }
 

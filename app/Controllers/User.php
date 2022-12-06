@@ -78,7 +78,7 @@ class User extends BaseController {
 	public function isNickname()
 	{//获取昵称是否存在
 		$nickname = $this->request->getPost('nickname');
-		$type = (new ValidModel())-> isNickname($nickname);
+		$type = ValidModel::isNickname($nickname);
 		$data['isNickname'] = $type;
 		echo DisposeModel::wetJsonRt(200,'success',$data);
 	}

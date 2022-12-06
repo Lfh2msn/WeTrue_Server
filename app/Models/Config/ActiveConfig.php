@@ -1,4 +1,5 @@
-<?php namespace App\Models\Config;
+<?php 
+namespace App\Models\Config;
 
 class ActiveConfig 
 {//活跃度配置

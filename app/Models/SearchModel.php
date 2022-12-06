@@ -1,8 +1,8 @@
-<?php namespace App\Models;
+<?php 
+namespace App\Models;
 
-use CodeIgniter\Model;
-use Config\Database;
 use App\Models\{
+	ComModel,
 	DisposeModel,
 	UserModel,
 	ValidModel,
@@ -10,14 +10,11 @@ use App\Models\{
 };
 use App\Models\Content\ContentPullModel;
 
-class SearchModel extends Model {
-//搜索Model
+class SearchModel
+{//搜索Model
 
 	public function __construct(){
-		//parent::__construct();
-		$this->db = Database::connect('default');
 		$this->UserModel  = new UserModel();
-		$this->ValidModel = new ValidModel();
 		$this->TopicModel = new TopicModel();
 		$this->ContentPullModel = new ContentPullModel();
 	}
@@ -27,7 +24,7 @@ class SearchModel extends Model {
 		$page   = max(1, (int)$page);
 		$size   = max(1, (int)$size);
 		$offset = max(0, (int)$offset);
-		$akToken   = $_SERVER['HTTP_KEY'];
+		$akToken   = isset($_SERVER['HTTP_KEY']) ? $_SERVER['HTTP_KEY'] : false;
 		$isAkToken = DisposeModel::checkAddress($akToken);
 		if ( $isAkToken ) {
 			$opt['userLogin'] = $akToken;
@@ -64,7 +61,7 @@ class SearchModel extends Model {
 								WHEN keywords THEN read_sum + 1
 							END 
 							WHERE keywords IN ($limitSql)";
-			$this->db-> query($upReadSql);
+			ComModel::db()-> query($upReadSql);
 		} else {
 			return DisposeModel::wetJsonRt(406,'error_type');
 		}
@@ -77,7 +74,7 @@ class SearchModel extends Model {
 	private function cycle($page, $size, $countSql, $limitSql, $opt)
 	{//列表循环
 		$data = $this->pages($page, $size, $countSql);
-		$query  = $this->db-> query($limitSql);
+		$query  = ComModel::db()-> query($limitSql);
 		$getRes = $query-> getResult();
 		$data['data'] = [];
 		foreach ($getRes as $row) {
@@ -85,15 +82,15 @@ class SearchModel extends Model {
 			$address  = $row->address;
 			$keywords = $row->keywords;
 			if ($hash) {
-				$isBloomHash = $this->ValidModel-> isBloomHash($hash);
+				$isBloomHash = ValidModel::isBloomHash($hash);
 			}
 
 			if ($address) {
-				$isBloomAddress = $this->ValidModel-> isBloomAddress($address);
+				$isBloomAddress = ValidModel::isBloomAddress($address);
 			}
 
 			if ($keywords){
-				$isTopicState = $this->ValidModel-> isTopicState($keywords);
+				$isTopicState = ValidModel::isTopicState($keywords);
 			}
 
 			if($isBloomHash || !$isBloomAddress || $isTopicState)
@@ -120,7 +117,7 @@ class SearchModel extends Model {
 
 	private function pages($page, $size, $sql)
 	{
-		$query = $this->db-> query($sql);
+		$query = ComModel::db()-> query($sql);
 		$row   = $query-> getRow();
         $count = $row->count;//总数量
 		$data  = [

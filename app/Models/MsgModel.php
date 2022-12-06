@@ -19,15 +19,13 @@ use App\Models\Wecom\{
 };
 use App\Models\Config\WecomConfig;
 
-class MsgModel extends ComModel
+class MsgModel
 {//消息Model
 
 	public function __construct(){
-        parent::__construct();
 		$this->CommentModel = new CommentModel();
 		$this->ReplyModel 	= new ReplyModel();
 		$this->RewardModel	= new RewardModel();
-		$this->ValidModel	= new ValidModel();
 		$this->SendModel    = new SendModel();
 		$this->WecomConfig  = new WecomConfig();
 		$this->CorpUserModel    = new CorpUserModel();
@@ -41,7 +39,7 @@ class MsgModel extends ComModel
 		$page   = max(1, (int)$page);
 		$size   = max(1, (int)$size);
 		$offset = max(0, (int)$offset);
-		$akToken   = $_SERVER['HTTP_KEY'];
+		$akToken   = isset($_SERVER['HTTP_KEY']) ? $_SERVER['HTTP_KEY'] : false;
 		$isAkToken = DisposeModel::checkAddress($akToken);
 		if (!$isAkToken) return DisposeModel::wetJsonRt(401,'error_address');
 
@@ -67,14 +65,14 @@ class MsgModel extends ComModel
 							WHEN 1 THEN 0
 						END 
 						WHERE hash IN ($upHashSql)";
-		$this->db-> query($upStateSql);
+		ComModel::db()-> query($upStateSql);
 		return $returnData;
 	}
 
 	private function cycle($page, $size, $countSql, $limitSql)
 	{//列表循环
 		$data = $this->pages($page, $size, $countSql);
-		$query = $this->db-> query($limitSql);
+		$query = ComModel::db()-> query($limitSql);
 		$getResult = $query-> getResult();
 		$data['data'] = [];
 		if ($getResult) {
@@ -168,8 +166,8 @@ class MsgModel extends ComModel
 			'state' 	   => isset($data['state']) 	   ? (int) $data['state']  : 1,
 			'utctime' 	   => isset($data['utctime']) 	   ? $data['utctime'] 	   : (time() * 1000),
 		];
-		$this->db->table($this->wet_message)->insert($insertData);
-		$isWecomAddress = $this->ValidModel-> isWecomAddress($data['recipient_id']);
+		ComModel::db()->table($this->wet_message)->insert($insertData);
+		$isWecomAddress = ValidModel::isWecomAddress($data['recipient_id']);
 		if ($isWecomAddress) $this->pushWecom($data);
 	}
 
@@ -188,7 +186,7 @@ class MsgModel extends ComModel
 		}
 
 		$sql   = "SELECT sender_id FROM $this->tablename WHERE $whereHash = '$hash' LIMIT 1";
-        $query = $this->db->query($sql);
+        $query = ComModel::db()->query($sql);
 		$row   = $query->getRow();
 		$send  = $row->sender_id;
 		return $send;
@@ -232,18 +230,18 @@ class MsgModel extends ComModel
 
 	public function getStateSize()
 	{//获取未读消息数
-		$akToken   = isset($_SERVER['HTTP_KEY']);
+		$akToken   = isset($_SERVER['HTTP_KEY']) ? $_SERVER['HTTP_KEY'] : false;
 		$isAkToken = DisposeModel::checkAddress($akToken);
 		if (!$isAkToken) return 'error_address';
 		$sql = "SELECT count(hash) FROM $this->wet_message WHERE recipient_id = '$akToken' AND state = '1' AND type <> 'reward' ";
-		$query = $this->db-> query($sql);
+		$query = ComModel::db()-> query($sql);
 		$row   = $query-> getRow();
 		return $row ? (int)$row->count : 0;
 	}
 
 	private function pages($page, $size, $sql)
 	{
-		$query = $this->db-> query($sql);
+		$query = ComModel::db()-> query($sql);
 		$row   = $query-> getRow();
         $count = $row->count;//总数量
 		$data  = [

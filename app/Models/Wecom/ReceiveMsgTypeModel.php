@@ -1,6 +1,8 @@
-<?php namespace App\Models\Wecom;
+<?php 
+namespace App\Models\Wecom;
 
 use App\Models\{
+	ComModel,
 	DisposeModel,
 	ValidModel
 };
@@ -11,14 +13,12 @@ use App\Models\Get\{
 	GetAeChainModel
 };
 
-class ReceiveMsgTypeModel {
-//企业微信被动回复类型处理 Model
+class ReceiveMsgTypeModel
+{//企业微信被动回复类型处理 Model
 
 	public function __construct(){
-		$this->db = \Config\Database::connect('default');
 		$this->CorpUserModel = new CorpUserModel();
 		$this->AeWallet 	 = new AeWallet();
-		$this->ValidModel 	 = new ValidModel();
 		$this->wet_wecom_users = "wet_wecom_users";
     }
 
@@ -160,15 +160,15 @@ class ReceiveMsgTypeModel {
 		if ($reqContent == "V1_Wallet_Get_Create") {
 			$newCreateWallet = $this->AeWallet-> newCreateWallet(); //创建钱包
 			if ($newCreateWallet['secretKey']){
-				$isWecomUserId = $this->ValidModel-> isWecomUserId($reqFromUserName); //验证id是否存在
+				$isWecomUserId = ValidModel::isWecomUserId($reqFromUserName); //验证id是否存在
 				if (!$isWecomUserId){ //不存在直接写入
 					$insertData = [
 						'wecom_user_id' => $reqFromUserName
 					];
-					$this->db->table($this->wet_wecom_users)->insert($insertData);
+					ComModel::db()->table($this->wet_wecom_users)->insert($insertData);
 				}
 
-				$isWecomMnemonic = $this->ValidModel-> isWecomMnemonic($reqFromUserName);
+				$isWecomMnemonic = ValidModel::isWecomMnemonic($reqFromUserName);
 				if ($isWecomMnemonic) {
 					$mycontent = "创建失败,已存在一个AE钱包";
 				} else {

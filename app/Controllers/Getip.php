@@ -1,9 +1,8 @@
 <?php
 namespace App\Controllers;
 
-class Getip
+class Getip extends BaseController
 {
-
 	public function index()
 	{//获取本地IP
 		if ( isset($_SERVER) ) {    
@@ -45,6 +44,5 @@ class Getip
 			$ip = "Unknown";
 		echo $ip;
 	}
-
 
 }

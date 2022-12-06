@@ -1,4 +1,5 @@
-<?php namespace App\Models\Config;
+<?php 
+namespace App\Models\Config;
 
 class AeChainPutConfig
 {//AE上链收录 配置

@@ -10,15 +10,13 @@ use App\Models\{
 };
 use App\Models\Get\GetAeChainModel;
 
-class MiningModel extends ComModel
+class MiningModel
 {//挖矿Model
 
 	public function __construct()
 	{
-		parent::__construct();
 		$this->AecliModel   = new AecliModel();
 		$this->UserModel    = new UserModel();
-		$this->ValidModel   = new ValidModel();
 		$this->wet_mapping  = "wet_mapping";
 		$this->wet_temp     = "wet_temp";
     }
@@ -32,12 +30,12 @@ class MiningModel extends ComModel
 		}
 
 		$isAddress    = DisposeModel::checkAddress($address);
-		$isVipAddress = $this->ValidModel-> isVipAddress($address);
+		$isVipAddress = ValidModel::isVipAddress($address);
 		if (!$isAddress && !$isVipAddress) {
 			return DisposeModel::wetJsonRt(406, 'did_not_open_mapping');
 		}
 
-		$isMapping = $this->ValidModel-> isMapState($address);
+		$isMapping = ValidModel::isMapState($address);
 		if ($isMapping) {
 			return DisposeModel::wetJsonRt(406, 'repeat_mapping');
 		}
@@ -52,7 +50,7 @@ class MiningModel extends ComModel
         	return DisposeModel::wetJsonRt(406, 'get_block_height_error');
         }
 
-		$isMapAddress = $this->ValidModel-> isMapAddress($address);
+		$isMapAddress = ValidModel::isMapAddress($address);
 		if ($isMapAddress) {
 			$upDate = [
 				'height_map'   => $blockHeight,
@@ -61,7 +59,7 @@ class MiningModel extends ComModel
 				'state'		   => 1,
 				'utctime'      => (time() * 1000)
 			];
-			$this->db->table($this->wet_mapping)->where('address', $address)->update($upDate);
+			ComModel::db()->table($this->wet_mapping)->where('address', $address)->update($upDate);
 		} else {
 			$insertData = [
 				'address'	   => $address,
@@ -71,7 +69,7 @@ class MiningModel extends ComModel
 				'state'		   => 1,
 				'utctime'      => (time() * 1000)
 			];
-			$this->db->table($this->wet_mapping)->insert($insertData);
+			ComModel::db()->table($this->wet_mapping)->insert($insertData);
 		}
 		//写入日志
 		$aettos  = DisposeModel::bigNumber("div", $amount);
@@ -116,7 +114,7 @@ class MiningModel extends ComModel
 				'earning_lock' => 0, //关闭锁
 				'utctime'      => (time() * 1000)
 			];
-			$this->db->table($this->wet_mapping)->where('address', $address)->update($upData);
+			ComModel::db()->table($this->wet_mapping)->where('address', $address)->update($upData);
 			$data['earning'] = $checEarning;
 			$ymdhTime = date("Y-m-d h:i:s");
 			$aettos   = DisposeModel::bigNumber("div", $checkRow['amount']);
@@ -151,7 +149,7 @@ class MiningModel extends ComModel
 				$upData = [
 					'earning' => 0
 				];
-				$this->db->table($this->wet_mapping)->where('address', $address)->update($upData);
+				ComModel::db()->table($this->wet_mapping)->where('address', $address)->update($upData);
 				$this->earningLock($address, 0); //关闭锁
 				$data['earning'] = $checEarning;
 				$ymdhTime = date("Y-m-d h:i:s");
@@ -171,7 +169,7 @@ class MiningModel extends ComModel
 
 	public function checkMapping($address)
 	{//映射信息查询
-		$isMapState = $this->ValidModel-> isMapState($address);
+		$isMapState = ValidModel::isMapState($address);
 		if (!$isMapState) {
 			$totalAE = $this->getTotalAE();
 			$data['state'] 	  = $isMapState;
@@ -189,7 +187,7 @@ class MiningModel extends ComModel
 				'state'   	   => 0,
 				'amount'  	   => 0
 			];
-			$this->db->table($this->wet_mapping)->where('address', $address)->update($upMapData);
+			ComModel::db()->table($this->wet_mapping)->where('address', $address)->update($upMapData);
 			$mapInfo = $this->getUserMapInfo($address);
 			return $mapInfo;
 		}
@@ -227,8 +225,8 @@ class MiningModel extends ComModel
 					'state'   	   => 0,
 					'amount'  	   => 0
 				];
-				$this->db->table($this->wet_mapping)->where('address', $address)->update($upMapData);
-				$this->db->table('wet_users_vip')->where('address', $address)->update( ['is_vip' => 0] );
+				ComModel::db()->table($this->wet_mapping)->where('address', $address)->update($upMapData);
+				ComModel::db()->table('wet_users_vip')->where('address', $address)->update( ['is_vip' => 0] );
 				$blackHouse = true;
 				$mapInfo    = $this->getUserMapInfo($address, $blackHouse);
 				return $mapInfo;
@@ -250,7 +248,7 @@ class MiningModel extends ComModel
 				'height_check' => $blockHeight,
 				'earning' 	   => $earningNew
 			];
-			$this->db->table($this->wet_mapping)->where('address', $address)->update($upData);
+			ComModel::db()->table($this->wet_mapping)->where('address', $address)->update($upData);
 			$mapInfo = $this->getUserMapInfo($address);
         }
 		return $mapInfo;
@@ -266,7 +264,7 @@ class MiningModel extends ComModel
 						earning,
 						earning_lock
 					FROM $this->wet_mapping WHERE address = '$address' AND state = 1 LIMIT 1";
-        $query  = $this->db->query($mapSql);
+        $query  = ComModel::db()->query($mapSql);
 		$rowMap = $query->getRow();
 		$totalAE = $this->getTotalAE();
 		$data = [
@@ -286,7 +284,7 @@ class MiningModel extends ComModel
 	public function topTen()
 	{//前10榜
 		$sql    = "SELECT address, amount FROM $this->wet_mapping ORDER BY amount DESC LIMIT 10";
-		$query  = $this->db-> query($sql);
+		$query  = ComModel::db()-> query($sql);
 		$getRes = $query->getResult();
 		$data = [];
 		foreach ($getRes as $row) {
@@ -302,11 +300,11 @@ class MiningModel extends ComModel
 
 	public function adminOpenMapping($address)
 	{//管理员开通映射账户
-		$akToken   = $_SERVER['HTTP_KEY'];
-		$isAdmin   = $this->ValidModel-> isAdmin($akToken);
+		$akToken   = isset($_SERVER['HTTP_KEY']) ? $_SERVER['HTTP_KEY'] : false;
+		$isAdmin   = ValidModel::isAdmin($akToken);
 		if($isAdmin && $address) {
 			$this->UserModel-> userPut($address);
-			$this->db->table('wet_users_vip')->where('address', $address)->update( ['is_vip' => '1'] );
+			ComModel::db()->table('wet_users_vip')->where('address', $address)->update( ['is_vip' => '1'] );
 			$logMsg  = "开通映射--{$akToken}--Admin";
 			$logPath = "mining/open-mapping-".date('Y-m-d');
 			DisposeModel::wetFwriteLog($logMsg, $logPath);
@@ -320,7 +318,7 @@ class MiningModel extends ComModel
 	private function getTotalAE()
 	{//统计映射AE总量
 		$sql = "SELECT SUM(amount) AS total_ae FROM $this->wet_mapping WHERE state = '1'";
-		$query = $this->db->query($sql);
+		$query = ComModel::db()->query($sql);
 		$total = $query->getRow();
 		return $total->total_ae;
 	}
@@ -330,7 +328,7 @@ class MiningModel extends ComModel
 		$upData = [
 			'earning_lock' => $value
 		];
-		$this->db->table($this->wet_mapping)->where('address', $address)->update($upData);
+		ComModel::db()->table($this->wet_mapping)->where('address', $address)->update($upData);
 	}
 
 }

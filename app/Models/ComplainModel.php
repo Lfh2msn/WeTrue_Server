@@ -1,9 +1,8 @@
-<?php namespace App\Models;
-
-use CodeIgniter\Model;
-use Config\Database;
+<?php 
+namespace App\Models;
 
 use App\Models\{
+	ComModel,
 	DisposeModel,
 	HashReadModel,
 	CommentModel,
@@ -14,17 +13,14 @@ use App\Models\Content\ContentPullModel;
 use App\Models\Get\GetAeChainModel;
 
 
-class ComplainModel extends Model {
-//投诉Model
+class ComplainModel
+{//投诉Model
 
 	public function __construct(){
-		//parent::__construct();
-		$this->db = Database::connect('default');
 		$this->HashReadModel = new HashReadModel();
 		$this->ContentPullModel = new ContentPullModel();
 		$this->CommentModel  = new CommentModel();
 		$this->ReplyModel 	 = new ReplyModel();
-		$this->ValidModel 	 = new ValidModel();
 		$this->wet_complain  = "wet_complain";
 		$this->wet_behavior  = "wet_behavior";
 	}
@@ -32,7 +28,7 @@ class ComplainModel extends Model {
 	public function complainAddress($hash)
 	{//投诉hash账户地址
 		$sql   = "SELECT address FROM $this->wet_complain WHERE hash = '$hash' LIMIT 1";
-		$query = $this->db->query($sql);
+		$query = ComModel::db()->query($sql);
         $row   = $query->getRow();
 		return $row-> address;
 	}
@@ -40,13 +36,13 @@ class ComplainModel extends Model {
 	public function deleteComplain($hash)
 	{//删除举报
 		$deleteSql = "DELETE FROM $this->wet_complain WHERE hash = '$hash'";
-		$this->db-> query($deleteSql);
+		ComModel::db()-> query($deleteSql);
 	}
 
 	public function txHash($hash)
 	{//投诉hash入库
 		$data['code'] = 200;
-		$akToken   = $_SERVER['HTTP_KEY'];
+		$akToken   = isset($_SERVER['HTTP_KEY']) ? $_SERVER['HTTP_KEY'] : false;
 		$isAkToken = DisposeModel::checkAddress($akToken);
 		if (!$isAkToken) {
 			$data['code'] = 401;
@@ -54,7 +50,7 @@ class ComplainModel extends Model {
 			return json_encode($data);
 		}
 
-		$isBloomHash = $this->ValidModel-> isBloomHash($hash);
+		$isBloomHash = ValidModel::isBloomHash($hash);
 		if ($isBloomHash) {
 			$this->deleteComplain($hash);
 			$data['msg'] = 'error_repeat';
@@ -67,17 +63,17 @@ class ComplainModel extends Model {
         	return json_encode($data);
         }
 		
-		$isComplain = $this->ValidModel->isComplain($hash);
+		$isComplain = ValidModel::isComplain($hash);
 		if ($isComplain) {
 			$updateReportSql = "UPDATE $this->wet_complain SET complain_sum = complain_sum + 1 WHERE hash = '$hash'";
-			$this->db-> query($updateReportSql);
+			ComModel::db()-> query($updateReportSql);
         } else {
 			$insertData = [
 				'hash'         => $hash,
 				'address'      => $rpSenderId,
 				'complain_sum' => 1
 			];
-			$this->db->table($this->wet_complain)->insert($insertData);
+			ComModel::db()->table($this->wet_complain)->insert($insertData);
 		}
 
 		//入库行为记录
@@ -87,7 +83,7 @@ class ComplainModel extends Model {
 			'thing'     => 'Complain',
 			'toaddress' => $rpSenderId
 		];
-		$this->db->table($this->wet_behavior)->insert($insetrBehaviorDate);
+		ComModel::db()->table($this->wet_behavior)->insert($insetrBehaviorDate);
 		$data['msg']  = 'success';
 		return json_encode($data);
 	}
@@ -101,9 +97,9 @@ class ComplainModel extends Model {
 		$page   = max(1, (int)$page);
 		$size   = max(1, (int)$size);
 		$offset = max(0, (int)$offset);
-		$akToken   = $_SERVER['HTTP_KEY'];
+		$akToken   = isset($_SERVER['HTTP_KEY']) ? $_SERVER['HTTP_KEY'] : false;
 		$isAkToken = DisposeModel::checkAddress($akToken);
-		$isAdmin   = $this->ValidModel-> isAdmin($akToken);
+		$isAdmin   = ValidModel::isAdmin($akToken);
 		$data['data'] = [];
 		if (!$isAkToken || !$isAdmin) {
 			return DisposeModel::wetJsonRt(401, 'error_login');
@@ -121,20 +117,20 @@ class ComplainModel extends Model {
 	{//列表循环
 
 		$data = $this->pages($page, $size, $countSql);
-		$query = $this->db-> query($limitSql);
+		$query = ComModel::db()-> query($limitSql);
 		$data['data'] = [];
 		foreach ($query-> getResult() as $row) {
 			$hash  = $row -> hash;
 
 			$conSql   = "SELECT hash FROM wet_content WHERE hash='$hash' LIMIT 1";
-			$conQuery = $this-> db-> query($conSql);
+			$conQuery = ComModel::db()-> query($conSql);
 			$conRow   = $conQuery-> getRow();
 
 			if ($conRow) {
 				$detaila[] = $this->ContentPullModel-> txContent($hash, $opt);
 			} else {
 				$comSql   = "SELECT hash FROM wet_comment WHERE hash='$hash' LIMIT 1";
-				$comQuery = $this-> db-> query($comSql);
+				$comQuery = ComModel::db()-> query($comSql);
 				$comRow   = $comQuery-> getRow();
 			}
 			
@@ -142,7 +138,7 @@ class ComplainModel extends Model {
 				$detaila[] = $this->CommentModel-> txComment($hash, $opt);
 			} else {
 				$repSql   = "SELECT hash FROM wet_reply WHERE hash='$hash' LIMIT 1";
-				$repQuery = $this-> db-> query($repSql);
+				$repQuery = ComModel::db()-> query($repSql);
 				$repRow   = $repQuery-> getRow();
 			}
 
@@ -157,7 +153,7 @@ class ComplainModel extends Model {
 
 	private function pages($page, $size, $sql)
 	{
-		$query = $this->db-> query($sql);
+		$query = ComModel::db()-> query($sql);
 		$row   = $query-> getRow();
         $count = $row->count;  //总数量
 		$data  = [

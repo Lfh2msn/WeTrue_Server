@@ -1,4 +1,5 @@
-<?php namespace App\Models\Config;
+<?php 
+namespace App\Models\Config;
 
 class AeTokenConfig
 {//AEX-9 Token 配置

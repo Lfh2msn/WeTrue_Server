@@ -9,15 +9,13 @@ use App\Models\{
 	DisposeModel
 };
 
-class AirdropModel extends ComModel
+class AirdropModel
 {//空投Model
 
 	public function __construct()
 	{
-		parent::__construct();
 		$this->session      = Services::session();
 		$this->AecliModel   = new AecliModel();
-		$this->ValidModel   = new ValidModel();
 		$this->wet_bloom    = "wet_bloom";
 		$this->wet_users    = "wet_users";
     }
@@ -29,7 +27,7 @@ class AirdropModel extends ComModel
 		$amount    = $bsConfig['airdropAeAmount'];
 		$NewUser   = $this->session-> get('NewUser');
 		$getIP	   = DisposeModel::getRealIP();
-		$isBloomIp = $this->ValidModel-> isBloomIp($getIP);
+		$isBloomIp = ValidModel::isBloomIp($getIP);
 
 		if ($isBloomIp || $NewUser == 'Repeat' || !$isAirdrop) {
 			if ($isAirdrop) {
@@ -67,16 +65,16 @@ class AirdropModel extends ComModel
 			if ($code == 200) {
 				$this->session ->set("NewUser","Repeat");
 				$inSql = "INSERT INTO $this->wet_bloom(bf_ip, bf_reason) VALUES ('$getIP','airdropAE')";
-				$this->db->query($inSql);
+				ComModel::db()->query($inSql);
 			}
 		}
 	}
 
 	public function airdropWTT($opt = [])
 	{//空投WTT写入txt
-		$akToken   = $_SERVER['HTTP_KEY'];
+		$akToken   = isset($_SERVER['HTTP_KEY']) ? $_SERVER['HTTP_KEY'] : false;
 		$isAkToken = DisposeModel::checkAddress($akToken);
-		$isAdmin   = $this->ValidModel-> isAdmin($akToken);
+		$isAdmin   = ValidModel::isAdmin($akToken);
 		$data['code'] = 200;
 		if (!$isAkToken || !$isAdmin) {
 			$data['code'] = 401;
@@ -94,7 +92,7 @@ class AirdropModel extends ComModel
 
 		$bsConfig = ConfigModel::backendConfig();
 		$selSql   = "SELECT address, uactive, last_active FROM $this->wet_users";
-        $query    = $this->db-> query($selSql);
+        $query    = ComModel::db()-> query($selSql);
 		$getRes	  = $query->getResult();
 		foreach ($getRes as $row) {
 			if($row->uactive != $row->last_active) {
@@ -102,7 +100,7 @@ class AirdropModel extends ComModel
 				$lastActive = $row->last_active;
 				$address    = $row->address;
 				$uaValue	= $uactive - $lastActive;
-				$isBloomAddress = $this->ValidModel-> isBloomAddress($address);
+				$isBloomAddress = ValidModel::isBloomAddress($address);
 				if( $address != "" && !$isBloomAddress && $uactive >= $lastActive) {
 					$logMsg = $address.":".($uaValue * $bsConfig['airdropWTTRatio'])."\r\n";
 					$logPath = "airdrop/WTT/".date("Y-m-d").".txt"
@@ -111,7 +109,7 @@ class AirdropModel extends ComModel
 
 				if($uactive >= $lastActive && !$isBloomAddress) {
 					$upSql = "UPDATE $this->wet_users SET last_active = uactive WHERE address = '$address'";
-					$this->db->query($upSql);
+					ComModel::db()->query($upSql);
 				}
 			}
 		}

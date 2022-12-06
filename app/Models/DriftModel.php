@@ -1,22 +1,19 @@
-<?php namespace App\Models;
+<?php 
+namespace App\Models;
 
-use CodeIgniter\Model;
-use Config\Database;
+
 use App\Models\{
+	ComModel,
 	DisposeModel,
 	ValidModel
 };
 
-class DriftModel extends Model
+class DriftModel
 {//Drift模型
 
 	public function __construct(){
-        //parent::__construct();
-		$this->db = Database::connect('default');
-		$this->ValidModel	   = new ValidModel();
 		$this->wet_drift_topic = "wet_drift_topic";
 		$this->wet_drift_reply = "wet_drift_reply";
-		
     }
 
     public function limit($page, $size, $offset)
@@ -25,7 +22,7 @@ class DriftModel extends Model
 		$size   = max(1, (int)$size);
 		$offset = max(0, (int)$offset);
 		$data['code'] = 200;
-		$akToken   = $_SERVER['HTTP_KEY'];
+		$akToken   = isset($_SERVER['HTTP_KEY']) ? $_SERVER['HTTP_KEY'] : false;
 		$isAkToken = DisposeModel::checkAddress($akToken);
 		if (!$isAkToken) {
 			$data['code'] = 401;
@@ -45,11 +42,11 @@ class DriftModel extends Model
 	{//列表循环
 		$data['code'] = 200;
 		$data['data'] = $this->pages($page, $size, $countSql);
-		$query = $this->db-> query($limitSql);
+		$query = ComModel::db()-> query($limitSql);
 		$data['data']['data'] = [];
 		foreach ($query-> getResult() as $row){
 			$hash    = $row -> hash;
-			$isBloomHash = $this->ValidModel-> isBloomHash($hash);
+			$isBloomHash = ValidModel::isBloomHash($hash);
 			if (!$isBloomHash) {
 				if ($opt['select']  == 'content') {
 					$detaila[] = $this->content-> txContent($hash, $opt);
@@ -71,7 +68,7 @@ class DriftModel extends Model
 
 	private function pages($page, $size, $sql)
 	{
-		$query = $this->db-> query($sql);
+		$query = ComModel::db()-> query($sql);
 		$row   = $query-> getRow();
         $count = $row->count;//总数量
 		$data  = [

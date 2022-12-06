@@ -1,21 +1,18 @@
-<?php namespace App\Models;
+<?php 
+namespace App\Models;
 
-use CodeIgniter\Model;
-use Config\Database;
 use App\Models\{
+	ComModel,
 	UserModel,
 	ValidModel,
 	DisposeModel
 };
 
-class ReplyModel extends Model {
-//回复Model
+class ReplyModel
+{//回复Model
 
 	public function __construct(){
-        //parent::__construct();
-		$this->db = Database::connect('default');
 		$this->UserModel	= new UserModel();
-		$this->ValidModel	= new ValidModel();
 		$this->tablename    = "wet_reply";
     }
 
@@ -39,7 +36,7 @@ class ReplyModel extends Model {
 							chain_id
 				FROM $this->tablename WHERE hash='$hash' LIMIT 1";
 
-        $query = $this->db->query($sql);
+        $query = ComModel::db()->query($sql);
 		$row   = $query-> getRow();
         if ($row) {
 			$sender_id			  = $row-> sender_id;
@@ -52,10 +49,10 @@ class ReplyModel extends Model {
 			$data['payload']	  = DisposeModel::delete_xss($row-> payload);
 			$data['toAddress']    = $to_address;
 			$data['receiverName'] = $to_address ? $this->UserModel-> getName($to_address) : '';
-			$data['receiverIsAuth'] = $to_address ? $this->ValidModel-> isAuthUser($to_address) : false;
+			$data['receiverIsAuth'] = $to_address ? ValidModel::isAuthUser($to_address) : false;
 			$data['utcTime']	  = (int) $row-> utctime;
 			$data['praise']		  = (int) $row-> praise;
-			$data['isPraise']	  = $opt['userLogin'] ? $this->ValidModel-> isPraise($hash, $opt['userLogin']) : false;
+			$data['isPraise']	  = $opt['userLogin'] ? ValidModel::isPraise($hash, $opt['userLogin']) : false;
 			$data['chainId']	  = $row->chain_id ? (int) $row->chain_id : 457;
 			$data['users']		  = $this->UserModel-> getUser($sender_id);
         }

@@ -1,4 +1,5 @@
-<?php namespace App\Models\Content;
+<?php 
+namespace App\Models\Content;
 
 use App\Models\{
 	ComModel,
@@ -8,15 +9,13 @@ use App\Models\{
 	UserModel
 };
 
-class ContentPullModel extends ComModel
+class ContentPullModel
 {//主贴Model
 
 	private $tablename;
 
 	public function __construct()
 	{
-        parent::__construct();
-		$this->ValidModel   = new ValidModel();
 		$this->UserModel	= new UserModel();
 		$this->RewardModel	= new RewardModel();
 		$this->tablename 	= "wet_content";
@@ -45,8 +44,8 @@ class ContentPullModel extends ComModel
 				FROM $this->tablename 
 				WHERE hash = '$hash' LIMIT 1";
 
-        $query = $this-> db-> query($sql);
-		$row   = $query-> getRow();
+        $query = ComModel::db()->query($sql);
+		$row   = $query->getRow();
         if ($row) {
 			$data['hash'] 			= $hash;
 			$sender_id	  			= $row-> sender_id;
@@ -66,9 +65,9 @@ class ContentPullModel extends ComModel
 				$data['rewardList']	= $this->RewardModel-> rewardList($hash);
 			}
 			if (isset($opt['userLogin'])) {
-				$data['isPraise']	= $this->ValidModel-> isPraise($hash, $opt['userLogin']);
-				$data['isStar']		= $this->ValidModel-> isStar($hash, $opt['userLogin']);
-				$data['isFocus']	= $this->ValidModel-> isFocus($sender_id, $opt['userLogin']);
+				$data['isPraise']	= ValidModel::isPraise($hash, $opt['userLogin']);
+				$data['isStar']		= ValidModel::isStar($hash, $opt['userLogin']);
+				$data['isFocus']	= ValidModel::isFocus($sender_id, $opt['userLogin']);
 			} else {
 				$data['isPraise']	= false;
 				$data['isStar']		= false;
@@ -79,7 +78,7 @@ class ContentPullModel extends ComModel
 			$data['users']			= $this->UserModel-> getUser($sender_id);
 			if (isset($opt['read'])) {
 				$upReadSql = "UPDATE $this->tablename SET read_sum = read_sum + 1 WHERE hash = '$hash'";
-				$this->db-> query($upReadSql);
+				ComModel::db()-> query($upReadSql);
 			}
 			
         }
@@ -101,7 +100,7 @@ class ContentPullModel extends ComModel
 				FROM $this->tablename 
 				WHERE hash='$hash' LIMIT 1";
 
-        $query = $this-> db-> query($sql);
+        $query = ComModel::db()-> query($sql);
 		$row   = $query-> getRow();
         if ($row) {
 			$data['hash'] = $hash;

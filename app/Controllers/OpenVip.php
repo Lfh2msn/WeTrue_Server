@@ -13,11 +13,11 @@ class OpenVip
 
 	public function state()
 	{//提交开通VIP状态
-		$address   = $_SERVER['HTTP_KEY'];
+		$address   = isset($_SERVER['HTTP_KEY']) ? $_SERVER['HTTP_KEY'] : false;
 		$isAddress = DisposeModel::checkAddress($address);
 		if ($isAddress) {
-			$isOpenVipState = (new ValidModel())-> isOpenVipState($address);
-			$isVipAddress   = (new ValidModel())-> isVipAddress($address);
+			$isOpenVipState = ValidModel::isOpenVipState($address);
+			$isVipAddress   = ValidModel::isVipAddress($address);
 			if ($isOpenVipState || $isVipAddress) {
 				$data = DisposeModel::wetJsonRt(200,'error_repeat',true);
 			} else {

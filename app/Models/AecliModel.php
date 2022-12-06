@@ -2,17 +2,12 @@
 namespace App\Models;
 
 use App\Models\{
-	ComModel,
 	ConfigModel
 };
 use App\Models\Config\CompilerConfig;
 
-class AecliModel extends ComModel
+class AecliModel
 {//AE cli 调用 Model
-
-	public function __construct() {
-		parent::__construct();
-    }
 
 	public function spendAE($address, $amount)
 	{

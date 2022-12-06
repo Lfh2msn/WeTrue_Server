@@ -1,12 +1,10 @@
-<?php namespace App\Models\Get;
+<?php 
+namespace App\Models\Get;
 
 use App\Models\DisposeModel;
 
 class GetPriceModel
 {//获取Model
-	public function __construct(){
-
-    }
 
 	public static function gateioPrice($coin = "AE", $trading = "usdt"){
 		//AE价格获取

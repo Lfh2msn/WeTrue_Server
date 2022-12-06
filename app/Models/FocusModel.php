@@ -1,21 +1,18 @@
-<?php namespace App\Models;
+<?php 
+namespace App\Models;
 
-use CodeIgniter\Model;
-use Config\Database;
 use App\Models\{
+	ComModel,
 	UserModel,
 	DisposeModel,
 	ValidModel
 };
 
-class FocusModel extends Model {
-//关注Model
+class FocusModel
+{//关注Model
 
 	public function __construct(){
-		//parent::__construct();
-		$this->db = Database::connect('default');
 		$this->UserModel    = new UserModel();
-		$this->ValidModel   = new ValidModel();
 		$this->tablename    = "wet_focus";
 		$this->wet_behavior = "wet_behavior";
 	}
@@ -57,7 +54,7 @@ class FocusModel extends Model {
 
 		$data = $this->pages($page, $size, $countSql);
 		$data['data'] = [];
-		$query = $this-> db-> query($limitSql);
+		$query = ComModel::db()-> query($limitSql);
 		foreach ($query-> getResult() as $row) {
 			$userAddress  = $row -> contrary;
 			$userInfo[]	  = $this->UserModel-> userAllInfo($userAddress);
@@ -68,7 +65,7 @@ class FocusModel extends Model {
 
 	private function pages($page, $size, $sql)
 	{
-		$query = $this->db-> query($sql);
+		$query = ComModel::db()-> query($sql);
 		$row   = $query-> getRow();
         $count = $row->count;  //总数量
 		$data  = [
@@ -83,10 +80,10 @@ class FocusModel extends Model {
 
 	public function focus($focus, $fans, $action)
 	{//关注
-		$verify = $this->ValidModel-> isUser($fans);
+		$verify = ValidModel::isUser($fans);
 		if (!$verify) $this->UserModel-> userPut($fans);
 
-		$isFocus = $this->ValidModel-> isFocus($focus, $fans);
+		$isFocus = ValidModel::isFocus($focus, $fans);
 		if (!$isFocus && $action == 'true') {
 			$focusSql = "INSERT INTO $this->tablename(focus, fans) VALUES ('$focus', '$fans')";
 			$e = true;
@@ -99,20 +96,20 @@ class FocusModel extends Model {
 
 		else die("focus Error");
 
-		$this->db-> query($focusSql);
+		ComModel::db()-> query($focusSql);
 		$this->UserModel-> userFocus($focus, $fans, $e);
 	}
 
 	public function autoFocus($focus ,$fans)
 	{//自动A账户关注B账户
-		$verify = $this->ValidModel-> isFocus($focus, $fans);
+		$verify = ValidModel::isFocus($focus, $fans);
 		if (!$verify) {
 			$focusSql = "INSERT INTO $this->tablename(focus, fans) VALUES ('$focus', '$fans')";
 			$e = true;
 		} else {
 			die("isFocus Error");
 		}
-		$this->db-> query($focusSql);
+		ComModel::db()-> query($focusSql);
 		$this->UserModel-> userFocus($focus, $fans, $e);
 		//入库行为记录
 		$insetrBehaviorDate = [
@@ -120,7 +117,7 @@ class FocusModel extends Model {
 			'thing'     => 'autoFocus',
 			'toaddress' => $userAddress
 		];
-		$this->db->table($this->wet_behavior)->insert($insetrBehaviorDate);
+		ComModel::db()->table($this->wet_behavior)->insert($insetrBehaviorDate);
 	}
 
 }

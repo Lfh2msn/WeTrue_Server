@@ -20,7 +20,7 @@ class Config extends BaseController
 
 	public function info()
 	{//获取前端配置
-		$userAddress = isset($_SERVER['HTTP_KEY']);
+		$userAddress = isset($_SERVER['HTTP_KEY']) ? $_SERVER['HTTP_KEY'] : false;
 		$config  = ConfigModel::frontConfig($userAddress);
 		if($config){
 			$code = 200;

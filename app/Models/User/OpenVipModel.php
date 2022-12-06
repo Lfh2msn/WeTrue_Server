@@ -1,4 +1,5 @@
-<?php namespace App\Models\User;
+<?php 
+namespace App\Models\User;
 
 use App\Models\{
 	ComModel,
@@ -12,13 +13,11 @@ use App\Models\Get\{
 	GetAeChainModel
 };
 
-class OpenVipModel extends ComModel
+class OpenVipModel
 {//用户开通VIP Model
 
 	public function __construct()
 	{
-		parent::__construct();
-		$this->ValidModel    = new ValidModel();
 		$this->wet_temp      = "wet_temp";
 		$this->wet_users_vip = "wet_users_vip";
     }
@@ -49,15 +48,15 @@ class OpenVipModel extends ComModel
 			$amount		 == $opConfig['openVipAmount'] &&
 			$poorHeight  <= $opConfig['limitHeight']
 		) {
-			$isVipAccount = $this->ValidModel-> isVipAccount($senderId);
+			$isVipAccount = ValidModel::isVipAccount($senderId);
 			if($isVipAccount) {
-				$this->db->table($this->wet_users_vip)->where('address', $senderId)->update( ['is_vip' => 1] );
+				ComModel::db()->table($this->wet_users_vip)->where('address', $senderId)->update( ['is_vip' => 1] );
 			} else {
 				$insertData = [
 					'address' => $senderId,
 					'is_vip'  => 1
 				];
-				$this->db->table($this->wet_users_vip)->insert($insertData);
+				ComModel::db()->table($this->wet_users_vip)->insert($insertData);
 			}
 
 			$wttAmount = DisposeModel::bigNumber("div", $amount);
@@ -79,7 +78,7 @@ class OpenVipModel extends ComModel
 	private function deleteTemp($hash)
 	{//删除临时缓存
 		$delete = "DELETE FROM $this->wet_temp WHERE tp_hash = '$hash'";
-		$this->db->query($delete);
+		ComModel::db()->query($delete);
 	}
 
 }

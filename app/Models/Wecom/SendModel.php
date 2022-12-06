@@ -1,13 +1,13 @@
-<?php namespace App\Models\Wecom;
+<?php 
+namespace App\Models\Wecom;
 
-use Config\Database;
+use App\Models\ComModel;
 use App\Models\Config\WecomConfig;
 
-class SendModel {
-//企业微信发送 Model
+class SendModel
+{//企业微信发送 Model
 
 	public function __construct() {
-		$this->db = Database::connect('default');
 		$this->WecomConfig = new WecomConfig();
 		$this->wecom_token = "wet_wecom_token";
     }
@@ -23,7 +23,7 @@ class SendModel {
 		if($wetrueKey_1 != $sendKey) die('bad params');
 
 		$sql   = "SELECT access_token FROM $this->wecom_token WHERE token_time >= now()-interval '110 M' LIMIT 1";
-		$query = $this->db->query($sql);
+		$query = ComModel::db()->query($sql);
 		$row   = $query->getRow();
 		$accessToken = $row->access_token ?? false;
 
@@ -84,13 +84,13 @@ class SendModel {
 	private function insertTokenTemp($access_token)
 	{//写入临时缓存
 		$insertSql = "INSERT INTO $this->wecom_token(access_token) VALUES ('$access_token')";
-		$this->db->query($insertSql);
+		ComModel::db()->query($insertSql);
 	}
 
 	private function deleteTokenTemp()
 	{//删除临时缓存
 		$delete = "DELETE FROM $this->wecom_token";
-		$this->db->query($delete);
+		ComModel::db()->query($delete);
 	}
 }
 

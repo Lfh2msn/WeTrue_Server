@@ -1,21 +1,18 @@
-<?php namespace App\Models;
+<?php 
+namespace App\Models;
 
-use CodeIgniter\Model;
-use Config\Database;
 use App\Models\{
+	ComModel,
 	UserModel,
 	ValidModel,
 	DisposeModel,
 	MsgModel
 };
 
-class RewardModel extends Model {
-//打赏Model
+class RewardModel
+{//打赏Model
 
 	public function __construct(){
-        //parent::__construct();
-		$this->db = Database::connect('default');
-		$this->ValidModel   = new ValidModel();
 		$this->UserModel    = new UserModel();
 		$this->wet_temp     = "wet_temp";
 		$this->wet_content  = "wet_content";
@@ -31,7 +28,7 @@ class RewardModel extends Model {
 						sender_id,
 						block_height
 					FROM $this->wet_reward WHERE to_hash = '$hash' ORDER BY block_height DESC LIMIT 50";
-        $query     = $this->db->query($sql);
+        $query     = ComModel::db()->query($sql);
 		$getResult = $query->getResult();
 		$data = [];
 		foreach ($getResult as $row) {
@@ -51,7 +48,7 @@ class RewardModel extends Model {
 						amount,
 						sender_id
 					FROM $this->wet_reward WHERE hash = '$hash' LIMIT 1";
-        $query = $this->db->query($sql);
+        $query = ComModel::db()->query($sql);
 		$row   = $query->getRow();
 		$data['hash']      = $row->hash;
 		$data['amount']    = $row->amount;
@@ -69,7 +66,7 @@ class RewardModel extends Model {
 		$amount 	  = $json['amount'];
 		$block_height = (int)$json['block_height'];
 
-		$isRewardHash = $this->ValidModel-> isRewardHash($hash);
+		$isRewardHash = ValidModel::isRewardHash($hash);
 		if ($isRewardHash) {
 			$this->deleteTemp($hash);
 			return;
@@ -81,7 +78,7 @@ class RewardModel extends Model {
 		} else {
 			$sql = "SELECT sender_id FROM $this->wet_content WHERE hash = '$toHash' LIMIT 1";
 		}
-		$query = $this->db->query($sql);
+		$query = ComModel::db()->query($sql);
 		$row   = $query->getRow();
 		$conID = $row-> sender_id;
 
@@ -93,7 +90,7 @@ class RewardModel extends Model {
 				'sender_id'    => $sender_id,
 				'block_height' => $block_height
 			];
-			$this->db->table($this->wet_reward)->insert($inData);
+			ComModel::db()->table($this->wet_reward)->insert($inData);
 			if ($isShid) { //SH ID 处理
 				$upContSql = "UPDATE $this->wet_content_sh SET reward_sum = (reward_sum + $amount) WHERE tip_id = '$toHash'";
 			} else {
@@ -101,8 +98,8 @@ class RewardModel extends Model {
 			}
 			
 			$upUserSql = "UPDATE $this->wet_users SET reward_sum = (reward_sum + $amount) WHERE address = '$sender_id'";
-			$this->db-> query($upContSql);
-			$this->db-> query($upUserSql);
+			ComModel::db()-> query($upContSql);
+			ComModel::db()-> query($upUserSql);
 			$this->deleteTemp($hash);
 
 			//写入消息
@@ -120,7 +117,7 @@ class RewardModel extends Model {
 	public function deleteTemp($hash)
 	{//删除临时缓存
 		$delete = "DELETE FROM $this->wet_temp WHERE tp_hash = '$hash'";
-		$this->db->query($delete);
+		ComModel::db()->query($delete);
 	}
 }
 

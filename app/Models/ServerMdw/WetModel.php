@@ -1,13 +1,10 @@
-<?php namespace App\Models\ServerMdw;
+<?php 
+namespace App\Models\ServerMdw;
 
-use App\Models\ComModel;
 use App\Models\ConfigModel;
 
-class WetModel extends ComModel {
-//WeTrue MDW交互
-	public function __construct(){
-		parent::__construct();
-    }
+class WetModel
+{//WeTrue MDW交互
 
 	public function getNewContentList()
 	{//通知中间件，有新的消息

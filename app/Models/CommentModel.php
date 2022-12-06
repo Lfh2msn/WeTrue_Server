@@ -1,24 +1,21 @@
-<?php namespace App\Models;
+<?php 
+namespace App\Models;
 
-use CodeIgniter\Model;
-use Config\Database;
 use App\Models\{
+	ComModel,
 	UserModel,
 	ReplyModel,
 	ValidModel,
 	DisposeModel
 };
 
-class CommentModel extends Model {
-//评论Model
+class CommentModel
+{//评论Model
 
 	public function __construct()
 	{
-        //parent::__construct();
-		$this->db 			= Database::connect('default');
 		$this->UserModel	= new UserModel();
 		$this->ReplyModel	= new ReplyModel();
-		$this->ValidModel	= new ValidModel();
 		$this->wet_comment  = "wet_comment";
 		$this->wet_reply    = "wet_reply";
     }
@@ -35,7 +32,7 @@ class CommentModel extends Model {
 					chain_id
 				FROM $this->wet_comment 
 				WHERE hash='$hash' LIMIT 1";
-        $query = $this->db->query($sql);
+        $query = ComModel::db()->query($sql);
 		$row   = $query-> getRow();
         if ($row) {
 			$data['hash']    	 = $hash;
@@ -46,7 +43,7 @@ class CommentModel extends Model {
 			$data['utcTime']	 = (int) $row-> utctime;
 			$data['replyNumber'] = (int) $row-> comment_sum;
 			$data['praise']		 = (int) $row-> praise;
-			$data['isPraise']	 = $opt['userLogin'] ? $this->ValidModel-> isPraise($hash, $opt['userLogin']) : false;
+			$data['isPraise']	 = $opt['userLogin'] ? ValidModel::isPraise($hash, $opt['userLogin']) : false;
 			$data['chainId']	 = $row->chain_id ? (int) $row->chain_id : 457;
 			$data['users'] = $this->UserModel-> getUser($sender_id);
 			if ( (int)$opt['replyLimit'] ) {
@@ -54,10 +51,10 @@ class CommentModel extends Model {
 				$replyLimit = max(0, (int)$opt['replyLimit']);
 				$limit    = 'LIMIT '.$replyLimit;
 				$replySql = "SELECT hash FROM $this->wet_reply WHERE to_hash = '$hash' ORDER BY utctime DESC ".$limit;
-				$query    = $this-> db-> query($replySql);
+				$query    = ComModel::db()-> query($replySql);
 				foreach ($query-> getResult() as $row) {
 					$hash  = $row -> hash;
-					$isBloomHash = $this->ValidModel-> isBloomHash($hash);
+					$isBloomHash = ValidModel::isBloomHash($hash);
 					if (!$isBloomHash) {
 						$opt['substr'] = 140; //限制输出
 						$list[] = $this->ReplyModel-> txReply($hash, $opt);
@@ -85,7 +82,7 @@ class CommentModel extends Model {
 					$payload
 				FROM $this->wet_comment 
 				WHERE hash='$hash' LIMIT 1";
-        $query = $this-> db-> query($sql);
+        $query = ComModel::db()-> query($sql);
 		$row   = $query-> getRow();
         if ($row) {
 			$data['hash']    = $hash;

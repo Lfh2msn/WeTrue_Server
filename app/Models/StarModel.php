@@ -1,18 +1,15 @@
-<?php namespace App\Models;
+<?php 
+namespace App\Models;
 
-use CodeIgniter\Model;
-use Config\Database;
 use App\Models\{
+	ComModel,
 	ValidModel
 };
 
-class StarModel extends Model {
-//收藏Model
+class StarModel
+{//收藏Model
 
 	public function __construct(){
-		//parent::__construct();
-		$this->db = Database::connect('default');
-		$this->ValidModel   = new ValidModel();
 		$this->wet_star     = "wet_star";
 		$this->wet_users	= "wet_users";
 		$this->wet_behavior = "wet_behavior";
@@ -28,7 +25,7 @@ class StarModel extends Model {
 			$whereHash = 'tip_id';
 		}
 
-		$verify = $this->ValidModel-> isStar($hash, $address);
+		$verify = ValidModel::isStar($hash, $address);
 		if (!$verify && $action == 'true') {
 			$starSql    = "INSERT INTO $this->wet_star(hash, sender_id) VALUES ('$hash', '$address')";
 			$upContent  = "UPDATE $this->tablename SET star_sum = star_sum + 1 WHERE $whereHash = '$hash'";
@@ -43,9 +40,9 @@ class StarModel extends Model {
 
 		else die("star Error");
 
-		$this->db-> query($starSql);
-		$this->db-> query($upContent);
-		$this->db-> query($upUsers);
+		ComModel::db()-> query($starSql);
+		ComModel::db()-> query($upContent);
+		ComModel::db()-> query($upUsers);
 	}
 
 }

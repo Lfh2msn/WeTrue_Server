@@ -1,9 +1,8 @@
-<?php namespace App\Models\Content;
-
-use CodeIgniter\Model;
-use Config\Database;
+<?php 
+namespace App\Models\Content;
 
 use App\Models\{
+	ComModel,
 	MsgModel,
 	UserModel,
 	StarModel,
@@ -18,29 +17,15 @@ use App\Models\ServerMdw\WetModel;
 use App\Models\Get\GetAeChainModel;
 use App\Models\Config\ActiveConfig;
 
-class AeChainPutModel extends Model {
-//Ae链上hash入库Model
-	private $MsgModel;
-	private $UserModel;
-	private $StarModel;
-	private $TopicModel;
-	private $ValidModel;
-	private $FocusModel;
-	private $WetModel;
-	private $MentionsModel;
-	private $wet_content;
-	private $wet_comment;
-	private $wet_reply;
-	private $wet_users;
+class AeChainPutModel
+{//Ae链上hash入库Model
 
 	public function __construct(){
-		$this->db = Database::connect('default');
 		$this->WetModel   = new WetModel();
 		$this->MsgModel   = new MsgModel();
 		$this->UserModel  = new UserModel();
 		$this->StarModel  = new StarModel();
 		$this->TopicModel = new TopicModel();
-		$this->ValidModel = new ValidModel();
 		$this->FocusModel = new FocusModel();
 		$this->ConfigModel   = new ConfigModel();
 		$this->MentionsModel = new MentionsModel();
@@ -103,32 +88,32 @@ class AeChainPutModel extends Model {
 			if ($data['type'] == 'topic'){ //主贴
 				$userAmount = $ftConfig['topicAmount'];
 				$getActive  = $activeConfig['topicActive'];
-				$repeatHash = $this->ValidModel-> isContentHash($data['hash']);
+				$repeatHash = ValidModel::isContentHash($data['hash']);
 			}
 			elseif ($data['type'] == 'comment'){ //评论
 				$userAmount = $ftConfig['commentAmount'];
 				$getActive  = $activeConfig['commentActive'];
-				$repeatHash = $this->ValidModel-> isCommentHash($data['hash']);
+				$repeatHash = ValidModel::isCommentHash($data['hash']);
 			}
 			elseif ($data['type'] == 'reply'){ //回复
 				$userAmount = $ftConfig['replyAmount'];
 				$getActive  = $activeConfig['replyActive'];
-				$repeatHash = $this->ValidModel-> isReplyHash($data['hash']);
+				$repeatHash = ValidModel::isReplyHash($data['hash']);
 			}
 			elseif ($data['type'] == 'nickname'){ //昵称
 				$userAmount = $ftConfig['nicknameAmount'];
 				$getActive  = $activeConfig['nicknameActive'];
-				$repeatHash = $this->ValidModel-> isNickname($data['content']);
+				$repeatHash = ValidModel::isNickname($data['content']);
 			}
 			elseif ($data['type'] == 'sex'){ //性别
 				$userAmount = $ftConfig['sexAmount'];
 				$getActive  = $activeConfig['sexActive'];
 			}
 			elseif ( $data['type'] == 'star' ){ //收藏帖
-				$repeatHash = $this->ValidModel-> isStar($data['hash'], $data['sender']);
+				$repeatHash = ValidModel::isStar($data['hash'], $data['sender']);
 			}
 			elseif ( $data['type'] == 'focus' ){ //关注用户
-				$repeatHash = $this->ValidModel-> isFocus($data['content'], $data['sender']);
+				$repeatHash = ValidModel::isFocus($data['content'], $data['sender']);
 			}else{}
 
 			if ($repeatHash) {
@@ -171,7 +156,7 @@ class AeChainPutModel extends Model {
 								'source' 	   => $data['source'],
 								'chain_id'	   => $data['chainId']
 							];
-				$this->db->table($this->wet_content)->insert($insertData);
+				ComModel::db()->table($this->wet_content)->insert($insertData);
 				//是否话题
 				$isTopic = $this->TopicModel-> isTopic($data['content']);
 				if($isTopic) {
@@ -213,7 +198,7 @@ class AeChainPutModel extends Model {
 					'payload' 	   => $data['content'],
 					'chain_id'	   => $data['chainId']
 				];
-				$this->db->table($this->wet_comment)->insert($insertData);
+				ComModel::db()->table($this->wet_comment)->insert($insertData);
 				//验证是否为Superhero ID
 				$isShTipid = DisposeModel::checkSuperheroTipid($data['toHash']);
 				if ($isShTipid) {
@@ -221,7 +206,7 @@ class AeChainPutModel extends Model {
 				} else {
 					$upSql = "UPDATE $this->wet_content SET comment_sum = comment_sum + 1 WHERE hash = '$data[toHash]'";
 				}
-				$this->db->query($upSql);
+				ComModel::db()->query($upSql);
 				//写入消息
 				$msgOpt = [ 'type'=>$data['type'] ];
 				if ($isShTipid) { //Superhero ID
@@ -286,9 +271,9 @@ class AeChainPutModel extends Model {
 					'payload' 	   => $data['content'],
 					'chain_id'	   => $data['chainId']
 				];
-				$this->db->table($this->wet_reply)->insert($insertData);
+				ComModel::db()->table($this->wet_reply)->insert($insertData);
 				$upSql = "UPDATE $this->wet_comment SET comment_sum = comment_sum + 1 WHERE hash = '$data[toHash]'";
-				$this->db->query($upSql);
+				ComModel::db()->query($upSql);
 				//写入消息
 				$msgOpt = [ 'type'=>$data['type'] ];
 				$toHashID = $this->MsgModel-> toHashSendID($data['toHash'], $msgOpt);  //获取被评论ID
@@ -335,17 +320,17 @@ class AeChainPutModel extends Model {
 			{//昵称
 				$data['content'] = trim($payload['content']);
 				$data['content'] = mb_substr($data['content'], 0, 15);
-				$verify     = $this->ValidModel-> isUser($data['sender']);
+				$verify     = ValidModel::isUser($data['sender']);
 
 				if($verify){  //用户是否存在
 					$upData = [ 'nickname' => $data['content'] ];
-					$this->db->table($this->wet_users)->where('address', $data['sender'])->update($upData);
+					ComModel::db()->table($this->wet_users)->where('address', $data['sender'])->update($upData);
 				}else{
 					$insertData = [
 						'address'  => $data['sender'],
 						'nickname' => $data['content']
 					];
-					$this->db->table($this->wet_users)->insert($insertData);
+					ComModel::db()->table($this->wet_users)->insert($insertData);
 				}
 			}
 
@@ -358,10 +343,10 @@ class AeChainPutModel extends Model {
 					return DisposeModel::wetJsonRt(406,'error');
 				}
 
-				$verify = $this->ValidModel-> isUser($data['sender']);
+				$verify = ValidModel::isUser($data['sender']);
 				if (!$verify) $this->UserModel-> userPut($data['sender']);
 				$upData = [ 'sex' => $data['content'] ];
-				$this->db->table($this->wet_users)->where('address', $data['sender'])->update($upData);
+				ComModel::db()->table($this->wet_users)->where('address', $data['sender'])->update($upData);
 			}
 
 			elseif ( $data['type'] == 'focus' )
@@ -374,7 +359,7 @@ class AeChainPutModel extends Model {
 				$data['action']  = $payload['action'];
 				$data['content'] = $payload['content'];
 				$isAddress = DisposeModel::checkAddress($data['content']);
-				$isUser    = $this->ValidModel-> isUser($data['content']);
+				$isUser    = ValidModel::isUser($data['content']);
 
 				if (!$isUser || !$isAddress){
 					DisposeModel::wetFwriteLog("focus isUser Error:{$data['hash']}");
@@ -425,7 +410,7 @@ class AeChainPutModel extends Model {
 			
 			if( $data['type'] == 'topic' ) { //发布主贴用户发帖量+1
 				$upSql = "UPDATE $this->wet_users SET topic_sum = topic_sum + 1 WHERE address = '$data[sender]'";
-				$this->db->query($upSql);
+				ComModel::db()->query($upSql);
 			}
 			$this->deleteTemp($hash);
 			if( $data['type'] == 'topic' ) $this->WetModel ->getNewContentList(); //通知中间件提示新内容
@@ -440,7 +425,7 @@ class AeChainPutModel extends Model {
 	private function deleteTemp($hash)
 	{//删除临时缓存
 		$delete = "DELETE FROM $this->wet_temp WHERE tp_hash = '$hash'";
-		$this->db->query($delete);
+		ComModel::db()->query($delete);
 	}
 
 }

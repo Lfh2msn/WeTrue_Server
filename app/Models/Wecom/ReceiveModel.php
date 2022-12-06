@@ -1,11 +1,12 @@
-<?php namespace App\Models\Wecom;
+<?php 
+namespace App\Models\Wecom;
 
 use App\Models\Config\WecomConfig;
 use App\Models\Wecom\Callback\WXBizMsgCrypt;
 use App\Models\Wecom\ReceiveMsgTypeModel;
 
-class ReceiveModel {
-//企业微信被动回复 Model
+class ReceiveModel
+{//企业微信被动回复 Model
 
 	public function __construct(){
 		$this->$WecomConfig = new WecomConfig();

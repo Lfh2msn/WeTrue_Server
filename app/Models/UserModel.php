@@ -10,12 +10,10 @@ use App\Models\{
 	ConfigModel
 };
 
-class UserModel extends ComModel
+class UserModel
 {//用户Model
 
 	public function __construct(){
-        parent::__construct();
-		$this->ValidModel	= new ValidModel();
 		$this->tablename    = "wet_users";
 		$this->wet_behavior = "wet_behavior";
     }
@@ -32,7 +30,7 @@ class UserModel extends ComModel
 					last_active,
 					is_auth
 				FROM $this->tablename WHERE address = '$address' LIMIT 1";
-        $query = $this->db->query($sql);
+        $query = ComModel::db()->query($sql);
 		$row = $query->getRow();
 		if ($row) {
 			$data['userAddress'] = $address;
@@ -49,7 +47,7 @@ class UserModel extends ComModel
 			$data['reward'] 	= $userReward;
 			$data['userReward'] = DisposeModel::rewardGrade($userReward);
 			$data['avatar']     = $row->avatar ?? "";
-			$is_vip = $this->ValidModel-> isVipAddress($address);
+			$is_vip = ValidModel::isVipAddress($address);
 			$data['isVip']  	= $is_vip ? true : false;
 			$data['isAuth']  	= $row->is_auth ? true : false;
         }
@@ -77,7 +75,7 @@ class UserModel extends ComModel
 				star_sum,
 				is_auth
 			FROM $this->tablename WHERE address = '$address' LIMIT 1";
-        $query = $this->db->query($sql);
+        $query = ComModel::db()->query($sql);
 		$row = $query->getRow();
 		$bsConfig = ConfigModel::backendConfig();
 		if (!$row && $opt['type'] == 'login') {
@@ -105,10 +103,10 @@ class UserModel extends ComModel
 		$data['star'] 		 = (int)$row->star_sum;
 		$data['focus'] 		 = (int)$row->focus_sum;
 		$data['fans']  		 = (int)$row->fans_sum;
-		$is_vip = $this->ValidModel-> isVipAddress($address);
+		$is_vip = ValidModel::isVipAddress($address);
 		$data['isVip']  	 = $is_vip ? true : false;
 		$data['isAuth']  	 = $row->is_auth ? true : false;
-		$isAdmin = $this->ValidModel-> isAdmin($address);
+		$isAdmin = ValidModel::isAdmin($address);
 		if ($isAdmin) {
 			$data['isAdmin'] = $isAdmin;
 		}
@@ -118,7 +116,7 @@ class UserModel extends ComModel
 	public function getName($address)
 	{//获取用户昵称
 		$sql   = "SELECT nickname FROM $this->tablename WHERE address = '$address' LIMIT 1";
-        $query = $this->db->query($sql);
+        $query = ComModel::db()->query($sql);
 		$row   = $query->getRow();
 		if ($row) {
 			$nickname = DisposeModel::delete_xss($row->nickname);
@@ -142,7 +140,7 @@ class UserModel extends ComModel
 		} else {
 			$updateSql = "UPDATE $this->tablename SET uactive = uactive - '$active' WHERE address = '$address'";
 		}
-		$this->db->query($updateSql);
+		ComModel::db()->query($updateSql);
 	}
 
 	public function userFocus($focus, $fans, $e)
@@ -159,18 +157,18 @@ class UserModel extends ComModel
 			$focusSql = "UPDATE $this->tablename SET focus_sum = focus_sum - 1 WHERE address = '$fans'";
 			$fansSql  = "UPDATE $this->tablename SET fans_sum = fans_sum - 1 WHERE address = '$focus'";
 		}
-		$this->db->query($focusSql);
-		$this->db->query($fansSql);
+		ComModel::db()->query($focusSql);
+		ComModel::db()->query($fansSql);
 	}
 
 	public function userPut($address)
 	{//用户入库
 		$selectSql = "SELECT address FROM $this->tablename WHERE address = '$address' LIMIT 1";
-		$query	   = $this->db->query($selectSql);
+		$query	   = ComModel::db()->query($selectSql);
 		$row	   = $query-> getRow();
 		if (!$row) {
 			$insertSql = "INSERT INTO $this->tablename(address) VALUES ('$address')";
-			$this->db->query($insertSql);
+			ComModel::db()->query($insertSql);
 			$autoFans1 = 'ak_2kxt6D65giv4yNt4oa44SjW4jEXfoHMviPFvAreSEXvz25Q3QQ';
 			//$autoFans2 = 'ak_AiYsw9sJVdfBCXbAAys4LiMDnXBd1BTTSi13fzpryQcXjSpsS';
 			(new FocusModel())-> autoFocus($autoFans1 ,$address);
@@ -180,7 +178,7 @@ class UserModel extends ComModel
 	public function userDelete($address)
 	{//用户删除
 		$sql = "DELETE FROM $this->tablename WHERE address = '$address'";
-		$query = $this->db->query($sql);
+		$query = ComModel::db()->query($sql);
 	}
 
 }

@@ -1,4 +1,5 @@
-<?php namespace App\Models;
+<?php 
+namespace App\Models;
 
 use App\Models\{
 	ComModel,
@@ -17,14 +18,12 @@ use App\Models\Get\{
 use App\Models\Content\ContentPullModel;
 use App\Models\Config\ActiveConfig;
 
-class BloomModel extends ComModel {
-//过滤Model
+class BloomModel
+{//过滤Model
 
 	public function __construct()
 	{
-		parent::__construct();
 		$this->UserModel	= new UserModel();
-		$this->ValidModel	= new ValidModel();
 		$this->AmountModel	= new AmountModel();
 		$this->wet_reply    = "wet_reply";
 		$this->wet_bloom    = "wet_bloom";
@@ -35,15 +34,15 @@ class BloomModel extends ComModel {
 
 	public function userCheck($address)
 	{//账户检查
-		$isNewUser = $this->ValidModel-> isNewUser($address);
+		$isNewUser = ValidModel::isNewUser($address);
 		if (!$isNewUser) return true;
-		$isAmountVip = $this->ValidModel-> isAmountVip($address);
+		$isAmountVip = ValidModel::isAmountVip($address);
 		if ($isAmountVip) return true;
 		$senderList = GetAeknowModel::atestSpendTx($address);
 		if (!$senderList) return false;
 		foreach ($senderList as $sender) {
-			$isBloomAddress = $this->ValidModel-> isBloomAddress($sender);
-			$isAmountVip = $this->ValidModel-> isAmountVip($sender);
+			$isBloomAddress = ValidModel::isBloomAddress($sender);
+			$isAmountVip = ValidModel::isAmountVip($sender);
 			if ($isBloomAddress || $isAmountVip) {
 				$balance = GetAeChainModel::accountsBalance($address);
 				if (!$balance) return false;
@@ -64,30 +63,30 @@ class BloomModel extends ComModel {
     public function deleteBloomHash($hash)
 	{//删除过滤
 		$deleteSql = "DELETE FROM $this->wet_bloom WHERE bf_hash = '$hash'";
-		$this->db-> query($deleteSql);
+		ComModel::db()-> query($deleteSql);
 	}
 
     public function bloomHash($hash)
     {//过滤TX入库bloom
-        $akToken   = $_SERVER['HTTP_KEY'];
+        $akToken   = isset($_SERVER['HTTP_KEY']) ? $_SERVER['HTTP_KEY'] : false;
 		$isAkToken = DisposeModel::checkAddress($akToken);
-		$isAdmin   = $this->ValidModel-> isAdmin($akToken);
+		$isAdmin   = ValidModel::isAdmin($akToken);
 		if (!$isAkToken || !$isAdmin) {
 			return DisposeModel::wetJsonRt(401, 'error_login');
 		}
 
-        $isComplain = $this->ValidModel-> isComplain($hash);
+        $isComplain = ValidModel::isComplain($hash);
         if (!$isComplain) {
 			return DisposeModel::wetJsonRt(401, 'error_no_complain');
         }
 
-        $isBloomHash = $this->ValidModel-> isBloomHash($hash);
+        $isBloomHash = ValidModel::isBloomHash($hash);
         if ($isBloomHash) {
 			return DisposeModel::wetJsonRt(200, 'error_repeat');
         }
 
         $insertBloom = "INSERT INTO $this->wet_bloom(bf_hash,bf_reason) VALUES ('$hash','admin_bf')";
-        $this->db->query($insertBloom);
+        ComModel::db()->query($insertBloom);
 
         $senderID = (new ComplainModel())-> complainAddress($hash);
         $acConfig = ActiveConfig::config();
@@ -103,16 +102,16 @@ class BloomModel extends ComModel {
 			'influence' => '-'.$clActive,
 			'toaddress' => $senderID
 		];
-		$this->db->table($this->wet_behavior)->insert($insetrBehaviorDate);
+		ComModel::db()->table($this->wet_behavior)->insert($insetrBehaviorDate);
 
 		return DisposeModel::wetJsonRt(200, 'success');
     }
 
     public function unBloom($hash)
     {//撤销过滤
-        $akToken   = $_SERVER['HTTP_KEY'];
+        $akToken   = isset($_SERVER['HTTP_KEY']) ? $_SERVER['HTTP_KEY'] : false;
 		$isAkToken = DisposeModel::checkAddress($akToken);
-		$isAdmin   = $this->ValidModel-> isAdmin($akToken);
+		$isAdmin   = ValidModel::isAdmin($akToken);
 		if (!$isAkToken || !$isAdmin) {
 			return DisposeModel::wetJsonRt(401, 'error_login');
 		}
@@ -127,9 +126,9 @@ class BloomModel extends ComModel {
 		$page   = max(1, (int)$page);
 		$size   = max(1, (int)$size);
 		$offset = max(0, (int)$offset);
-		$akToken   = $_SERVER['HTTP_KEY'];
+		$akToken   = isset($_SERVER['HTTP_KEY']) ? $_SERVER['HTTP_KEY'] : false;
 		$isAkToken = DisposeModel::checkAddress($akToken);
-		$isAdmin   = $this->ValidModel-> isAdmin($akToken);
+		$isAdmin   = ValidModel::isAdmin($akToken);
 		if ( !$isAkToken || !$isAdmin ) {
 			return DisposeModel::wetJsonRt(401, 'error_login');
 		}
@@ -147,20 +146,20 @@ class BloomModel extends ComModel {
 	{//列表循环
 
 		$data = $this->pages($page, $size, $countSql);
-		$query = $this->db-> query($limitSql);
+		$query = ComModel::db()-> query($limitSql);
 		$data['data'] = [];
 		foreach ($query-> getResult() as $row) {
 			$hash  = $row -> hash;
 
 			$conSql   = "SELECT hash FROM $this->wet_content WHERE hash='$hash' LIMIT 1";
-			$conQuery = $this-> db-> query($conSql);
+			$conQuery = ComModel::db()-> query($conSql);
 			$conRow   = $conQuery-> getRow();
 
 			if ($conRow) {
 				$detaila[] = (new ContentPullModel())-> txContent($hash, $opt);
 			} else {
 				$comSql   = "SELECT hash FROM $this->wet_comment WHERE hash='$hash' LIMIT 1";
-				$comQuery = $this-> db-> query($comSql);
+				$comQuery = ComModel::db()-> query($comSql);
 				$comRow   = $comQuery-> getRow();
 			}
 			
@@ -168,7 +167,7 @@ class BloomModel extends ComModel {
 				$detaila[] = (new CommentModel())-> txComment($hash, $opt);
 			} else {
 				$repSql   = "SELECT hash FROM $this->wet_reply WHERE hash='$hash' LIMIT 1";
-				$repQuery = $this-> db-> query($repSql);
+				$repQuery = ComModel::db()-> query($repSql);
 				$repRow   = $repQuery-> getRow();
 			}
 
@@ -183,7 +182,7 @@ class BloomModel extends ComModel {
 
 	private function pages($page, $size, $sql)
 	{
-		$query = $this->db-> query($sql);
+		$query = ComModel::db()-> query($sql);
 		$row   = $query-> getRow();
         $count = $row->count;  //总数量
 		$data  = [

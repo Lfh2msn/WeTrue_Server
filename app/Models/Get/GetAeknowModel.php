@@ -1,11 +1,10 @@
-<?php namespace App\Models\Get;
+<?php 
+namespace App\Models\Get;
 
 use App\Models\DisposeModel;
 
 class GetAeknowModel
 {//获取Model
-	public function __construct(){
-    }
 
 	public static function tokenTx($hash)
 	{//获取Aeknow API AEX9合约Token信息

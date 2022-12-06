@@ -8,12 +8,10 @@ use App\Models\{
 };
 use App\Models\Content\ContentPullModel;
 
-class TopicModel extends ComModel
+class TopicModel
 {//话题Model
 	public function __construct(){
-        parent::__construct();
 		$this->ContentPullModel  = new ContentPullModel();
-		$this->ValidModel 		 = new ValidModel();
 		$this->UserModel 	 	 = new UserModel();
         $this->wet_topic_tag     = "wet_topic_tag";
 		$this->wet_topic_content = "wet_topic_content";
@@ -41,7 +39,7 @@ class TopicModel extends ComModel
 							FROM $this->wet_topic_tag 
 							WHERE keywords ilike '$keyword' AND state = '1' 
 							LIMIT 1";
-			$getTagRow = $this->db->query($selectTag)-> getRow();
+			$getTagRow = ComModel::db()->query($selectTag)-> getRow();
 			$data = [
 					'total'		=> (int)$getTagRow-> topic_sum,  //总话题量
 					'read_sum'	=> (int)$getTagRow-> read_sum,  //阅读量
@@ -57,7 +55,7 @@ class TopicModel extends ComModel
 				$updateSql = "UPDATE $this->wet_topic_tag 
 							SET read_sum = read_sum + 1
 							WHERE keywords ilike '$getTagRow->keywords'";
-				$this->db->query($updateSql);
+				ComModel::db()->query($updateSql);
 			}
 			return $data;
 		}
@@ -69,7 +67,7 @@ class TopicModel extends ComModel
 		$page   = max(1, (int)$page);
 		$size   = max(1, (int)$size);
 		$offset = max(0, (int)$offset);
-		$akToken   = $_SERVER['HTTP_KEY'];
+		$akToken   = isset($_SERVER['HTTP_KEY']) ? $_SERVER['HTTP_KEY'] : false;
 		$isAkToken = DisposeModel::checkAddress($akToken);
 		if ($isAkToken) $opt['userLogin'] = $akToken;
 		$opt['substr']	  = 160; //限制输出
@@ -80,7 +78,7 @@ class TopicModel extends ComModel
 							FROM $this->wet_topic_tag 
 							WHERE keywords ilike '$keyword' 
 							AND state = '1' LIMIT 1";
-			$getTagRow = $this->db->query($selectTag)-> getRow();
+			$getTagRow = ComModel::db()->query($selectTag)-> getRow();
 
 			$data  = [
 					'page'		=> $page,  //当前页
@@ -104,7 +102,7 @@ class TopicModel extends ComModel
 								WHERE tag_uid = '$topicTagUid' AND state = '1'
 								ORDER BY utctime DESC 
 								LIMIT $size OFFSET ".(($page-1) * $size + $offset);
-				$query = $this->db-> query($limitSql);
+				$query = ComModel::db()-> query($limitSql);
 				$getResult = $query-> getResult();
 
 				foreach ($getResult as $row) {
@@ -118,7 +116,7 @@ class TopicModel extends ComModel
 
 				$data['data'] = [];
 				foreach ($arrList as $hash) {
-					$isBloomHash = $this->ValidModel-> isBloomHash($hash);
+					$isBloomHash = ValidModel::isBloomHash($hash);
 					if (!$isBloomHash) {
 						$isData = $this->ContentPullModel-> txContent($hash, $opt);
 						if(isset($isData)) $detaila[] = $isData;
@@ -131,7 +129,7 @@ class TopicModel extends ComModel
 					$updateSql = "UPDATE $this->wet_topic_tag 
 							SET read_sum = read_sum + '$countList'
 							WHERE keywords ilike '$keyword'";
-					$this->db->query($updateSql);
+					ComModel::db()->query($updateSql);
 				}
 
 				$code = 200;
@@ -157,7 +155,7 @@ class TopicModel extends ComModel
 						GROUP BY tag_uid 
 						ORDER BY count DESC
 						LIMIT 20";
-		$query = $this->db-> query($selectUid);
+		$query = ComModel::db()-> query($selectUid);
 		$getResult = $query-> getResult();
 		$data['data'] = [];
 		if ($getResult) {
@@ -182,7 +180,7 @@ class TopicModel extends ComModel
 						FROM $this->wet_topic_tag 
 						WHERE uid = $uid 
 						LIMIT 1";
-			$row  = $this->db->query($select)-> getRow();
+			$row  = ComModel::db()->query($select)-> getRow();
 			return $row->keywords;
 	}
 
@@ -202,15 +200,15 @@ class TopicModel extends ComModel
 			$count = count($keywords) <= 15 ? count($keywords) : 15;
 			for($i=0; $i<$count; $i++) {
 				$selectTag = "SELECT uid FROM $this->wet_topic_tag WHERE keywords ilike '$keywords[$i]' LIMIT 1";
-				$getTagRow = $this->db->query($selectTag)-> getRow();
+				$getTagRow = ComModel::db()->query($selectTag)-> getRow();
 				if (!$getTagRow) {
 					$inTopicTag = [
 									'keywords'	=> $keywords[$i],
 									'sender_id' => $topic['sender_id'],
 									'utctime'   => $topic['utctime']
 								];
-					$this->db->table($this->wet_topic_tag)->insert($inTopicTag);
-					$getTagRow  = $this->db->query($selectTag)-> getRow();
+					ComModel::db()->table($this->wet_topic_tag)->insert($inTopicTag);
+					$getTagRow  = ComModel::db()->query($selectTag)-> getRow();
 				}
 
 				$topicTagUid    = $getTagRow->uid;
@@ -220,13 +218,13 @@ class TopicModel extends ComModel
 									'sender_id' => $topic['sender_id'],
 									'utctime'   => $topic['utctime']
 								];
-				$this->db->table($this->wet_topic_content)->insert($inTopicContent);
+				ComModel::db()->table($this->wet_topic_content)->insert($inTopicContent);
 				$updateSql = "UPDATE $this->wet_topic_tag 
 								SET 
 									topic_sum = topic_sum + 1, 
 									read_sum  = read_sum + 1
 								WHERE keywords ilike '$keywords[$i]'";
-				$this->db->query($updateSql);
+				ComModel::db()->query($updateSql);
 			}
 		}
 	}

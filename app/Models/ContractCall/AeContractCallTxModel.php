@@ -1,24 +1,22 @@
 <?php 
 namespace App\Models\ContractCall;
 
-use CodeIgniter\Model;
-use Config\Database;
 use App\Models\Config\AeTokenConfig;
 use App\Models\Get\GetAeknowModel;
 use App\Models\{
+	ComModel,
 	DisposeModel,
 	ConfigModel
 };
 use App\Models\ContractCall\TokenEventModel;
 
-class AeContractCallTxModel extends Model
+class AeContractCallTxModel
 {//AE智能合约TX处理模块
 
 	private $TokenEventModel;
 	private $wet_temp;
 
 	public function __construct(){
-		$this->db = Database::connect('default');
 		$this->TokenEventModel = new TokenEventModel();
 		$this->wet_temp = "wet_temp";
     }
@@ -75,7 +73,7 @@ class AeContractCallTxModel extends Model
 	private function deleteTemp($hash)
 	{//删除临时缓存
 		$delete = "DELETE FROM $this->wet_temp WHERE tp_hash = '$hash'";
-		$this->db->query($delete);
+		ComModel::db()->query($delete);
 	}
 
 }

@@ -1,8 +1,8 @@
-<?php namespace App\Models;
+<?php 
+namespace App\Models;
 
-use CodeIgniter\Model;
-use Config\Database;
 use App\Models\{
+	ComModel,
 	BloomModel,
 	ValidModel,
 	DeleteModel,
@@ -16,13 +16,11 @@ use App\Models\Content\{
 };
 use App\Models\ContractCall\AeContractCallTxModel;
 
-class HashReadModel extends Model {
-//链上hash入库Model
+class HashReadModel
+{//链上hash入库Model
 
 	public function __construct(){
-		$this->db = Database::connect('default');
 		$this->BloomModel  = new BloomModel();
-		$this->ValidModel  = new ValidModel();
 		$this->DeleteModel = new DeleteModel();
 		$this->AeChainPutModel = new AeChainPutModel();
 		$this->AeSuperheroPutModel  = new AeSuperheroPutModel();
@@ -32,13 +30,13 @@ class HashReadModel extends Model {
 
 	public function split($hash, $chainId){
 	//上链hash入库
-		$repeatHash = $this->ValidModel-> isTempHash($hash); //重复检测
+		$repeatHash = ValidModel::isTempHash($hash); //重复检测
 		if ($repeatHash) {
 			return DisposeModel::wetJsonRt(406,'error_repeat');
 		}
 		//写入临时缓存
 		$insertTempSql = "INSERT INTO $this->wet_temp(tp_hash, tp_chain_id) VALUES ('$hash', '$chainId')";
-		$this->db->query($insertTempSql);
+		ComModel::db()->query($insertTempSql);
 		return DisposeModel::wetJsonRt(200);
 	}
 
@@ -46,10 +44,10 @@ class HashReadModel extends Model {
 	//上链内容出库事件
 		$bsConfig 	= ConfigModel::backendConfig();
 		$delTempSql = "DELETE FROM $this->wet_temp WHERE tp_time <= now()-interval '3 D'";
-		$this->db->query($delTempSql);
+		ComModel::db()->query($delTempSql);
 
 		$tpSql   = "SELECT tp_hash FROM $this->wet_temp ORDER BY tp_time DESC LIMIT 30";
-		$tpquery = $this->db-> query($tpSql);
+		$tpquery = ComModel::db()-> query($tpSql);
 		$result  = $tpquery-> getResult();
 		foreach ($result as $row) {
 			$tp_hash = $row-> tp_hash;
@@ -72,7 +70,7 @@ class HashReadModel extends Model {
 				continue;
 			}
 			
-			$isBloomAddress = $this->ValidModel-> isBloomAddress($sender);
+			$isBloomAddress = ValidModel::isBloomAddress($sender);
 			if ($isBloomAddress) {
 				DisposeModel::wetFwriteLog("被bloom过滤账户:{$tp_hash}");
 				$this->deleteTemp($tp_hash);  //删除临时缓存
@@ -119,7 +117,7 @@ class HashReadModel extends Model {
 	private function deleteTemp($hash)
 	{//删除临时缓存
 		$delete = "DELETE FROM $this->wet_temp WHERE tp_hash = '$hash'";
-		$this->db->query($delete);
+		ComModel::db()->query($delete);
 	}
 
 }

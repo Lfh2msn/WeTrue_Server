@@ -1,4 +1,5 @@
-<?php namespace App\Models\Content;
+<?php 
+namespace App\Models\Content;
 
 use App\Models\{
 	ComModel,
@@ -8,13 +9,11 @@ use App\Models\{
 };
 use App\Models\Config\ActiveConfig;
 
-class AeSuperheroPutModel extends ComModel {
-//抓取Superhero内容入库Model
+class AeSuperheroPutModel
+{//抓取Superhero内容入库Model
 
 	public function __construct(){
-		parent::__construct();
 		$this->UserModel    = new UserModel();
-		$this->ValidModel   = new ValidModel();
 		$this->wet_content_sh = "wet_content_sh";
 		$this->wet_users 	  = "wet_users";
     }
@@ -74,7 +73,7 @@ class AeSuperheroPutModel extends ComModel {
 
 		$toPgArr = DisposeModel::to_pg_val_array($getTipIdArr); //转换为pgsql所需数组
 		$sql     = "SELECT tmp.tip_id FROM (VALUES $toPgArr) AS tmp(tip_id) WHERE tmp.tip_id NOT IN(SELECT tip_id FROM wet_content_sh ORDER BY uid DESC LIMIT 100)";
-		$query   = $this->db-> query($sql);
+		$query   = ComModel::db()-> query($sql);
 		$sqlResult = $query-> getResult();
 
 		if (!$sqlResult) {
@@ -91,7 +90,7 @@ class AeSuperheroPutModel extends ComModel {
 		foreach ($lastResult as $key => $value) {
 			if ($value == $json[$key]['id']) {
 				$isBloomAddress = $this->ValidModel ->isBloomAddress($json[$key]['sender']);
-				$isAmountVip = $this->ValidModel-> isAmountVip($json[$key]['sender']);
+				$isAmountVip = ValidModel::isAmountVip($json[$key]['sender']);
 				if (!$isBloomAddress && !$isAmountVip) { //地址过滤
 					$insertData = [
 						'tip_id'	  => $json[$key]['id'],
@@ -107,10 +106,10 @@ class AeSuperheroPutModel extends ComModel {
 						'utctime' 	  => strtotime($json[$key]['timestamp']) * 1000
 					];
 					
-					$this->db->table($this->wet_content_sh)->insert($insertData);
+					ComModel::db()->table($this->wet_content_sh)->insert($insertData);
 					$this->UserModel-> userActive($json[$key]['sender'], $getActive, $e = true);
 					$upSql = "UPDATE $this->wet_users SET topic_sum = topic_sum + 1 WHERE address = '$json[$key][sender]'";
-					$this->db->query($upSql);
+					ComModel::db()->query($upSql);
 				}
 			}
 		}

@@ -12,9 +12,9 @@ class Mining extends BaseController {
 	public function mapping()
 	{//映射挖矿
 		(int)$amount   = $this->request->getPost('amount');
-		$userAddress   = $_SERVER['HTTP_KEY'];
+		$userAddress   = isset($_SERVER['HTTP_KEY']) ? $_SERVER['HTTP_KEY'] : false;
 		$isUserAddress = DisposeModel::checkAddress($userAddress);
-		$isVipAccount  = (new ValidModel())-> isVipAccount($userAddress);
+		$isVipAccount  = ValidModel::isVipAccount($userAddress);
 		if ($isVipAccount && is_numeric($amount) && $isUserAddress) {
 			$data = (new MiningModel())-> inMapping($userAddress, $amount);
 		} else {
@@ -25,9 +25,9 @@ class Mining extends BaseController {
 
 	public function earning()
 	{//领取收益
-		$userAddress   = $_SERVER['HTTP_KEY'];
+		$userAddress   = isset($_SERVER['HTTP_KEY']) ? $_SERVER['HTTP_KEY'] : false;
 		$isUserAddress = DisposeModel::checkAddress($userAddress);
-		$isVipAccount  = (new ValidModel())-> isVipAccount($userAddress);
+		$isVipAccount  = ValidModel::isVipAccount($userAddress);
 		if ($isUserAddress && $isVipAccount) {
 			$data = (new MiningModel())-> getEarning($userAddress);
 		} else {
@@ -38,9 +38,9 @@ class Mining extends BaseController {
 
 	public function unMapping()
 	{//解除映射
-		$userAddress   = $_SERVER['HTTP_KEY'];
+		$userAddress   = isset($_SERVER['HTTP_KEY']) ? $_SERVER['HTTP_KEY'] : false;
 		$isUserAddress = DisposeModel::checkAddress($userAddress);
-		$isVipAccount  = (new ValidModel())-> isVipAccount($userAddress);
+		$isVipAccount  = ValidModel::isVipAccount($userAddress);
 		if ($isVipAccount && $isUserAddress) {
 			$data = (new MiningModel())-> unMapping($userAddress);
 		} else {
@@ -51,9 +51,9 @@ class Mining extends BaseController {
 
 	public function mapInfo()
 	{//获取用户映射挖矿信息
-		$userAddress   = $_SERVER['HTTP_KEY'];
+		$userAddress   = isset($_SERVER['HTTP_KEY']) ? $_SERVER['HTTP_KEY'] : false;
 		$isUserAddress = DisposeModel::checkAddress($userAddress);
-		$isVipAccount  = (new ValidModel())-> isVipAccount($userAddress);
+		$isVipAccount  = ValidModel::isVipAccount($userAddress);
 		if ($isUserAddress && $isVipAccount) {
 			$userMiningInfo = (new MiningModel())-> checkMapping($userAddress);
 			if ($userMiningInfo) {

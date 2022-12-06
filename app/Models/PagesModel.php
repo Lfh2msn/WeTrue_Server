@@ -1,8 +1,8 @@
-<?php namespace App\Models;
+<?php 
+namespace App\Models;
 
-use CodeIgniter\Model;
-use Config\Database;
 use App\Models\{
+	ComModel,
 	ValidModel,
 	CommentModel,
 	ReplyModel,
@@ -14,15 +14,12 @@ use App\Models\Content\{
 	SuperheroContentModel
 };
 
-class PagesModel extends Model {
-//分页列表模型
+class PagesModel
+{//分页列表模型
 
 	public $tablename;
 
 	public function __construct(){
-        //parent::__construct();
-		$this->db = Database::connect('default');
-		$this->ValidModel   = new ValidModel();
 		$this->CommentModel = new CommentModel();
 		$this->ReplyModel 	= new ReplyModel();
 		$this->ContentPullModel = new ContentPullModel();
@@ -43,7 +40,7 @@ class PagesModel extends Model {
 		$page   = max(1, (int)$page);
 		$size   = max(1, (int)$size);
 		$offset = max(0, (int)$offset);
-		$akToken   = isset($_SERVER['HTTP_KEY']);
+		$akToken   = isset($_SERVER['HTTP_KEY']) ? $_SERVER['HTTP_KEY'] : false;
 		$isAkToken = DisposeModel::checkAddress($akToken);
 		if ($isAkToken) $opt['userLogin'] = $akToken;
 		$opt['substr'] = 160; //限制输出
@@ -68,7 +65,7 @@ class PagesModel extends Model {
 								WHEN hash THEN read_sum + 1 
 							END 
 							WHERE hash IN ($limitSql)";
-			$this->db-> query($upReadSql);
+			ComModel::db()-> query($upReadSql);
 		}
 
 		if ( $opt['type'] == 'commentList' )
@@ -185,7 +182,7 @@ class PagesModel extends Model {
 
 	public function alone($hash, $opt=[])
 	{//内容单页
-		$akToken   = $_SERVER['HTTP_KEY'] ?? false;
+		$akToken   = isset($_SERVER['HTTP_KEY']) ? $_SERVER['HTTP_KEY'] : false;
 		$isAkToken = DisposeModel::checkAddress($akToken);
 		if($isAkToken) {
 			$opt['userLogin'] = $akToken;
@@ -220,7 +217,7 @@ class PagesModel extends Model {
 	private function cycle($page, $size, $countSql, $limitSql, $opt)
 	{//列表循环
 		$data  = $this->pages($page, $size, $countSql);
-		$query = $this->db-> query($limitSql);
+		$query = ComModel::db()-> query($limitSql);
 		$getResult = $query-> getResult();
 		$data['data'] = [];
 
@@ -237,7 +234,7 @@ class PagesModel extends Model {
 			}
 
 			foreach ($arrList as $hash) {
-				$isBloomHash = $this->ValidModel-> isBloomHash($hash);
+				$isBloomHash = ValidModel::isBloomHash($hash);
 				if (!$isBloomHash) {
 					if ($opt['select']  == 'content') {
 						$isData = $this->ContentPullModel-> txContent($hash, $opt);
@@ -279,7 +276,7 @@ class PagesModel extends Model {
 
 	public function contentCount(){
 		$sql   = "SELECT count(hash) FROM wet_content";
-		$query = $this->db-> query($sql);
+		$query = ComModel::db()-> query($sql);
 		$row   = $query-> getRow();
 		$data  = [
 			'totalSize'	=> (int)$row->count //总数量
@@ -289,7 +286,7 @@ class PagesModel extends Model {
 
 	private function pages($page, $size, $sql)
 	{
-		$query = $this->db-> query($sql);
+		$query = ComModel::db()-> query($sql);
 		$row   = $query-> getRow();
         $count = $row->count;//总数量
 		$data  = [

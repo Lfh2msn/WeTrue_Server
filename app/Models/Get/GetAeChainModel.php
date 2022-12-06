@@ -1,4 +1,5 @@
-<?php namespace App\Models\Get;
+<?php 
+namespace App\Models\Get;
 
 use App\Models\{
 	ConfigModel,
@@ -7,8 +8,6 @@ use App\Models\{
 
 class GetAeChainModel
 {//获取Model
-	public function __construct(){
-    }
 
 	public static function microBlockTime($microBlockHash)
 	{//微块时间
