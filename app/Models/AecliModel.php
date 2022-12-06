@@ -16,7 +16,7 @@ class AecliModel extends ComModel
 
 	public function spendAE($address, $amount)
 	{
-		$bsConfig = (new ConfigModel())-> backendConfig();
+		$bsConfig = ConfigModel::backendConfig();
 		$nodeUrl  = $bsConfig['backendServiceNode'];
 		$wallet   = $bsConfig['walletPath_1'];
 		$password = $bsConfig['walletPassword'];
@@ -59,7 +59,7 @@ class AecliModel extends ComModel
 
 	public function spendWTT($address, $amount)
 	{	
-		$bsConfig		 = (new ConfigModel())-> backendConfig();
+		$bsConfig		 = ConfigModel::backendConfig();
 		$cpUrls		     = CompilerConfig::urls();
 		$nodeUrl		 = $bsConfig['backendServiceNode'];
 		$compilerUrl	 = $cpUrls[0]['url'];

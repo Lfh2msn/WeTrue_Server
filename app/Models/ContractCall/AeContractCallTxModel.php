@@ -14,7 +14,6 @@ use App\Models\ContractCall\TokenEventModel;
 class AeContractCallTxModel extends Model
 {//AE智能合约TX处理模块
 
-	private $ConfigModel;
 	private $GetAeknowModel;
 	private $TokenEventModel;
 	private $wet_temp;

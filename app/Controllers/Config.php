@@ -21,7 +21,7 @@ class Config extends BaseController
 	public function info()
 	{//获取前端配置
 		$userAddress = isset($_SERVER['HTTP_KEY']);
-		$config  = (new ConfigModel())-> frontConfig($userAddress);
+		$config  = ConfigModel::frontConfig($userAddress);
 		if($config){
 			$code = 200;
 			$msg  = 'success';
@@ -53,7 +53,7 @@ class Config extends BaseController
 		$system  = $this->request->getPost('system');
 		$list['version'] = $version;
 		$list['system']  = $system ?? "Other";
-		$data = (new ConfigModel())-> appVersionConfig($list);
+		$data = ConfigModel::appVersionConfig($list);
 		echo json_encode($data);
     }
 

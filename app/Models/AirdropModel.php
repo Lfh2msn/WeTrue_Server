@@ -24,7 +24,7 @@ class AirdropModel extends ComModel
 
 	public function airdropAE($address)
 	{//新用户空投AE
-		$bsConfig  = (new ConfigModel())-> backendConfig();
+		$bsConfig  = ConfigModel::backendConfig();
 		$isAirdrop = $bsConfig['airdropAE'];
 		$amount    = $bsConfig['airdropAeAmount'];
 		$NewUser   = $this->session-> get('NewUser');
@@ -92,7 +92,7 @@ class AirdropModel extends ComModel
 			fclose($File);
 		}
 
-		$bsConfig = (new ConfigModel())-> backendConfig();
+		$bsConfig = ConfigModel::backendConfig();
 		$selSql   = "SELECT address, uactive, last_active FROM $this->wet_users";
         $query    = $this->db-> query($selSql);
 		$getRes	  = $query->getResult();

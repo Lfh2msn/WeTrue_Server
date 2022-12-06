@@ -5,8 +5,8 @@ use App\Models\{
 	DisposeModel
 };
 
-class GetAeChainModel {
-//获取Model
+class GetAeChainModel
+{//获取Model
 	public function __construct(){
     }
 

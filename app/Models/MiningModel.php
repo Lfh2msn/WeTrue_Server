@@ -26,7 +26,7 @@ class MiningModel extends ComModel
 
 	public function inMapping($address, $amount)
 	{//用户映射挖矿
-		$bsConfig   = (new ConfigModel())-> backendConfig();
+		$bsConfig   = ConfigModel::backendConfig();
 		$mappingWTT = $bsConfig['mappingWTT'];
 		if (!$mappingWTT) {
 			return DisposeModel::wetJsonRt(406, 'close_mapping');
@@ -180,7 +180,7 @@ class MiningModel extends ComModel
 			return $data;
 		}
 
-		$bsConfig   = (new ConfigModel())-> backendConfig();
+		$bsConfig   = ConfigModel::backendConfig();
 		$mappingWTT = $bsConfig['mappingWTT']; //映射挖矿开启状态
 		if (!$mappingWTT) {
 			$upMapData = [

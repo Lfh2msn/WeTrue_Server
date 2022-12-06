@@ -4,7 +4,6 @@ use CodeIgniter\Model;
 use Config\Database;
 use App\Models\{
 	UserModel,
-	ConfigModel,
 	ValidModel,
 	DisposeModel,
 	MsgModel
