@@ -23,7 +23,6 @@ class BloomModel
 
 	public function __construct()
 	{
-		$this->UserModel	= new UserModel();
 		$this->AmountModel	= new AmountModel();
 		$this->wet_reply    = "wet_reply";
 		$this->wet_bloom    = "wet_bloom";
@@ -91,7 +90,7 @@ class BloomModel
         $senderID = (new ComplainModel())-> complainAddress($hash);
         $acConfig = ActiveConfig::config();
         $clActive = $acConfig['complainActive'];
-        $this->UserModel-> userActive($senderID, $clActive, $e = false);
+        UserModel::userActive($senderID, $clActive, $e = false);
 
         (new ComplainModel())-> deleteComplain($hash);
 

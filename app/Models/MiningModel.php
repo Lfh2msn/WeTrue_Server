@@ -3,6 +3,7 @@ namespace App\Models;
 
 use App\Models\{
 	ComModel,
+	UserModel,
 	AecliModel,
 	ValidModel,
 	ConfigModel,
@@ -16,7 +17,6 @@ class MiningModel
 	public function __construct()
 	{
 		$this->AecliModel   = new AecliModel();
-		$this->UserModel    = new UserModel();
 		$this->wet_mapping  = "wet_mapping";
 		$this->wet_temp     = "wet_temp";
     }
@@ -303,7 +303,7 @@ class MiningModel
 		$akToken   = isset($_SERVER['HTTP_KEY']) ? $_SERVER['HTTP_KEY'] : false;
 		$isAdmin   = ValidModel::isAdmin($akToken);
 		if($isAdmin && $address) {
-			$this->UserModel-> userPut($address);
+			UserModel::userPut($address);
 			ComModel::db()->table('wet_users_vip')->where('address', $address)->update( ['is_vip' => '1'] );
 			$logMsg  = "开通映射--{$akToken}--Admin";
 			$logPath = "mining/open-mapping-".date('Y-m-d');

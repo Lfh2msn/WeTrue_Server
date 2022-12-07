@@ -11,13 +11,12 @@ class CorpUserModel
 {//企业微信绑定 Model
 
 	public function __construct() {
-		$this->UserModel  = new UserModel();
 		$this->wet_wecom_users = "wet_wecom_users";
     }
 
 	public function bindUser($address, $corp_id, $user_id)
 	{// 企业id绑定
-		$this->UserModel-> userPut($address);
+		UserModel::userPut($address);
 		$isWecomUserId = ValidModel::isWecomUserId($user_id);
 		if ($isWecomUserId) {
 			ComModel::db()->table($this->wet_wecom_users)->where('wecom_user_id', $user_id)->update(['address' => $address]);
@@ -43,7 +42,7 @@ class CorpUserModel
 		*/
 		try {
 			$publicKey = $wallet['publicKey'];
-			$this->UserModel-> userPut($publicKey);
+			UserModel::userPut($publicKey);
 			$updateData = [
 				'wecom_mnemonic' => $wallet['mnemonic'],
 				'wecom_address'  => $publicKey,

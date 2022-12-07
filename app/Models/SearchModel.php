@@ -14,7 +14,6 @@ class SearchModel
 {//搜索Model
 
 	public function __construct(){
-		$this->UserModel  = new UserModel();
 		$this->TopicModel = new TopicModel();
 		$this->ContentPullModel = new ContentPullModel();
 	}
@@ -101,7 +100,7 @@ class SearchModel
 				}
 
 				if($opt['type']  == 'user') {
-					$isData = $this->UserModel-> userAllInfo($address);
+					$isData = UserModel::userAllInfo($address);
 					if(isset($isData)) $detaila[] = $isData;
 				}
 

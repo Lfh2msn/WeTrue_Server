@@ -4,6 +4,7 @@ namespace App\Models;
 use App\Models\{
 	ComModel,
 	ValidModel,
+	UserModel,
 	DisposeModel
 };
 use App\Models\Content\ContentPullModel;
@@ -12,7 +13,6 @@ class TopicModel
 {//话题Model
 	public function __construct(){
 		$this->ContentPullModel  = new ContentPullModel();
-		$this->UserModel 	 	 = new UserModel();
         $this->wet_topic_tag     = "wet_topic_tag";
 		$this->wet_topic_content = "wet_topic_content";
     }
@@ -47,7 +47,7 @@ class TopicModel
 					'imgIcon'	=> $getTagRow-> img_icon,  //话题图标
 					'describe'	=> $getTagRow-> describe,  //简介
 					'sender_id'	=> $getTagRow-> sender_id,  //创建人
-					'nickname'	=> $this->UserModel-> getName($getTagRow->sender_id),  //创建昵称
+					'nickname'	=> UserModel::getName($getTagRow->sender_id),  //创建昵称
 					'state'		=> (int)$getTagRow-> state,  //状态
 					'utctime'	=> (int)$getTagRow-> utctime,  //时间
 					];

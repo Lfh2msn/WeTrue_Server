@@ -17,7 +17,6 @@ class SuperheroContentModel
 
 	public function __construct()
 	{
-		$this->UserModel	= new UserModel();
 		$this->RewardModel	= new RewardModel();
 		$this->tablename 	= "wet_content_sh";
     }
@@ -87,7 +86,7 @@ class SuperheroContentModel
 				$data['isFocus']	= false;
 			}
 			$data['source']			= $row->source;
-			$data['users']			= $this->UserModel-> getUser($sender_id);
+			$data['users']			= UserModel::getUser($sender_id);
 			if ($opt['read']) {
 				$upReadSql = "UPDATE $this->tablename SET read_sum = read_sum + 1 WHERE tip_id = '$tip_id'";
 				ComModel::db()-> query($upReadSql);
@@ -127,7 +126,7 @@ class SuperheroContentModel
 			$data['payload'] = DisposeModel::sensitive($deleteXss);
 			$data['image']   = $row->image ? "{$shApiUrl}{$row->image}" : $row->media;
 			$data['media']   = $row->media ?? "";
-			$data['users']['nickname'] = $this->UserModel-> getName($sender_id);
+			$data['users']['nickname'] = UserModel::getName($sender_id);
 			$data['users']['userAddress'] = $sender_id;
         }
     	return $data;

@@ -11,13 +11,7 @@ use App\Models\{
 class FocusModel
 {//关注Model
 
-	public function __construct(){
-		$this->UserModel    = new UserModel();
-		$this->tablename    = "wet_focus";
-		$this->wet_behavior = "wet_behavior";
-	}
-
-    public function limit($page, $size, $offset, $opt=[])
+    public static function limit($page, $size, $offset, $opt=[])
 	{/*分页
 	opt可选参数
 		[type	 => 列表标签类型
@@ -39,31 +33,31 @@ class FocusModel
 				$field	  = "focus";
 				$contrary = "fans";
 			}
-			$countSql = "SELECT count($field) FROM $this->tablename WHERE $field = '$address'";
-			$limitSql = "SELECT $contrary AS contrary FROM $this->tablename 
+			$countSql = "SELECT count($field) FROM wet_focus WHERE $field = '$address'";
+			$limitSql = "SELECT $contrary AS contrary FROM wet_focus 
 								WHERE $field='$address' 
 								ORDER BY focus_time DESC LIMIT $size OFFSET ".(($page-1) * $size + $offset);
 		}
 		
-		$data = $this->cycle($page, $size, $countSql, $limitSql);
+		$data = self::cycle($page, $size, $countSql, $limitSql);
 		return DisposeModel::wetJsonRt(200, 'success', $data);
     }
 
-	private function cycle($page, $size, $countSql, $limitSql)
+	private static function cycle($page, $size, $countSql, $limitSql)
 	{  //用户列表循环
 
-		$data = $this->pages($page, $size, $countSql);
+		$data = self::pages($page, $size, $countSql);
 		$data['data'] = [];
 		$query = ComModel::db()-> query($limitSql);
 		foreach ($query-> getResult() as $row) {
 			$userAddress  = $row -> contrary;
-			$userInfo[]	  = $this->UserModel-> userAllInfo($userAddress);
+			$userInfo[]	  = UserModel::userAllInfo($userAddress);
 			$data['data'] = $userInfo;
 		}
 		return $data;
 	}
 
-	private function pages($page, $size, $sql)
+	private static function pages($page, $size, $sql)
 	{
 		$query = ComModel::db()-> query($sql);
 		$row   = $query-> getRow();
@@ -78,46 +72,46 @@ class FocusModel
 	}
 
 
-	public function focus($focus, $fans, $action)
+	public static function focus($focus, $fans, $action)
 	{//关注
 		$verify = ValidModel::isUser($fans);
-		if (!$verify) $this->UserModel-> userPut($fans);
+		if (!$verify) UserModel::userPut($fans);
 
 		$isFocus = ValidModel::isFocus($focus, $fans);
 		if (!$isFocus && $action == 'true') {
-			$focusSql = "INSERT INTO $this->tablename(focus, fans) VALUES ('$focus', '$fans')";
+			$focusSql = "INSERT INTO wet_focus(focus, fans) VALUES ('$focus', '$fans')";
 			$e = true;
 		}
 		
 		elseif ($isFocus && $action == 'false') {
-			$focusSql = "DELETE FROM $this->tablename WHERE focus = '$focus' AND fans = '$fans'";
+			$focusSql = "DELETE FROM wet_focus WHERE focus = '$focus' AND fans = '$fans'";
 			$e = false;
 	 	}
 
 		else die("focus Error");
 
 		ComModel::db()-> query($focusSql);
-		$this->UserModel-> userFocus($focus, $fans, $e);
+		UserModel::userFocus($focus, $fans, $e);
 	}
 
-	public function autoFocus($focus ,$fans)
+	public static function autoFocus($focus ,$fans)
 	{//自动A账户关注B账户
 		$verify = ValidModel::isFocus($focus, $fans);
 		if (!$verify) {
-			$focusSql = "INSERT INTO $this->tablename(focus, fans) VALUES ('$focus', '$fans')";
+			$focusSql = "INSERT INTO wet_focus(focus, fans) VALUES ('$focus', '$fans')";
 			$e = true;
 		} else {
 			die("isFocus Error");
 		}
 		ComModel::db()-> query($focusSql);
-		$this->UserModel-> userFocus($focus, $fans, $e);
+		UserModel::userFocus($focus, $fans, $e);
 		//入库行为记录
 		$insetrBehaviorDate = [
 			'address'   => $akToken,
 			'thing'     => 'autoFocus',
 			'toaddress' => $userAddress
 		];
-		ComModel::db()->table($this->wet_behavior)->insert($insetrBehaviorDate);
+		ComModel::db()->table('wet_behavior')->insert($insetrBehaviorDate);
 	}
 
 }

@@ -13,7 +13,6 @@ class RewardModel
 {//打赏Model
 
 	public function __construct(){
-		$this->UserModel    = new UserModel();
 		$this->wet_temp     = "wet_temp";
 		$this->wet_content  = "wet_content";
 		$this->wet_content_sh = "wet_content_sh";
@@ -34,7 +33,7 @@ class RewardModel
 		foreach ($getResult as $row) {
 			$detaila['hash']         = $row->hash;
 			$detaila['amount']       = $row->amount;
-			$detaila['nickname']     = $this->UserModel-> getName($row->sender_id);
+			$detaila['nickname']     = UserModel::getName($row->sender_id);
 			$detaila['sender_id']    = $row->sender_id;
 			$detaila['block_height'] = $row->block_height;
 			$data[] = $detaila;
@@ -52,7 +51,7 @@ class RewardModel
 		$row   = $query->getRow();
 		$data['hash']      = $row->hash;
 		$data['amount']    = $row->amount;
-		$data['nickname']  = $this->UserModel-> getName($row->sender_id);
+		$data['nickname']  = UserModel::getName($row->sender_id);
 		$data['sender_id'] = $row->sender_id;
 		return $data;
 	}
@@ -114,7 +113,7 @@ class RewardModel
 		}
 	}
 
-	public function deleteTemp($hash)
+	private function deleteTemp($hash)
 	{//删除临时缓存
 		$delete = "DELETE FROM $this->wet_temp WHERE tp_hash = '$hash'";
 		ComModel::db()->query($delete);

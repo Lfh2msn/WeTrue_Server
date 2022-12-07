@@ -14,7 +14,6 @@ class CommentModel
 
 	public function __construct()
 	{
-		$this->UserModel	= new UserModel();
 		$this->ReplyModel	= new ReplyModel();
 		$this->wet_comment  = "wet_comment";
 		$this->wet_reply    = "wet_reply";
@@ -45,7 +44,7 @@ class CommentModel
 			$data['praise']		 = (int) $row-> praise;
 			$data['isPraise']	 = $opt['userLogin'] ? ValidModel::isPraise($hash, $opt['userLogin']) : false;
 			$data['chainId']	 = $row->chain_id ? (int) $row->chain_id : 457;
-			$data['users'] = $this->UserModel-> getUser($sender_id);
+			$data['users'] = UserModel::getUser($sender_id);
 			if ( (int)$opt['replyLimit'] ) {
 				$data['commentList'] = [];
 				$replyLimit = max(0, (int)$opt['replyLimit']);
@@ -69,17 +68,16 @@ class CommentModel
 
 	public function simpleComment($hash, $opt=[])
 	{//获取简单评论内容
-		if ( (int) $opt['substr'] ) {
-			$payload  = "substring(payload for '$opt[substr]') as payload";
-			$strCount = true;
+		if ( (isset($opt['substr'])) ) {
+			$sqlPayload  = "substring(payload for '$opt[substr]') as payload";
 		} else {
-			$payload  = "payload";
+			$sqlPayload  = "payload";
 		}
 
 		$sql = "SELECT
 					to_hash,
 					sender_id,
-					$payload
+					$sqlPayload
 				FROM $this->wet_comment 
 				WHERE hash='$hash' LIMIT 1";
         $query = ComModel::db()-> query($sql);
@@ -89,11 +87,14 @@ class CommentModel
 			$data['toHash']  = $row-> to_hash; //即将废弃
 			$data['to_hash'] = $row-> to_hash;
 			$sender_id	  	 = $row-> sender_id;
-			$operation		 = mb_strlen($row->payload,'UTF8') >= $opt['substr'] ? $row->payload.'...' : $row->payload;
-			$isStrCount		 = $strCount ? $operation : $row->payload;
-			$deleteXss		 = DisposeModel::delete_xss($isStrCount);
+			if(isset($opt['substr'])){
+				$payload = mb_strlen($row->payload,'UTF8') >= $opt['substr'] ? $row->payload.'...' : $row->payload;
+			} else {
+				$payload = $row->payload;
+			}
+			$deleteXss  	 = DisposeModel::delete_xss($payload);
 			$data['payload'] = DisposeModel::sensitive($deleteXss);
-			$data['users']   = $this->UserModel-> getUser($sender_id);
+			$data['users']   = UserModel::getUser($sender_id);
         }
     	return $data;
     }

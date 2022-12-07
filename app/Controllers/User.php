@@ -1,6 +1,8 @@
 <?php
 namespace App\Controllers;
 
+use App\Models\FocusModel;
+use App\Models\UserModel;
 use App\Models\ValidModel;
 use App\Models\DisposeModel;
 
@@ -11,14 +13,15 @@ class User extends BaseController {
         $userAddress   = $this->request->getPost('userAddress');
 		$typeLogin     = $this->request->getPost('type');
 		$isUserAddress = DisposeModel::checkAddress($userAddress);
+		$content = '';
 		if($isUserAddress){
 			$code = 200;
 			$opt = '';
 			if(isset($typeLogin)){
 				$opt = ['type' => $typeLogin];
 			}
-			$userInfo = $this->UserModel-> userAllInfo($userAddress, $opt);
-			if($userInfo){
+			$userInfo = UserModel::userAllInfo($userAddress, $opt);
+			if(isset($userInfo)){
 				$content = $userInfo;
 				$msg = 'success';
 			}else{
@@ -68,7 +71,7 @@ class User extends BaseController {
 				'focus'   => $focus, //focus => 可选类型 myFocus\focusMy
 				'address' => $userAddress
 			];
-			$data  = $this->FocusModel-> limit($page, $size, $offset, $opt);
+			$data  = FocusModel::limit($page, $size, $offset, $opt);
 			echo $data;
 		}else{
 			echo DisposeModel::wetJsonRt(406,'error');

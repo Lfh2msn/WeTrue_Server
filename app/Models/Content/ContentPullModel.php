@@ -16,22 +16,20 @@ class ContentPullModel
 
 	public function __construct()
 	{
-		$this->UserModel	= new UserModel();
 		$this->RewardModel	= new RewardModel();
 		$this->tablename 	= "wet_content";
     }
 
 	public function txContent($hash, $opt = [])
 	{//获取主贴内容
-		if ( (int) $opt['substr'] ) {
-			$payload  = "substring(payload for '$opt[substr]') as payload";
-			$strCount = true;
+		if ( (isset($opt['substr'])) ) {
+			$sqlPayload  = "substring(payload for '$opt[substr]') as payload";
 		} else {
-			$payload  = "payload";
+			$sqlPayload  = "payload";
 		}
 
 		$sql = "SELECT sender_id,
-						$payload,
+						$sqlPayload,
 						media_list,
 						utctime,
 						comment_sum,
@@ -49,11 +47,14 @@ class ContentPullModel
         if ($row) {
 			$data['hash'] 			= $hash;
 			$sender_id	  			= $row-> sender_id;
-			$operation				= mb_strlen($row->payload,'UTF8') >= $opt['substr'] ? $row->payload.'...' : $row->payload;
-			$isStrCount				= $strCount ? $operation : $row->payload;
-			$deleteXss				= DisposeModel::delete_xss($isStrCount);
-			$data['payload']		= DisposeModel::sensitive($deleteXss);
-			//$data['imgTx']			= $row->img_tx ? "https://api.wetrue.io/Image/toimg/".$hash : "";
+			if(isset($opt['substr'])){
+				$payload = mb_strlen($row->payload,'UTF8') >= $opt['substr'] ? $row->payload.'...' : $row->payload;
+			} else {
+				$payload = $row->payload;
+			}
+			$deleteXss  			= DisposeModel::delete_xss($payload);
+			$data['payload']   	    = DisposeModel::sensitive($deleteXss);
+			//$data['imgTx']		= $row->img_tx ? "https://api.wetrue.io/Image/toimg/".$hash : "";
 			$data['mediaList']		= json_decode($row->media_list, true) ?? [];
 			$data['utcTime']		= (int) $row-> utctime;
 			$data['commentNumber']  = (int) $row-> comment_sum;
@@ -75,7 +76,7 @@ class ContentPullModel
 			}
 			$data['source']			= $row->source ? $row->source : "WeTrue";
 			$data['chainId']		= $row->chain_id ? (int) $row->chain_id : 457;
-			$data['users']			= $this->UserModel-> getUser($sender_id);
+			$data['users']			= UserModel::getUser($sender_id);
 			if (isset($opt['read'])) {
 				$upReadSql = "UPDATE $this->tablename SET read_sum = read_sum + 1 WHERE hash = '$hash'";
 				ComModel::db()-> query($upReadSql);
@@ -87,15 +88,14 @@ class ContentPullModel
 
 	public function simpleContent($hash, $opt=[])
 	{//获取简单主贴内容
-		if ( (int) $opt['substr'] ) {
-			$payload  = "substring(payload for '$opt[substr]') as payload";
-			$strCount = true;
+		if (isset($opt['substr'])) {
+			$sqlPayload  = "substring(payload for '$opt[substr]') as payload";
 		} else {
-			$payload = "payload";
+			$sqlPayload = "payload";
 		}
 
 		$sql = "SELECT sender_id,
-						$payload,
+						$sqlPayload,
 						img_tx
 				FROM $this->tablename 
 				WHERE hash='$hash' LIMIT 1";
@@ -105,12 +105,15 @@ class ContentPullModel
         if ($row) {
 			$data['hash'] = $hash;
 			$sender_id  = $row-> sender_id;
-			$operation  = mb_strlen($row->payload,'UTF8') >= $opt['substr'] ? $row->payload.'...' : $row->payload;
-			$isStrCount = $strCount ? $operation : $row->payload;
-			$deleteXss  = DisposeModel::delete_xss($isStrCount);
+			if(isset($opt['substr'])){
+				$payload = mb_strlen($row->payload,'UTF8') >= $opt['substr'] ? $row->payload.'...' : $row->payload;
+			} else {
+				$payload = $row->payload;
+			}
+			$deleteXss  = DisposeModel::delete_xss($payload);
 			$data['payload']   = DisposeModel::sensitive($deleteXss);
-			$data['mediaList'] = json_decode($row->media_list, true) ?? [];
-			$data['users']['nickname'] = $this->UserModel-> getName($sender_id);
+			$data['mediaList'] = isset($row->media_list) ? json_decode($row->media_list, true) : [];
+			$data['users']['nickname'] = UserModel::getName($sender_id);
 			$data['users']['userAddress'] = $sender_id;	
         }
     	return $data;

@@ -3,7 +3,7 @@ namespace App\Models;
 
 use App\Models\{
 	ComModel,
-	AirdropModel,
+	//AirdropModel, //空投结束暂时屏蔽
 	FocusModel,
 	ValidModel,
 	DisposeModel,
@@ -13,12 +13,7 @@ use App\Models\{
 class UserModel
 {//用户Model
 
-	public function __construct(){
-		$this->tablename    = "wet_users";
-		$this->wet_behavior = "wet_behavior";
-    }
-
-    public function getUser($address)
+    public static function getUser($address)
 	{//获取用户昵称、头像、活跃、等级
 		$sql="SELECT 
 					nickname,
@@ -29,7 +24,7 @@ class UserModel
 					reward_sum,
 					last_active,
 					is_auth
-				FROM $this->tablename WHERE address = '$address' LIMIT 1";
+				FROM wet_users WHERE address = '$address' LIMIT 1";
         $query = ComModel::db()->query($sql);
 		$row = $query->getRow();
 		if ($row) {
@@ -54,7 +49,7 @@ class UserModel
 		return $data;
 	}
 
-	public function userAllInfo($address, $opt=[])
+	public static function userAllInfo($address, $opt=[])
 	{/*获取用户完整信息分页
 		opt可选参数
 		[
@@ -74,38 +69,44 @@ class UserModel
 				fans_sum,
 				star_sum,
 				is_auth
-			FROM $this->tablename WHERE address = '$address' LIMIT 1";
+			FROM wet_users WHERE address = '$address' LIMIT 1";
         $query = ComModel::db()->query($sql);
 		$row = $query->getRow();
-		$bsConfig = ConfigModel::backendConfig();
-		if (!$row && $opt['type'] == 'login') {
-			$this-> userPut($address);
-			if ($bsConfig['airdropAE']) {
-				(new AirdropModel())-> airdropAE($address);
+		
+
+		if (!$row && isset($opt['type'])) {
+			if ($opt['type'] == 'login') {
+				$bsConfig = ConfigModel::backendConfig();
+				self::userPut($address);
+				/* //空投结束暂时屏蔽
+				if ($bsConfig['airdropAE']) {
+					(new AirdropModel())-> airdropAE($address);
+				}
+				*/
 			}
 		}
-		$userActive  = (int)$row->uactive ?? 0;
+		$userActive  = $row->uactive ?? 0;
 		$userReward  = $row->reward_sum ?? 0;
-		$nickname    = DisposeModel::delete_xss($row->nickname);
+		$nickname    = isset($row->nickname) ? DisposeModel::delete_xss($row->nickname) : '';
 		$nickname 	 = mb_substr($nickname, 0, 15);
-		$defaultAens = $row->default_aens;
+		$defaultAens = $row->default_aens ?? '';
 		$data['userAddress'] = $address;
-		$data['nickname']    = $nickname ?? "";
-		$data['defaultAens'] = $defaultAens ?? "";
-		$data['sex'] 	     = (int)$row->sex;
+		$data['nickname']    = $nickname ?? '';
+		$data['defaultAens'] = $defaultAens ?? '';
+		$data['sex'] 	     = $row->sex ?? '';
 		$data['active'] 	 = $userActive;
 		$data['reward'] 	 = $userReward;
 		$data['userActive']  = DisposeModel::activeGrade($userActive);
 		$data['userReward']  = DisposeModel::rewardGrade($userReward);
-		$data['lastActive']  = ($userActive - $row->last_active);// * $bsConfig['airdropWTTRatio'];
-		$data['avatar']      = $row->avatar ?? "";
-		$data['topic'] 		 = (int)$row->topic_sum;
-		$data['star'] 		 = (int)$row->star_sum;
-		$data['focus'] 		 = (int)$row->focus_sum;
-		$data['fans']  		 = (int)$row->fans_sum;
+		$data['lastActive']  = ($userActive - ($row->last_active ?? 0));// * $bsConfig['airdropWTTRatio'];
+		$data['avatar']      = $row->avatar ?? '';
+		$data['topic'] 		 = $row->topic_sum ?? 0;
+		$data['star'] 		 = $row->star_sum ?? 0;
+		$data['focus'] 		 = $row->focus_sum ?? 0;
+		$data['fans']  		 = $row->fans_sum ?? 0;
 		$is_vip = ValidModel::isVipAddress($address);
 		$data['isVip']  	 = $is_vip ? true : false;
-		$data['isAuth']  	 = $row->is_auth ? true : false;
+		$data['isAuth']  	 = isset($row->is_auth) ? true : false;
 		$isAdmin = ValidModel::isAdmin($address);
 		if ($isAdmin) {
 			$data['isAdmin'] = $isAdmin;
@@ -113,9 +114,9 @@ class UserModel
 		return $data;
 	}
 
-	public function getName($address)
+	public static function getName($address)
 	{//获取用户昵称
-		$sql   = "SELECT nickname FROM $this->tablename WHERE address = '$address' LIMIT 1";
+		$sql   = "SELECT nickname FROM wet_users WHERE address = '$address' LIMIT 1";
         $query = ComModel::db()->query($sql);
 		$row   = $query->getRow();
 		if ($row) {
@@ -128,56 +129,56 @@ class UserModel
 		return $data;
 	}
 
-	public function userActive($address, $active, $e)
+	public static function userActive($address, $active, $e)
 	{/*用户活跃入库
 		$address = 目标地址
 		$active  = 数量
 		$e       = true增 或 false减
 	*/
-		$this-> userPut($address);
+		self::userPut($address);
 		if ($e) {
-			$updateSql = "UPDATE $this->tablename SET uactive = uactive + '$active' WHERE address = '$address'";
+			$updateSql = "UPDATE wet_users SET uactive = uactive + '$active' WHERE address = '$address'";
 		} else {
-			$updateSql = "UPDATE $this->tablename SET uactive = uactive - '$active' WHERE address = '$address'";
+			$updateSql = "UPDATE wet_users SET uactive = uactive - '$active' WHERE address = '$address'";
 		}
 		ComModel::db()->query($updateSql);
 	}
 
-	public function userFocus($focus, $fans, $e)
+	public static function userFocus($focus, $fans, $e)
 	{/*用户关注用户
 			$focus = 目标地址
 			$fans  = 粉丝地址
 			$e     = isFocus
 	*/
-		$this-> userPut($fans);
+		self::userPut($fans);
 		if ($e) {
-			$focusSql = "UPDATE $this->tablename SET focus_sum = focus_sum + 1 WHERE address = '$fans'";
-			$fansSql  = "UPDATE $this->tablename SET fans_sum = fans_sum + 1 WHERE address = '$focus'";
+			$focusSql = "UPDATE wet_users SET focus_sum = focus_sum + 1 WHERE address = '$fans'";
+			$fansSql  = "UPDATE wet_users SET fans_sum = fans_sum + 1 WHERE address = '$focus'";
 		} else {
-			$focusSql = "UPDATE $this->tablename SET focus_sum = focus_sum - 1 WHERE address = '$fans'";
-			$fansSql  = "UPDATE $this->tablename SET fans_sum = fans_sum - 1 WHERE address = '$focus'";
+			$focusSql = "UPDATE wet_users SET focus_sum = focus_sum - 1 WHERE address = '$fans'";
+			$fansSql  = "UPDATE wet_users SET fans_sum = fans_sum - 1 WHERE address = '$focus'";
 		}
 		ComModel::db()->query($focusSql);
 		ComModel::db()->query($fansSql);
 	}
 
-	public function userPut($address)
+	public static function userPut($address)
 	{//用户入库
-		$selectSql = "SELECT address FROM $this->tablename WHERE address = '$address' LIMIT 1";
+		$selectSql = "SELECT address FROM wet_users WHERE address = '$address' LIMIT 1";
 		$query	   = ComModel::db()->query($selectSql);
 		$row	   = $query-> getRow();
 		if (!$row) {
-			$insertSql = "INSERT INTO $this->tablename(address) VALUES ('$address')";
+			$insertSql = "INSERT INTO wet_users(address) VALUES ('$address')";
 			ComModel::db()->query($insertSql);
 			$autoFans1 = 'ak_2kxt6D65giv4yNt4oa44SjW4jEXfoHMviPFvAreSEXvz25Q3QQ';
 			//$autoFans2 = 'ak_AiYsw9sJVdfBCXbAAys4LiMDnXBd1BTTSi13fzpryQcXjSpsS';
-			(new FocusModel())-> autoFocus($autoFans1 ,$address);
+			FocusModel::autoFocus($autoFans1 ,$address);
 		}
 	}
 
-	public function userDelete($address)
+	public static function userDelete($address)
 	{//用户删除
-		$sql = "DELETE FROM $this->tablename WHERE address = '$address'";
+		$sql = "DELETE FROM wet_users WHERE address = '$address'";
 		$query = ComModel::db()->query($sql);
 	}
 

@@ -13,7 +13,6 @@ class AeSuperheroPutModel
 {//抓取Superhero内容入库Model
 
 	public function __construct(){
-		$this->UserModel    = new UserModel();
 		$this->wet_content_sh = "wet_content_sh";
 		$this->wet_users 	  = "wet_users";
     }
@@ -107,7 +106,7 @@ class AeSuperheroPutModel
 					];
 					
 					ComModel::db()->table($this->wet_content_sh)->insert($insertData);
-					$this->UserModel-> userActive($json[$key]['sender'], $getActive, $e = true);
+					UserModel::userActive($json[$key]['sender'], $getActive, $e = true);
 					$upSql = "UPDATE $this->wet_users SET topic_sum = topic_sum + 1 WHERE address = '$json[$key][sender]'";
 					ComModel::db()->query($upSql);
 				}

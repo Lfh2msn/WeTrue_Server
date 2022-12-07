@@ -13,7 +13,6 @@ class PraiseModel
 {//点赞Model
 
 	public function __construct(){
-		$this->UserModel    = new UserModel();
 		$this->wet_behavior = "wet_behavior";
     }
 	
@@ -68,7 +67,7 @@ class PraiseModel
 			$countqy   = ComModel::db()-> query($countSql);
 			$countPick = $countqy-> getRow()-> count_pick;
 			if ($countPick <= 20) { //24小时内小于20赞
-				$this->UserModel-> userActive($akToken, $psActive, $e);
+				UserModel::userActive($akToken, $psActive, $e);
 			}
 			//入库行为记录
 			$insetrBehaviorDate = [

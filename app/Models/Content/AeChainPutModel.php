@@ -23,7 +23,6 @@ class AeChainPutModel
 	public function __construct(){
 		$this->WetModel   = new WetModel();
 		$this->MsgModel   = new MsgModel();
-		$this->UserModel  = new UserModel();
 		$this->StarModel  = new StarModel();
 		$this->TopicModel = new TopicModel();
 		$this->FocusModel = new FocusModel();
@@ -343,7 +342,7 @@ class AeChainPutModel
 				}
 
 				$verify = ValidModel::isUser($data['sender']);
-				if (!$verify) $this->UserModel-> userPut($data['sender']);
+				if (!$verify) UserModel::userPut($data['sender']);
 				$upData = [ 'sex' => $data['content'] ];
 				ComModel::db()->table($this->wet_users)->where('address', $data['sender'])->update($upData);
 			}
@@ -405,7 +404,7 @@ class AeChainPutModel
 				return DisposeModel::wetJsonRt(406,'error');
 			}
 
-			$this->UserModel-> userActive($data['sender'], $getActive, $e = true);
+			UserModel::userActive($data['sender'], $getActive, $e = true);
 			
 			if( $data['type'] == 'topic' ) { //发布主贴用户发帖量+1
 				$upSql = "UPDATE $this->wet_users SET topic_sum = topic_sum + 1 WHERE address = '$data[sender]'";

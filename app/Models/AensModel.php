@@ -13,13 +13,12 @@ class AensModel
 	public function __construct(){
 		//parent::__construct();
 		//$this->db = Database::connect('default');
-		$this->UserModel  = new UserModel();
 		$this->tablename  = "wet_users";
 	}
 
 	public function insertUserAens($address, $aens)
 	{//写入AENS
-		$this->UserModel-> userPut($address);
+		UserModel::userPut($address);
 		$exist = ValidModel::isAddressAens($aens);
 		if ($exist) {
 			$verify = ValidModel::isAddressSameAens($address, $aens);
