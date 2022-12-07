@@ -35,11 +35,11 @@ class Config extends BaseController
 
 	public function url()
 	{//获取各Url配置
-		$data['baseApi']  = BaseApiConfig::urls();
-		$data['nodes']    = NodesConfig::urls();
-		$data['compiler'] = CompilerConfig::urls();
-		$data['aeknow']   = AeknowConfig::urls();
-		$data['aeMdw']    = AeMdwConfig::urls();
+		$data['baseApi']   = BaseApiConfig::urls();
+		$data['nodes']     = NodesConfig::urls();
+		$data['compiler']  = CompilerConfig::urls();
+		$data['aeknow']    = AeknowConfig::urls();
+		$data['aeMdw']     = AeMdwConfig::urls();
 		$data['webClient'] = WebClientConfig::urls();
 		
 		$code = 200;

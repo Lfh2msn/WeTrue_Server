@@ -106,7 +106,7 @@ class UserModel
 		$data['fans']  		 = $row->fans_sum ?? 0;
 		$is_vip = ValidModel::isVipAddress($address);
 		$data['isVip']  	 = $is_vip ? true : false;
-		$data['isAuth']  	 = isset($row->is_auth) ? true : false;
+		$data['isAuth']  	 = $row->is_auth ? true : false;
 		$isAdmin = ValidModel::isAdmin($address);
 		if ($isAdmin) {
 			$data['isAdmin'] = $isAdmin;
