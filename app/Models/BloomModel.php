@@ -23,7 +23,6 @@ class BloomModel
 
 	public function __construct()
 	{
-		$this->AmountModel	= new AmountModel();
 		$this->wet_reply    = "wet_reply";
 		$this->wet_bloom    = "wet_bloom";
         $this->wet_content  = "wet_content";
@@ -50,7 +49,7 @@ class BloomModel
 				$mulAE   = $floorAE-0.01;
 				$amount  = DisposeModel::bigNumber("mul", $mulAE);
 				if ($floorAE >= 10) $amount = 99999e14;
-				$this->AmountModel-> insertAmountUser($address, $amount);
+				AmountModel::insertAmountUser($address, $amount);
 				$logMsg  = date('Y-m-d')."-抓到一枚VIP,地址:{$address},收费:{$amount}";
 				$logPath = "auto_amount_vip/".date('Y-m');
 				DisposeModel::wetFwriteLog($logMsg, $logPath);
@@ -155,7 +154,7 @@ class BloomModel
 			$conRow   = $conQuery-> getRow();
 
 			if ($conRow) {
-				$detaila[] = (new ContentPullModel())-> txContent($hash, $opt);
+				$detaila[] = ContentPullModel::txContent($hash, $opt);
 			} else {
 				$comSql   = "SELECT hash FROM $this->wet_comment WHERE hash='$hash' LIMIT 1";
 				$comQuery = ComModel::db()-> query($comSql);
@@ -163,7 +162,7 @@ class BloomModel
 			}
 			
 			if ($comRow) {
-				$detaila[] = (new CommentModel())-> txComment($hash, $opt);
+				$detaila[] = CommentModel::txComment($hash, $opt);
 			} else {
 				$repSql   = "SELECT hash FROM $this->wet_reply WHERE hash='$hash' LIMIT 1";
 				$repQuery = ComModel::db()-> query($repSql);
@@ -171,7 +170,7 @@ class BloomModel
 			}
 
 			if ($repRow) {
-				$detaila[] = (new ReplyModel())-> txReply($hash, $opt);
+				$detaila[] = ReplyModel::txReply($hash, $opt);
 			}
 
 			$data['data'] = $detaila;

@@ -13,11 +13,6 @@ use App\Models\Content\ContentPullModel;
 class SearchModel
 {//搜索Model
 
-	public function __construct(){
-		$this->TopicModel = new TopicModel();
-		$this->ContentPullModel = new ContentPullModel();
-	}
-
 	public function search($page, $size, $offset, $opt=[])
 	{	
 		$page   = max(1, (int)$page);
@@ -95,7 +90,7 @@ class SearchModel
 			if($isBloomHash || !$isBloomAddress || $isTopicState)
 			{
 				if($opt['type']  == 'topic') {
-					$isData = $this->ContentPullModel-> txContent($hash, $opt);
+					$isData = ContentPullModel::txContent($hash, $opt);
 					if(isset($isData)) $detaila[] = $isData;
 				}
 
@@ -105,7 +100,7 @@ class SearchModel
 				}
 
 				if($opt['type']  == 'topicTag') {
-					$isData = $this->TopicModel-> getTopicInfo($keywords);
+					$isData = TopicModel::getTopicInfo($keywords);
 					if(isset($isData)) $detaila[] = $isData;
 				}
 			}

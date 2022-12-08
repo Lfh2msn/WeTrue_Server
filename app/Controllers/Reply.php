@@ -1,7 +1,10 @@
 <?php
 namespace App\Controllers;
 
-use App\Models\DisposeModel;
+use App\Models\{
+    PagesModel,
+    DisposeModel
+};
 
 class Reply extends BaseController 
 {
@@ -18,7 +21,7 @@ class Reply extends BaseController
                 'type' => 'replyList',
                 'hash' => $hash
             ];
-            $data = $this->PagesModel-> limit($page, $size, $offset, $opt);
+            $data = PagesModel::limit($page, $size, $offset, $opt);
             echo $data;
         } else {
             echo DisposeModel::wetJsonRt(406, 'error_hash');

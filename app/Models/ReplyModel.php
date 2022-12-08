@@ -11,11 +11,7 @@ use App\Models\{
 class ReplyModel
 {//回复Model
 
-	public function __construct(){
-		$this->tablename    = "wet_reply";
-    }
-
-	public function txReply($hash, $opt=[])
+	public static function txReply($hash, $opt=[])
 	{//获取回复内容
 		if ((isset($opt['substr']))) {
 			$sqlPayload = "substring(payload for '$opt[substr]') as payload";
@@ -33,7 +29,7 @@ class ReplyModel
 							utctime,
 							praise,
 							chain_id
-				FROM $this->tablename WHERE hash='$hash' LIMIT 1";
+				FROM wet_reply WHERE hash='$hash' LIMIT 1";
 
         $query = ComModel::db()->query($sql);
 		$row   = $query-> getRow();

@@ -15,7 +15,6 @@ namespace App\Controllers;
  */
 
 use CodeIgniter\Controller;
-use App\Models\PagesModel;
 use CodeIgniter\HTTP\RequestInterface;
 use CodeIgniter\HTTP\ResponseInterface;
 
@@ -49,7 +48,6 @@ class BaseController extends Controller {
 		$this->request 		= $request;
 		//$this->request = service('request');
 		$this->response 	= $response;
-		$this->PagesModel   = new PagesModel();
 		$this->response->setHeader('Access-Control-Allow-Origin', '*');
 		$this->response->setHeader('Access-Control-Allow-Headers', 'ak-token, chain-id, key');
 		//$this->response->setHeader('Content-Type', 'application/json; charset=utf-8');

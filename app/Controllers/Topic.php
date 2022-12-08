@@ -12,7 +12,7 @@ class Topic extends BaseController {
 	{//话题信息
 		$keyword = $this->request->getPost('keyword');
 		$opt = ['read' => true];
-		$data	 = (new TopicModel())-> getTopicInfo($keyword, $opt);
+		$data	 = TopicModel::getTopicInfo($keyword, $opt);
 		if ($data) {
 			$data = DisposeModel::wetJsonRt(200, 'success', $data);
 		} else {
@@ -27,14 +27,14 @@ class Topic extends BaseController {
         $size    = $this->request->getPost('size');
         $offset  = $this->request->getPost('offset');
 		$keyword = $this->request->getPost('keyword');
-		$data	 = (new TopicModel())-> getTopicList($page, $size, $offset, $keyword);
+		$data	 = TopicModel::getTopicList($page, $size, $offset, $keyword);
 		echo json_encode($data);
 
 	}
 
 	public function hotTopic()
 	{//热点话题
-		$data = (new TopicModel())-> hotRecTopic();
+		$data = TopicModel::hotRecTopic();
 		echo json_encode($data);
 		$this->cachePage(1);
 	}

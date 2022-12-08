@@ -7,11 +7,8 @@ use App\Models\{
 
 class AmountModel
 {//Amount Model
-	public function __construct(){
-		$this->tablename  = "wet_amount";
-	}
 
-	public function insertAmountUser($address, $amount)
+	public static function insertAmountUser($address, $amount)
 	{//写入Amount VIP用户
 		$data = [
 			'address' => $address,
@@ -19,7 +16,7 @@ class AmountModel
 			'comment' => $amount,
 			'reply'   => $amount
 		];
-		ComModel::db()->table($this->tablename)->insert($data);
+		ComModel::db()->table('wet_amount')->insert($data);
 	}
 
 }

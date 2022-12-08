@@ -12,7 +12,6 @@ class MentionsModel
 
 	public function __construct(){
 		$this->MsgModel   = new MsgModel();
-		$this->AensModel  = new AensModel();
     }
 
 	public function isMentions($content)
@@ -26,7 +25,7 @@ class MentionsModel
 	{//AENS获取AE地址
 		$aens    = str_replace("@", "" ,$aens);
 		$address = GetAeChainModel::addressByNamePoint($aens);
-		$this->AensModel-> insertUserAens($address, $aens);
+		AensModel::insertUserAens($address, $aens);
 		return $address;
 	}
 

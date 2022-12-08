@@ -12,21 +12,13 @@ use App\Models\{
 class RewardModel
 {//打赏Model
 
-	public function __construct(){
-		$this->wet_temp     = "wet_temp";
-		$this->wet_content  = "wet_content";
-		$this->wet_content_sh = "wet_content_sh";
-		$this->wet_users    = "wet_users";
-		$this->wet_reward   = "wet_reward";
-    }
-
-	public function rewardList($hash)
+	public static function rewardList($hash)
 	{//打赏列表
 		$sql = "SELECT hash,
 						amount,
 						sender_id,
 						block_height
-					FROM $this->wet_reward WHERE to_hash = '$hash' ORDER BY block_height DESC LIMIT 50";
+					FROM wet_reward WHERE to_hash = '$hash' ORDER BY block_height DESC LIMIT 50";
         $query     = ComModel::db()->query($sql);
 		$getResult = $query->getResult();
 		$data = [];
@@ -41,12 +33,12 @@ class RewardModel
 		return $data;
 	}
 
-	public function simpleReward($hash)
+	public static function simpleReward($hash)
 	{//简单打赏信息
 		$sql = "SELECT hash,
 						amount,
 						sender_id
-					FROM $this->wet_reward WHERE hash = '$hash' LIMIT 1";
+					FROM wet_reward WHERE hash = '$hash' LIMIT 1";
         $query = ComModel::db()->query($sql);
 		$row   = $query->getRow();
 		$data['hash']      = $row->hash;
@@ -73,9 +65,9 @@ class RewardModel
 
 		$isShid = DisposeModel::checkSuperheroTipid($toHash);
 		if ($isShid) { //SH ID 处理
-			$sql = "SELECT sender_id FROM $this->wet_content_sh WHERE tip_id = '$toHash' LIMIT 1";
+			$sql = "SELECT sender_id FROM wet_content_sh WHERE tip_id = '$toHash' LIMIT 1";
 		} else {
-			$sql = "SELECT sender_id FROM $this->wet_content WHERE hash = '$toHash' LIMIT 1";
+			$sql = "SELECT sender_id FROM wet_content WHERE hash = '$toHash' LIMIT 1";
 		}
 		$query = ComModel::db()->query($sql);
 		$row   = $query->getRow();
@@ -89,14 +81,14 @@ class RewardModel
 				'sender_id'    => $sender_id,
 				'block_height' => $block_height
 			];
-			ComModel::db()->table($this->wet_reward)->insert($inData);
+			ComModel::db()->table('wet_reward')->insert($inData);
 			if ($isShid) { //SH ID 处理
-				$upContSql = "UPDATE $this->wet_content_sh SET reward_sum = (reward_sum + $amount) WHERE tip_id = '$toHash'";
+				$upContSql = "UPDATE wet_content_sh SET reward_sum = (reward_sum + $amount) WHERE tip_id = '$toHash'";
 			} else {
-				$upContSql = "UPDATE $this->wet_content SET reward_sum = (reward_sum + $amount) WHERE hash = '$toHash'";
+				$upContSql = "UPDATE wet_content SET reward_sum = (reward_sum + $amount) WHERE hash = '$toHash'";
 			}
 			
-			$upUserSql = "UPDATE $this->wet_users SET reward_sum = (reward_sum + $amount) WHERE address = '$sender_id'";
+			$upUserSql = "UPDATE wet_users SET reward_sum = (reward_sum + $amount) WHERE address = '$sender_id'";
 			ComModel::db()-> query($upContSql);
 			ComModel::db()-> query($upUserSql);
 			$this->deleteTemp($hash);
@@ -115,7 +107,7 @@ class RewardModel
 
 	private function deleteTemp($hash)
 	{//删除临时缓存
-		$delete = "DELETE FROM $this->wet_temp WHERE tp_hash = '$hash'";
+		$delete = "DELETE FROM wet_temp WHERE tp_hash = '$hash'";
 		ComModel::db()->query($delete);
 	}
 }

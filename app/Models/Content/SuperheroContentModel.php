@@ -13,15 +13,7 @@ use App\Models\{
 class SuperheroContentModel
 {//主贴Model
 
-	private $tablename;
-
-	public function __construct()
-	{
-		$this->RewardModel	= new RewardModel();
-		$this->tablename 	= "wet_content_sh";
-    }
-
-	public function txContent($tip_id, $opt = [])
+	public static function txContent($tip_id, $opt = [])
 	{//获取主贴内容
 		$bsConfig = ConfigModel::backendConfig();
 		$shApiUrl = $bsConfig['superheroApiUrl'];
@@ -48,7 +40,7 @@ class SuperheroContentModel
 						reward_sum,
 						utctime,
 						url
-		FROM $this->tablename 
+		FROM wet_content_sh 
 		WHERE tip_id = '$tip_id' LIMIT 1";
 
         $query = ComModel::db()-> query($sql);
@@ -73,10 +65,10 @@ class SuperheroContentModel
 			$data['star']			= (int) $row-> star_sum;
 			$data['read']			= (int) $row-> read_sum;
 			$data['reward']			= $row-> reward_sum;
-			if ($opt['rewardList']) {
-				$data['rewardList']	= $this->RewardModel-> rewardList($tip_id);
+			if (isset($opt['rewardList'])) {
+				$data['rewardList']	= RewardModel::rewardList($tip_id);
 			}
-			if ($opt['userLogin']) {
+			if (isset($opt['userLogin'])) {
 				$data['isPraise']	= ValidModel::isPraise($tip_id, $opt['userLogin']);
 				$data['isStar']		= ValidModel::isStar($tip_id, $opt['userLogin']);
 				$data['isFocus']	= ValidModel::isFocus($sender_id, $opt['userLogin']);
@@ -87,8 +79,8 @@ class SuperheroContentModel
 			}
 			$data['source']			= $row->source;
 			$data['users']			= UserModel::getUser($sender_id);
-			if ($opt['read']) {
-				$upReadSql = "UPDATE $this->tablename SET read_sum = read_sum + 1 WHERE tip_id = '$tip_id'";
+			if (isset($opt['read'])) {
+				$upReadSql = "UPDATE wet_content_sh SET read_sum = read_sum + 1 WHERE tip_id = '$tip_id'";
 				ComModel::db()-> query($upReadSql);
 			}
 			
@@ -96,7 +88,7 @@ class SuperheroContentModel
     	return $data;
     }
 
-	public function simpleContent($tip_id, $opt=[])
+	public static function simpleContent($tip_id, $opt=[])
 	{//获取简单主贴内容
 		$bsConfig = ConfigModel::backendConfig();
 		$shApiUrl = $bsConfig['superheroApiUrl'];
@@ -112,7 +104,7 @@ class SuperheroContentModel
 						$payload,
 						image,
 						media
-				FROM $this->tablename 
+				FROM wet_content_sh 
 				WHERE tip_id='$tip_id' LIMIT 1";
 
         $query = ComModel::db()-> query($sql);

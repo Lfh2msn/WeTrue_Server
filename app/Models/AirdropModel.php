@@ -8,6 +8,7 @@ use App\Models\{
 	ValidModel,
 	DisposeModel
 };
+use App\Models\Config\AirdropConfig;
 
 class AirdropModel
 {//空投Model
@@ -22,9 +23,9 @@ class AirdropModel
 
 	public function airdropAE($address)
 	{//新用户空投AE
-		$bsConfig  = ConfigModel::backendConfig();
-		$isAirdrop = $bsConfig['airdropAE'];
-		$amount    = $bsConfig['airdropAeAmount'];
+		$aacConfig  = AirdropConfig::config();
+		$isAirdrop = $aacConfig['aeOpen'];
+		$amount    = $aacConfig['aeAmount'];
 		$NewUser   = $this->session-> get('NewUser');
 		$getIP	   = DisposeModel::getRealIP();
 		$isBloomIp = ValidModel::isBloomIp($getIP);
@@ -40,26 +41,6 @@ class AirdropModel
 		@$GetUrl = file_get_contents($url);
 
 		if (!$GetUrl) {
-			/*$AeasyApiUrl = $bsConfig['AeasyApiUrl'];
-			$post_data   = array(
-				'app_id'     => $bsConfig['AeasyAppID'],
-				'address'    => $address,
-				'amount'     => $amount,
-				'signingKey' => $bsConfig['AeasySecretKey'],
-			);
-			$postdata = http_build_query($post_data);
-			$options  = array(
-							'http' => array(
-											'method'  => 'POST',
-											'header'  => 'Content-type:application/x-www-form-urlencoded',
-											'content' => $postdata,
-											'timeout' => 30 // 超时时间（单位:s）
-									));
-			$context = stream_context_create($options);
-			$result  = file_get_contents($AeasyApiUrl, false, $context);
-			$dejson  = (array) json_decode($result, true);
-			$code    = $dejson['code'];*/
-			
 			$hash = $this->AecliModel-> spendAE($address, $amount);
 			$code = DisposeModel::checkAddress($hash) ? 200 : 406;
 			if ($code == 200) {
@@ -90,7 +71,7 @@ class AirdropModel
 			fclose($File);
 		}
 
-		$bsConfig = ConfigModel::backendConfig();
+		$aacConfig  = AirdropConfig::config();
 		$selSql   = "SELECT address, uactive, last_active FROM $this->wet_users";
         $query    = ComModel::db()-> query($selSql);
 		$getRes	  = $query->getResult();
@@ -102,7 +83,7 @@ class AirdropModel
 				$uaValue	= $uactive - $lastActive;
 				$isBloomAddress = ValidModel::isBloomAddress($address);
 				if( $address != "" && !$isBloomAddress && $uactive >= $lastActive) {
-					$logMsg = $address.":".($uaValue * $bsConfig['airdropWTTRatio'])."\r\n";
+					$logMsg = $address.":".($uaValue * $aacConfig['wttRatio'])."\r\n";
 					$logPath = "airdrop/WTT/".date("Y-m-d").".txt"
 					DisposeModel::wetFwriteLog($logMsg, $logPath);
 				}

@@ -1,7 +1,10 @@
 <?php
 namespace App\Controllers;
 
-use App\Models\DisposeModel;
+use App\Models\{
+    DisposeModel,
+    PagesModel
+};
 
 class Content extends BaseController
 {
@@ -14,7 +17,7 @@ class Content extends BaseController
 		    $opt  =	['select' => $type,
                      'read' => true
                     ];
-            $data = $this->PagesModel-> alone($hash, $opt);
+            $data = PagesModel::alone($hash, $opt);
             echo $data;
         }else{
             echo DisposeModel::wetJsonRt(406, 'error_hash');
@@ -28,7 +31,7 @@ class Content extends BaseController
         $offset = $this->request->getPost('offset');
         $type   = 'contentList';
 		$opt    =	['type' => $type];
-		$data   = $this->PagesModel-> limit($page, $size, $offset, $opt);
+		$data   = PagesModel::limit($page, $size, $offset, $opt);
 		echo $data;
     }
 
@@ -39,7 +42,7 @@ class Content extends BaseController
         $offset = $this->request->getPost('offset');
         $type = 'hotRecList';
 		$opt  =	['type' => $type];
-		$data = $this->PagesModel-> limit($page, $size, $offset, $opt);
+		$data = PagesModel::limit($page, $size, $offset, $opt);
 		echo $data;
     }
 
@@ -50,7 +53,7 @@ class Content extends BaseController
         $offset = $this->request->getPost('offset');
 		$type = 'userFocusContentList';
 		$opt  =	['type' => $type];
-		$data = $this->PagesModel-> limit($page, $size, $offset, $opt);
+		$data = PagesModel::limit($page, $size, $offset, $opt);
 		echo $data;
 	}
 
@@ -67,7 +70,7 @@ class Content extends BaseController
                     'type' => $type,
                     'address' => $userAddress
                     ];
-            $data = $this->PagesModel-> limit($page, $size, $offset, $opt);
+            $data = PagesModel::limit($page, $size, $offset, $opt);
             echo $data;
         } else {
             echo DisposeModel::wetJsonRt(406, 'error');
@@ -83,7 +86,7 @@ class Content extends BaseController
 		    $opt  =	['select' => $type,
                      'read' => true
                     ];
-            $data = $this->PagesModel-> alone($shTipid, $opt);
+            $data = PagesModel::alone($shTipid, $opt);
             echo $data;
         }else{
             echo DisposeModel::wetJsonRt(406, 'error_superhero_tipid');
@@ -97,13 +100,13 @@ class Content extends BaseController
         $offset = $this->request->getPost('offset');
         $type   = 'shTipidList';
 		$opt    =	['type' => $type];
-		$data   = $this->PagesModel-> limit($page, $size, $offset, $opt);
+		$data   = PagesModel::limit($page, $size, $offset, $opt);
 		echo $data;
     }
 
     public function getCount()
     {//主贴总数
-		$data = $this->PagesModel-> contentCount();
+		$data = PagesModel::contentCount();
         echo DisposeModel::wetJsonRt(200,'success',$data);
     }
 

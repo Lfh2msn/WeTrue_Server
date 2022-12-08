@@ -2,7 +2,6 @@
 namespace App\Controllers;
 
 use App\Models\{
-	StarModel,
 	PraiseModel,
 	SearchModel,
 	RewardModel,
@@ -30,7 +29,7 @@ class Submit extends BaseController {
 			|| $type == 'reply' 
 			|| $type == 'shTipid'
 		) {
-            echo (new PraiseModel())-> praise($hash, $type);
+            echo PraiseModel::praise($hash, $type);
         } else {
 			echo DisposeModel::wetJsonRt(406, 'error');
 		}

@@ -12,14 +12,7 @@ use App\Models\{
 class CommentModel
 {//评论Model
 
-	public function __construct()
-	{
-		$this->ReplyModel	= new ReplyModel();
-		$this->wet_comment  = "wet_comment";
-		$this->wet_reply    = "wet_reply";
-    }
-
-	public function txComment($hash, $opt=[])
+	public static function txComment($hash, $opt=[])
 	{//获取评论内容
         $sql = "SELECT
 					to_hash,
@@ -29,7 +22,7 @@ class CommentModel
 					comment_sum,
 					praise,
 					chain_id
-				FROM $this->wet_comment 
+				FROM wet_comment 
 				WHERE hash='$hash' LIMIT 1";
         $query = ComModel::db()->query($sql);
 		$row   = $query-> getRow();
@@ -49,14 +42,14 @@ class CommentModel
 				$data['commentList'] = [];
 				$replyLimit = max(0, (int)$opt['replyLimit']);
 				$limit    = 'LIMIT '.$replyLimit;
-				$replySql = "SELECT hash FROM $this->wet_reply WHERE to_hash = '$hash' ORDER BY utctime DESC ".$limit;
+				$replySql = "SELECT hash FROM wet_reply WHERE to_hash = '$hash' ORDER BY utctime DESC ".$limit;
 				$query    = ComModel::db()-> query($replySql);
 				foreach ($query-> getResult() as $row) {
 					$hash  = $row -> hash;
 					$isBloomHash = ValidModel::isBloomHash($hash);
 					if (!$isBloomHash) {
 						$opt['substr'] = 140; //限制输出
-						$list[] = $this->ReplyModel-> txReply($hash, $opt);
+						$list[] = ReplyModel::txReply($hash, $opt);
 					}
 					$data['commentList'] = $list;
 				}
@@ -66,7 +59,7 @@ class CommentModel
     return $data;
     }
 
-	public function simpleComment($hash, $opt=[])
+	public static function simpleComment($hash, $opt=[])
 	{//获取简单评论内容
 		if ( (isset($opt['substr'])) ) {
 			$sqlPayload  = "substring(payload for '$opt[substr]') as payload";
@@ -78,7 +71,7 @@ class CommentModel
 					to_hash,
 					sender_id,
 					$sqlPayload
-				FROM $this->wet_comment 
+				FROM wet_comment 
 				WHERE hash='$hash' LIMIT 1";
         $query = ComModel::db()-> query($sql);
 		$row   = $query-> getRow();

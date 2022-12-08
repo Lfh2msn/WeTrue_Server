@@ -2,6 +2,7 @@
 namespace App\Controllers;
 
 use App\Models\{
+    PagesModel,
     DisposeModel,
     ConfigModel
 };
@@ -14,7 +15,7 @@ class Image extends BaseController
         $size   = $this->request->getPost('size');
         $offset = $this->request->getPost('offset');
         $opt    = ['type' => 'imageList'];
-		$data   = $this->PagesModel-> limit($page, $size, $offset, $opt);
+		$data   = PagesModel::limit($page, $size, $offset, $opt);
 		echo $data;
     }
 	

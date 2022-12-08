@@ -111,7 +111,7 @@ class DisposeModel
         return $address;
     }
     
-    public static function bigNumber($x, string $m, string $n = "1000000000000000000")
+    public static function bigNumber(string $x, string $m, string $n = "1000000000000000000")
     {/**大数计算--注意必须为string
         * 使用方法:
         * $x = out 原数输出

@@ -1,11 +1,13 @@
 <?php
 namespace App\Controllers;
 
-use App\Models\ComplainModel;
-use App\Models\DisposeModel;
-use App\Models\BloomModel;
-use App\Models\AirdropModel;
-use App\Models\MiningModel;
+use App\Models\{
+	ComplainModel,
+	DisposeModel,
+	BloomModel,
+	AirdropModel,
+	MiningModel
+};
 
 class Admin extends BaseController
 {//管理

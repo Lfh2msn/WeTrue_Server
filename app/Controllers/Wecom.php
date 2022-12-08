@@ -1,8 +1,10 @@
 <?php
 namespace App\Controllers;
 
-use App\Models\Wecom\SendModel;
-use App\Models\Wecom\ReceiveModel;
+use App\Models\Wecom\{
+	SendModel,
+	ReceiveModel
+};
 
 class Wecom extends BaseController {
 

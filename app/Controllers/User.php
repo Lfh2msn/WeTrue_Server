@@ -1,10 +1,13 @@
 <?php
 namespace App\Controllers;
 
-use App\Models\FocusModel;
-use App\Models\UserModel;
-use App\Models\ValidModel;
-use App\Models\DisposeModel;
+use App\Models\{
+	FocusModel,
+	UserModel,
+	PagesModel,
+	ValidModel,
+	DisposeModel
+};
 
 class User extends BaseController {
 
@@ -17,16 +20,18 @@ class User extends BaseController {
 		if($isUserAddress){
 			$code = 200;
 			$opt = '';
-			if(isset($typeLogin)){
+			if(isset($typeLogin))
 				$opt = ['type' => $typeLogin];
-			}
+			else
+				$opt = ['type' => ''];
 			$userInfo = UserModel::userAllInfo($userAddress, $opt);
 			if(isset($userInfo)){
 				$content = $userInfo;
 				$msg = 'success';
-			}else{
-				$msg = 'error_address';
 			}
+			else
+				$msg = 'error_address';
+			
 		}else{
 			$code = 406;
 			$msg  = 'error';
@@ -47,7 +52,7 @@ class User extends BaseController {
 					'type' 		=> $type,
 					'publicKey' => $userAddress
 				];
-			$data = $this->PagesModel-> limit($page, $size, $offset, $opt);
+			$data = PagesModel::limit($page, $size, $offset, $opt);
 			echo $data;
 		}else{
 			$data['code'] = 406;
@@ -73,9 +78,9 @@ class User extends BaseController {
 			];
 			$data  = FocusModel::limit($page, $size, $offset, $opt);
 			echo $data;
-		}else{
-			echo DisposeModel::wetJsonRt(406,'error');
 		}
+		else
+			echo DisposeModel::wetJsonRt(406,'error');
 	}
 
 	public function isNickname()

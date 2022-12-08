@@ -1,14 +1,14 @@
 <?php 
 namespace App\Models;
 
+//use App\Models\AirdropModel; //空投结束暂时屏蔽
 use App\Models\{
 	ComModel,
-	//AirdropModel, //空投结束暂时屏蔽
 	FocusModel,
 	ValidModel,
-	DisposeModel,
-	ConfigModel
+	DisposeModel
 };
+use App\Models\Config\AirdropConfig;
 
 class UserModel
 {//用户Model
@@ -76,10 +76,10 @@ class UserModel
 
 		if (!$row && isset($opt['type'])) {
 			if ($opt['type'] == 'login') {
-				$bsConfig = ConfigModel::backendConfig();
+				$acConfig = AirdropConfig::config();
 				self::userPut($address);
 				/* //空投结束暂时屏蔽
-				if ($bsConfig['airdropAE']) {
+				if ($acConfig['aeOpen']) {
 					(new AirdropModel())-> airdropAE($address);
 				}
 				*/
@@ -98,7 +98,7 @@ class UserModel
 		$data['reward'] 	 = $userReward;
 		$data['userActive']  = DisposeModel::activeGrade($userActive);
 		$data['userReward']  = DisposeModel::rewardGrade($userReward);
-		$data['lastActive']  = ($userActive - ($row->last_active ?? 0));// * $bsConfig['airdropWTTRatio'];
+		$data['lastActive']  = ($userActive - ($row->last_active ?? 0));// * $acConfig['wttRatio'];
 		$data['avatar']      = $row->avatar ?? '';
 		$data['topic'] 		 = $row->topic_sum ?? 0;
 		$data['star'] 		 = $row->star_sum ?? 0;

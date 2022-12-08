@@ -18,9 +18,6 @@ class ComplainModel
 
 	public function __construct(){
 		$this->HashReadModel = new HashReadModel();
-		$this->ContentPullModel = new ContentPullModel();
-		$this->CommentModel  = new CommentModel();
-		$this->ReplyModel 	 = new ReplyModel();
 		$this->wet_complain  = "wet_complain";
 		$this->wet_behavior  = "wet_behavior";
 	}
@@ -127,7 +124,7 @@ class ComplainModel
 			$conRow   = $conQuery-> getRow();
 
 			if ($conRow) {
-				$detaila[] = $this->ContentPullModel-> txContent($hash, $opt);
+				$detaila[] = ContentPullModel::txContent($hash, $opt);
 			} else {
 				$comSql   = "SELECT hash FROM wet_comment WHERE hash='$hash' LIMIT 1";
 				$comQuery = ComModel::db()-> query($comSql);
@@ -135,7 +132,7 @@ class ComplainModel
 			}
 			
 			if ($comRow) {
-				$detaila[] = $this->CommentModel-> txComment($hash, $opt);
+				$detaila[] = CommentModel::txComment($hash, $opt);
 			} else {
 				$repSql   = "SELECT hash FROM wet_reply WHERE hash='$hash' LIMIT 1";
 				$repQuery = ComModel::db()-> query($repSql);
@@ -143,7 +140,7 @@ class ComplainModel
 			}
 
 			if ($repRow) {
-				$detaila[] = $this->ReplyModel-> txReply($hash, $opt);
+				$detaila[] = ReplyModel::txReply($hash, $opt);
 			}
 
 			$data['data'] = $detaila;

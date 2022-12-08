@@ -15,7 +15,10 @@ use App\Models\{
 };
 use App\Models\ServerMdw\WetModel;
 use App\Models\Get\GetAeChainModel;
-use App\Models\Config\ActiveConfig;
+use App\Models\Config\{
+	AeChainPutConfig,
+	ActiveConfig
+};
 
 class AeChainPutModel
 {//Ae链上hash入库Model
@@ -23,19 +26,17 @@ class AeChainPutModel
 	public function __construct(){
 		$this->WetModel   = new WetModel();
 		$this->MsgModel   = new MsgModel();
-		$this->StarModel  = new StarModel();
-		$this->TopicModel = new TopicModel();
 		$this->FocusModel = new FocusModel();
 		$this->MentionsModel = new MentionsModel();
-		$this->wet_temp 	 = "wet_temp";
-		$this->wet_behavior  = "wet_behavior";
-		$this->wet_content 	 = "wet_content";
-		$this->wet_comment   = "wet_comment";
-		$this->wet_reply	 = "wet_reply";
-		$this->wet_users	 = "wet_users";
-		$this->wet_topic_tag = "wet_topic_tag";
-		$this->wet_content_sh = "wet_content_sh";
-		$this->wet_topic_content = "wet_topic_content";
+		$this->wet_temp 	 = 'wet_temp';
+		$this->wet_behavior  = 'wet_behavior';
+		$this->wet_content 	 = 'wet_content';
+		$this->wet_comment   = 'wet_comment';
+		$this->wet_reply	 = 'wet_reply';
+		$this->wet_users	 = 'wet_users';
+		$this->wet_topic_tag = 'wet_topic_tag';
+		$this->wet_content_sh = 'wet_content_sh';
+		$this->wet_topic_content = 'wet_topic_content';
     }
 
 	public function decodeContent($json)
@@ -80,31 +81,31 @@ class AeChainPutModel
 			$data['chainId']= 457;
 
 			//用户 活跃度及费用 设置检测
-			$ftConfig = ConfigModel::frontConfig($data['sender']);
+			$amountConfig = AeChainPutConfig::amount($data['sender']);
 			$activeConfig = ActiveConfig::config();
 
 			if ($data['type'] == 'topic'){ //主贴
-				$userAmount = $ftConfig['topicAmount'];
+				$userAmount = $amountConfig['topic'];
 				$getActive  = $activeConfig['topicActive'];
 				$repeatHash = ValidModel::isContentHash($data['hash']);
 			}
 			elseif ($data['type'] == 'comment'){ //评论
-				$userAmount = $ftConfig['commentAmount'];
+				$userAmount = $amountConfig['comment'];
 				$getActive  = $activeConfig['commentActive'];
 				$repeatHash = ValidModel::isCommentHash($data['hash']);
 			}
 			elseif ($data['type'] == 'reply'){ //回复
-				$userAmount = $ftConfig['replyAmount'];
+				$userAmount = $amountConfig['reply'];
 				$getActive  = $activeConfig['replyActive'];
 				$repeatHash = ValidModel::isReplyHash($data['hash']);
 			}
 			elseif ($data['type'] == 'nickname'){ //昵称
-				$userAmount = $ftConfig['nicknameAmount'];
+				$userAmount = $amountConfig['nickname'];
 				$getActive  = $activeConfig['nicknameActive'];
 				$repeatHash = ValidModel::isNickname($data['content']);
 			}
 			elseif ($data['type'] == 'sex'){ //性别
-				$userAmount = $ftConfig['sexAmount'];
+				$userAmount = $amountConfig['sex'];
 				$getActive  = $activeConfig['sexActive'];
 			}
 			elseif ( $data['type'] == 'star' ){ //收藏帖
@@ -114,7 +115,7 @@ class AeChainPutModel
 				$repeatHash = ValidModel::isFocus($data['content'], $data['sender']);
 			}else{}
 
-			if ($repeatHash) {
+			if ($repeatHash) { //重复检测
 				$this->deleteTemp($hash);
 				DisposeModel::wetFwriteLog("重复Hash:{$hash}");
 				return DisposeModel::wetJsonRt(406,'error');
@@ -156,7 +157,7 @@ class AeChainPutModel
 							];
 				ComModel::db()->table($this->wet_content)->insert($insertData);
 				//是否话题
-				$isTopic = $this->TopicModel-> isTopic($data['content']);
+				$isTopic = TopicModel::isTopic($data['content']);
 				if($isTopic) {
 					$topic = [
 						'hash'		=> $data['hash'],
@@ -164,7 +165,7 @@ class AeChainPutModel
 						'sender_id' => $data['sender'],
 						'utctime'   => $data['mb_time']
 						];
-					$this->TopicModel-> insertTopic($topic);
+					TopicModel::insertTopic($topic);
 				}
 				//是否“@”
 				$isMentions = $this->MentionsModel-> isMentions($data['content']);
@@ -250,7 +251,7 @@ class AeChainPutModel
 				$data['toAddress'] = DisposeModel::delete_xss($toAddress);
 				$data['replyHash'] = DisposeModel::delete_xss($replyHash);
 
-				if ($data['replyType'] != "comment" && $data['replyType'] != "reply") {
+				if ($data['replyType'] != 'comment' && $data['replyType'] != 'reply') {
 					$this->deleteTemp($hash);
 					DisposeModel::wetFwriteLog("无效格式回复贴格式:{$data['replyType']}:{$data['hash']}");
 					return DisposeModel::wetJsonRt(406,'error');
@@ -318,7 +319,7 @@ class AeChainPutModel
 			{//昵称
 				$data['content'] = trim($payload['content']);
 				$data['content'] = mb_substr($data['content'], 0, 15);
-				$verify     = ValidModel::isUser($data['sender']);
+				$verify = ValidModel::isUser($data['sender']);
 
 				if($verify){  //用户是否存在
 					$upData = [ 'nickname' => $data['content'] ];
@@ -390,7 +391,7 @@ class AeChainPutModel
 					$this->deleteTemp($hash);
 					return DisposeModel::wetJsonRt(406,'error');
 				}
-				$this->StarModel-> star($data['sender'], $data['content'], $data['action'],$select);
+				StarModel::star($data['sender'], $data['content'], $data['action'],$select);
 				$this->deleteTemp($hash);
 				return;
 			}

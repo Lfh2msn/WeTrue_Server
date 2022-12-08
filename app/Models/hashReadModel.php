@@ -21,7 +21,6 @@ class HashReadModel
 
 	public function __construct(){
 		$this->BloomModel  = new BloomModel();
-		$this->DeleteModel = new DeleteModel();
 		$this->AeChainPutModel = new AeChainPutModel();
 		$this->AeSuperheroPutModel  = new AeSuperheroPutModel();
 		$this->AeContractCallTxModel = new AeContractCallTxModel();
@@ -72,9 +71,9 @@ class HashReadModel
 			
 			$isBloomAddress = ValidModel::isBloomAddress($sender);
 			if ($isBloomAddress) {
-				DisposeModel::wetFwriteLog("被bloom过滤账户:{$tp_hash}");
+				DisposeModel::wetFwriteLog("被bloom过滤账户:{$sender},Hash:{$tp_hash}");
 				$this->deleteTemp($tp_hash);  //删除临时缓存
-				$this->DeleteModel-> deleteAll($sender); //删除账户
+				DeleteModel::deleteAll($sender); //删除账户
 				continue;
 			}
 

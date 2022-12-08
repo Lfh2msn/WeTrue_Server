@@ -23,15 +23,9 @@ class MsgModel
 {//消息Model
 
 	public function __construct(){
-		$this->CommentModel = new CommentModel();
-		$this->ReplyModel 	= new ReplyModel();
-		$this->RewardModel	= new RewardModel();
 		$this->SendModel    = new SendModel();
 		$this->WecomConfig  = new WecomConfig();
 		$this->CorpUserModel    = new CorpUserModel();
-		$this->ContentPullModel = new ContentPullModel();
-		$this->SuperheroContentModel = new SuperheroContentModel();
-		$this->wet_message  = "wet_message";
     }
 
     public function getMsgList($page, $size, $offset)
@@ -43,24 +37,24 @@ class MsgModel
 		$isAkToken = DisposeModel::checkAddress($akToken);
 		if (!$isAkToken) return DisposeModel::wetJsonRt(401,'error_address');
 
-		$countSql = "SELECT count(hash) FROM $this->wet_message WHERE recipient_id = '$akToken'";
+		$countSql = "SELECT count(hash) FROM wet_message WHERE recipient_id = '$akToken'";
 		$limitSql = "SELECT hash, 
 						to_hash, 
 						type,
 						state, 
 						utctime 
-					FROM $this->wet_message 
+					FROM wet_message 
 						WHERE recipient_id = '$akToken' 
 						ORDER BY utctime DESC, state DESC 
 					LIMIT $size OFFSET ".(($page-1) * $size + $offset);
 		$returnData = $this->cycle($page, $size, $countSql, $limitSql);
 
-		$upHashSql = "SELECT hash FROM $this->wet_message 
+		$upHashSql = "SELECT hash FROM wet_message 
 						WHERE recipient_id = '$akToken'
 						AND state = 1
 						AND type <> 'reward' 
 					LIMIT $size OFFSET ".(($page-1) * $size + $offset);
-		$upStateSql = "UPDATE $this->wet_message 
+		$upStateSql = "UPDATE wet_message 
 						SET state = CASE state
 							WHEN 1 THEN 0
 						END 
@@ -88,10 +82,10 @@ class MsgModel
 					$isData['state']   = $state;
 					$isData['type']    = $type;
 					$isData['utctime'] = $utctime;
-					$isData['topic']   = $this->ContentPullModel-> simpleContent($to_hash, $opt=[]);
+					$isData['topic']   = ContentPullModel::simpleContent($to_hash, $opt=[]);
 					$isShTipid = DisposeModel::checkSuperheroTipid($to_hash);
-					if ($isShTipid) $isData['topic'] = $this->SuperheroContentModel-> simpleContent($to_hash, $opt=[]);
-					$comment = $this->CommentModel-> simpleComment($hash, $opt);
+					if ($isShTipid) $isData['topic'] = SuperheroContentModel::simpleContent($to_hash, $opt=[]);
+					$comment = CommentModel::simpleComment($hash, $opt);
 					$isData['comment'] = $comment ? $comment : [];
 					$isData['reply']   = [];
 					$isData['reward']  = [];
@@ -104,11 +98,11 @@ class MsgModel
 					$isData['state']   = $state;
 					$isData['type']    = $type;
 					$isData['utctime'] = $utctime;
-					$commentPayload    = $this->CommentModel-> simpleComment($to_hash, $opt);
+					$commentPayload    = CommentModel::simpleComment($to_hash, $opt);
 					$topicHash		   = $commentPayload['to_hash'];
-					$isData['topic']   = $this->ContentPullModel-> simpleContent($topicHash, $opt=[]);
+					$isData['topic']   = ContentPullModel::simpleContent($topicHash, $opt=[]);
 					$isData['comment'] = $commentPayload;
-					$isData['reply']   = $this->ReplyModel-> txReply($hash);
+					$isData['reply']   = ReplyModel::txReply($hash);
 					$isData['reward']  = [];
 					if($isData['topic'] && $isData['comment'] && $isData['reply']) {
 						$detaila[] = $isData;
@@ -119,8 +113,8 @@ class MsgModel
 					$isData['state']   = $state;
 					$isData['type']    = $type;
 					$isData['utctime'] = $utctime;
-					$isData['topic']   = $this->ContentPullModel-> simpleContent($to_hash, $opt=[]);
-					$isData['reward']  = $this->RewardModel-> simpleReward($hash);
+					$isData['topic']   = ContentPullModel::simpleContent($to_hash, $opt=[]);
+					$isData['reward']  = RewardModel::simpleReward($hash);
 					$isData['comment'] = [];
 					$isData['reply']   = [];
 					if($isData['topic'] && $isData['reward']) {
@@ -166,7 +160,7 @@ class MsgModel
 			'state' 	   => isset($data['state']) 	   ? (int) $data['state']  : 1,
 			'utctime' 	   => isset($data['utctime']) 	   ? $data['utctime'] 	   : (time() * 1000),
 		];
-		ComModel::db()->table($this->wet_message)->insert($insertData);
+		ComModel::db()->table('wet_message')->insert($insertData);
 		$isWecomAddress = ValidModel::isWecomAddress($data['recipient_id']);
 		if ($isWecomAddress) $this->pushWecom($data);
 	}
@@ -204,7 +198,7 @@ class MsgModel
 		} elseif ($type == 'reply') {
 			$opt['substr'] = 45; //限制Payload长度
 			$opt = ['imgTx'=>true];
-			$comHash = $this->CommentModel-> simpleComment($toHash, $opt);
+			$comHash = CommentModel::simpleComment($toHash, $opt);
 			$toHash = $comHash['toHash'];
 			$type    = "回复";
 		} else {
@@ -233,7 +227,7 @@ class MsgModel
 		$akToken   = isset($_SERVER['HTTP_KEY']) ? $_SERVER['HTTP_KEY'] : false;
 		$isAkToken = DisposeModel::checkAddress($akToken);
 		if (!$isAkToken) return 'error_address';
-		$sql = "SELECT count(hash) FROM $this->wet_message WHERE recipient_id = '$akToken' AND state = '1' AND type <> 'reward' ";
+		$sql = "SELECT count(hash) FROM wet_message WHERE recipient_id = '$akToken' AND state = '1' AND type <> 'reward' ";
 		$query = ComModel::db()-> query($sql);
 		$row   = $query-> getRow();
 		return $row ? (int)$row->count : 0;

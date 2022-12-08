@@ -12,11 +12,7 @@ use App\Models\Config\ActiveConfig;
 class PraiseModel
 {//点赞Model
 
-	public function __construct(){
-		$this->wet_behavior = "wet_behavior";
-    }
-	
-	public function praise($hash, $type)
+	public static function praise($hash, $type)
 	{//点赞
 		$akToken = isset($_SERVER['HTTP_KEY']) ? $_SERVER['HTTP_KEY'] : false;
 		$isAkToken = DisposeModel::checkAddress($akToken);
@@ -26,23 +22,23 @@ class PraiseModel
 		
 		$whereHash = 'hash';
 		if ( $type === 'topic' ) {
-			$this->tablename = 'wet_content';
+			$tablename = 'wet_content';
 
 		} elseif ( $type === 'comment' ) {
-			$this->tablename = 'wet_comment';
+			$tablename = 'wet_comment';
 
 		} elseif ( $type === 'reply' ) {
-			$this->tablename = 'wet_reply';
+			$tablename = 'wet_reply';
 
 		} elseif ( $type === 'shTipid' ) {
-			$this->tablename = 'wet_content_sh';
+			$tablename = 'wet_content_sh';
 			$whereHash = 'tip_id';
 		} else {
 			return DisposeModel::wetJsonRt(401, 'error_type');
 		}
 
 		$data = [];
-		$isHashSql = "SELECT $whereHash,praise FROM $this->tablename WHERE $whereHash = '$hash' LIMIT 1";
+		$isHashSql = "SELECT $whereHash,praise FROM $tablename WHERE $whereHash = '$hash' LIMIT 1";
 		$query = ComModel::db()-> query($isHashSql);
 		$row   = $query-> getRow();
 		if(!$row) {
@@ -50,11 +46,11 @@ class PraiseModel
 		} else {
 			$verify = ValidModel::isPraise($hash, $akToken);
 			if(!$verify) {
-				$updateSql = "UPDATE $this->tablename SET praise = praise + 1 WHERE $whereHash = '$hash'";
+				$updateSql = "UPDATE $tablename SET praise = praise + 1 WHERE $whereHash = '$hash'";
 				$praiseSql = "INSERT INTO wet_praise(hash, sender_id) VALUES ('$hash', '$akToken')";
 				$e = TRUE;
 			} else {
-				$updateSql = "UPDATE $this->tablename SET praise = praise - 1 WHERE $whereHash = '$hash'";
+				$updateSql = "UPDATE $tablename SET praise = praise - 1 WHERE $whereHash = '$hash'";
 				$praiseSql = "DELETE FROM wet_praise WHERE hash = '$hash' AND sender_id = '$akToken'";
 				$e = FALSE;
 			}
@@ -76,7 +72,7 @@ class PraiseModel
 				'influence' => $psActive,
 				'toaddress' => $hash
 			];
-			ComModel::db()->table($this->wet_behavior)->insert($insetrBehaviorDate);
+			ComModel::db()->table('wet_behavior')->insert($insetrBehaviorDate);
 			$praise = (int)$row->praise;
 			if ($e) {
 				$praiseSum = $praise + 1;

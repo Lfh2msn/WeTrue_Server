@@ -11,22 +11,17 @@ use App\Models\Content\ContentPullModel;
 
 class TopicModel
 {//话题Model
-	public function __construct(){
-		$this->ContentPullModel  = new ContentPullModel();
-        $this->wet_topic_tag     = "wet_topic_tag";
-		$this->wet_topic_content = "wet_topic_content";
-    }
 
-	public function isTopic($content)
+	public static function isTopic($content)
 	{//内容搜索话题
 		//$topicTag = preg_match_all("/#[x80-xff\u4e00-\u9fa5\w ,，.。!！-？·\?æÆ]{1,25}#/u", $content, $keywords);
 		$topicTag = preg_match_all("/#([\x{4e00}-\x{9fa5}a-zA-Z0-9]{1,24}+\b)(?!;)/u", $content, $keywords);
 		return $topicTag ? $keywords[0] : false;
 	}
 
-	public function getTopicInfo($keyword, $opt=[])
+	public static function getTopicInfo($keyword, $opt=[])
 	{//获取话题信息
-		$isTopic = $this->isTopic($keyword);
+		$isTopic = self::isTopic($keyword);
 		if ($isTopic) {
 			$selectTag = "SELECT keywords,
 								 img_icon, 
@@ -36,23 +31,25 @@ class TopicModel
 								 utctime, 
 								 topic_sum, 
 								 read_sum
-							FROM $this->wet_topic_tag 
+							FROM wet_topic_tag 
 							WHERE keywords ilike '$keyword' AND state = '1' 
 							LIMIT 1";
 			$getTagRow = ComModel::db()->query($selectTag)-> getRow();
 			$data = [
-					'total'		=> (int)$getTagRow-> topic_sum,  //总话题量
-					'read_sum'	=> (int)$getTagRow-> read_sum,  //阅读量
-					'keyword'	=> $getTagRow-> keywords,  //话题关键词
-					'imgIcon'	=> $getTagRow-> img_icon,  //话题图标
-					'describe'	=> $getTagRow-> describe,  //简介
-					'sender_id'	=> $getTagRow-> sender_id,  //创建人
-					'nickname'	=> UserModel::getName($getTagRow->sender_id),  //创建昵称
-					'state'		=> (int)$getTagRow-> state,  //状态
-					'utctime'	=> (int)$getTagRow-> utctime,  //时间
+					'total'		  => (int)$getTagRow-> topic_sum,  //总话题量
+					'read_sum'	  => (int)$getTagRow-> read_sum,  //阅读量,即将废弃
+					'readSum'	  => (int)$getTagRow-> read_sum,  //阅读量
+					'keyword'	  => $getTagRow-> keywords,  //话题关键词
+					'imgIcon'	  => $getTagRow-> img_icon,  //话题图标
+					'describe'	  => $getTagRow-> describe,  //简介
+					'userAddress' => $getTagRow-> sender_id,  //创建人
+					'sender_id'   => $getTagRow-> sender_id,  //创建人,即将废弃
+					'nickname'	  => UserModel::getName($getTagRow->sender_id),  //创建昵称
+					'state'		  => (int)$getTagRow-> state,  //状态
+					'utctime'	  => (int)$getTagRow-> utctime,  //时间
 					];
 			if($opt['read']) {
-				$updateSql = "UPDATE $this->wet_topic_tag 
+				$updateSql = "UPDATE wet_topic_tag 
 							SET read_sum = read_sum + 1
 							WHERE keywords ilike '$getTagRow->keywords'";
 				ComModel::db()->query($updateSql);
@@ -62,7 +59,7 @@ class TopicModel
 		
 	}
 
-	public function getTopicList($page, $size, $offset, $keyword)
+	public static function getTopicList($page, $size, $offset, $keyword)
 	{//获取话题主贴列表
 		$page   = max(1, (int)$page);
 		$size   = max(1, (int)$size);
@@ -72,10 +69,10 @@ class TopicModel
 		if ($isAkToken) $opt['userLogin'] = $akToken;
 		$opt['substr']	  = 160; //限制输出
 
-		$isTopic = $this->isTopic($keyword);
+		$isTopic = self::isTopic($keyword);
 		if ($isTopic) {
 			$selectTag = "SELECT uid, topic_sum
-							FROM $this->wet_topic_tag 
+							FROM wet_topic_tag 
 							WHERE keywords ilike '$keyword' 
 							AND state = '1' LIMIT 1";
 			$getTagRow = ComModel::db()->query($selectTag)-> getRow();
@@ -118,7 +115,7 @@ class TopicModel
 				foreach ($arrList as $hash) {
 					$isBloomHash = ValidModel::isBloomHash($hash);
 					if (!$isBloomHash) {
-						$isData = $this->ContentPullModel-> txContent($hash, $opt);
+						$isData = ContentPullModel::txContent($hash, $opt);
 						if(isset($isData)) $detaila[] = $isData;
 					}
 					$data['data'] = $detaila;
@@ -126,7 +123,7 @@ class TopicModel
 
 				$countList = (int) count($arrList);
 				if ($countList > 0) {  //更新阅读数量
-					$updateSql = "UPDATE $this->wet_topic_tag 
+					$updateSql = "UPDATE wet_topic_tag 
 							SET read_sum = read_sum + '$countList'
 							WHERE keywords ilike '$keyword'";
 					ComModel::db()->query($updateSql);
@@ -145,7 +142,7 @@ class TopicModel
 		return DisposeModel::wetRt($code, $msg, $data);
 	}
 
-	public function hotRecTopic()
+	public static function hotRecTopic()
 	{//获取热点话题
 		$nowTime   = time() * 1000;
 		$cycleTime = $nowTime - (86400000 * 7);
@@ -162,7 +159,7 @@ class TopicModel
 			foreach ($getResult as $row) {
 				$tagUid = (int) $row->tag_uid;
 				$tagHot = (int) $row->count;
-				$keyword = $this->tagUidToKeyWord($tagUid);
+				$keyword = self::tagUidToKeyWord($tagUid);
 				if ($keyword) {
 					$isData['keyword'] = $keyword;
 					$isData['tagHot']  = $tagHot;
@@ -174,17 +171,17 @@ class TopicModel
 		return DisposeModel::wetRt(200, 'success', $data);
 	}
 
-	public function tagUidToKeyWord($uid)
+	public static function tagUidToKeyWord($uid)
 	{//Uid查询话题关键词
 			$select = "SELECT keywords
-						FROM $this->wet_topic_tag 
+						FROM wet_topic_tag 
 						WHERE uid = $uid 
 						LIMIT 1";
 			$row  = ComModel::db()->query($select)-> getRow();
 			return $row->keywords;
 	}
 
-	public function insertTopic($topic=[])
+	public static function insertTopic($topic=[])
 	{/*话题入库
 		topic = [
 			hash	  => hash
@@ -193,13 +190,13 @@ class TopicModel
 			utctime   => 时间戳
 		]
 	*/
-		$keywords = $this->isTopic($topic['content']);
+		$keywords = self::isTopic($topic['content']);
 		$keywords = array_unique($keywords);
 		$keywords = array_values($keywords);
 		if ($keywords) {
 			$count = count($keywords) <= 15 ? count($keywords) : 15;
 			for($i=0; $i<$count; $i++) {
-				$selectTag = "SELECT uid FROM $this->wet_topic_tag WHERE keywords ilike '$keywords[$i]' LIMIT 1";
+				$selectTag = "SELECT uid FROM wet_topic_tag WHERE keywords ilike '$keywords[$i]' LIMIT 1";
 				$getTagRow = ComModel::db()->query($selectTag)-> getRow();
 				if (!$getTagRow) {
 					$inTopicTag = [
@@ -207,7 +204,7 @@ class TopicModel
 									'sender_id' => $topic['sender_id'],
 									'utctime'   => $topic['utctime']
 								];
-					ComModel::db()->table($this->wet_topic_tag)->insert($inTopicTag);
+					ComModel::db()->table('wet_topic_tag')->insert($inTopicTag);
 					$getTagRow  = ComModel::db()->query($selectTag)-> getRow();
 				}
 
@@ -218,8 +215,8 @@ class TopicModel
 									'sender_id' => $topic['sender_id'],
 									'utctime'   => $topic['utctime']
 								];
-				ComModel::db()->table($this->wet_topic_content)->insert($inTopicContent);
-				$updateSql = "UPDATE $this->wet_topic_tag 
+				ComModel::db()->table('wet_topic_content')->insert($inTopicContent);
+				$updateSql = "UPDATE wet_topic_tag 
 								SET 
 									topic_sum = topic_sum + 1, 
 									read_sum  = read_sum + 1

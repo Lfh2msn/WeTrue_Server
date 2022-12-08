@@ -18,10 +18,6 @@ class NodesConfig
 			'url'	=> 'https://mainnet.wetrue.cc',
 			'name' 	=> 'WeTrueCC',
 		);
-		$data[] = array(
-			'url'	=> 'https://node.aeasy.io',
-			'name' 	=> 'BoxAepp',
-		);
 		return $data;
     }
 

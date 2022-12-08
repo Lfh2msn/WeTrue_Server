@@ -1,7 +1,10 @@
 <?php
 namespace App\Controllers;
 
-use App\Models\DisposeModel;
+use App\Models\{
+    PagesModel,
+    DisposeModel
+};
 
 class Comment extends BaseController
 {
@@ -21,7 +24,7 @@ class Comment extends BaseController
         $isHash = DisposeModel::checkAddress($hash);
         $isShid = DisposeModel::checkSuperheroTipid($hash);
         if ($isHash || $isShid) {
-            $data = $this->PagesModel-> limit($page, $size, $offset, $opt);
+            $data = PagesModel::limit($page, $size, $offset, $opt);
             echo $data;
         } else {
             echo DisposeModel::wetJsonRt(406,'error_hash');
@@ -34,7 +37,7 @@ class Comment extends BaseController
         $isHash = DisposeModel::checkAddress($hash);
 		if ($isHash) {
             $opt  = ['select' => 'comment'];
-            $data = $this->PagesModel-> alone($hash, $opt);
+            $data = PagesModel::alone($hash, $opt);
             echo $data;
         } else {
             echo DisposeModel::wetJsonRt(406,'error_hash');

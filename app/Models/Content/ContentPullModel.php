@@ -12,15 +12,7 @@ use App\Models\{
 class ContentPullModel
 {//主贴Model
 
-	private $tablename;
-
-	public function __construct()
-	{
-		$this->RewardModel	= new RewardModel();
-		$this->tablename 	= "wet_content";
-    }
-
-	public function txContent($hash, $opt = [])
+	public static function txContent($hash, $opt = [])
 	{//获取主贴内容
 		if ( (isset($opt['substr'])) ) {
 			$sqlPayload  = "substring(payload for '$opt[substr]') as payload";
@@ -39,7 +31,7 @@ class ContentPullModel
 						reward_sum,
 						source,
 						chain_id
-				FROM $this->tablename 
+				FROM wet_content 
 				WHERE hash = '$hash' LIMIT 1";
 
         $query = ComModel::db()->query($sql);
@@ -63,7 +55,7 @@ class ContentPullModel
 			$data['read']			= (int) $row-> read_sum;
 			$data['reward']			= $row-> reward_sum;
 			if (isset($opt['rewardList'])) {
-				$data['rewardList']	= $this->RewardModel-> rewardList($hash);
+				$data['rewardList']	= RewardModel::rewardList($hash);
 			}
 			if (isset($opt['userLogin'])) {
 				$data['isPraise']	= ValidModel::isPraise($hash, $opt['userLogin']);
@@ -78,7 +70,7 @@ class ContentPullModel
 			$data['chainId']		= $row->chain_id ? (int) $row->chain_id : 457;
 			$data['users']			= UserModel::getUser($sender_id);
 			if (isset($opt['read'])) {
-				$upReadSql = "UPDATE $this->tablename SET read_sum = read_sum + 1 WHERE hash = '$hash'";
+				$upReadSql = "UPDATE wet_content SET read_sum = read_sum + 1 WHERE hash = '$hash'";
 				ComModel::db()-> query($upReadSql);
 			}
 			
@@ -86,7 +78,7 @@ class ContentPullModel
     	return $data;
     }
 
-	public function simpleContent($hash, $opt=[])
+	public static function simpleContent($hash, $opt=[])
 	{//获取简单主贴内容
 		if (isset($opt['substr'])) {
 			$sqlPayload  = "substring(payload for '$opt[substr]') as payload";
@@ -97,7 +89,7 @@ class ContentPullModel
 		$sql = "SELECT sender_id,
 						$sqlPayload,
 						img_tx
-				FROM $this->tablename 
+				FROM wet_content 
 				WHERE hash='$hash' LIMIT 1";
 
         $query = ComModel::db()-> query($sql);
