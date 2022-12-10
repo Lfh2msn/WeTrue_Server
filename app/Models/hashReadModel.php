@@ -111,6 +111,7 @@ class HashReadModel
 				$this->AeSuperheroPutModel-> putContent(1);
 			}
 		}
+		return DisposeModel::wetJsonRt(200);
 	}
 
 	private function deleteTemp($hash)
