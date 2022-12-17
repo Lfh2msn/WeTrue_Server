@@ -20,19 +20,19 @@ class StarModel
 		}
 
 		$verify = ValidModel::isStar($hash, $address);
-		if (!$verify && $action == 'true') {
-			$starSql    = "INSERT INTO wet_star(hash, sender_id) VALUES ('$hash', '$address')";
-			$upContent  = "UPDATE $tablename SET star_sum = star_sum + 1 WHERE $whereHash = '$hash'";
-			$upUsers    = "UPDATE wet_users SET star_sum = star_sum + 1 WHERE address = '$address'";
+		if (!$verify && ($action == true || $action == 'true') ) {
+			$starSql   = "INSERT INTO wet_star(hash, sender_id) VALUES ('$hash', '$address')";
+			$upContent = "UPDATE $tablename SET star_sum = star_sum + 1 WHERE $whereHash = '$hash'";
+			$upUsers   = "UPDATE wet_users SET star_sum = star_sum + 1 WHERE address = '$address'";
 		}
 
-		elseif ($verify && $action == 'false') {
-			$starSql    = "DELETE FROM wet_star WHERE hash = '$hash' AND sender_id = '$address'";
-			$upContent  = "UPDATE $tablename SET star_sum = star_sum - 1 WHERE $whereHash = '$hash'";
-			$upUsers    = "UPDATE wet_users SET star_sum = star_sum - 1 WHERE address = '$address'";
+		elseif ($verify && ($action == false || $action == 'false') ) {
+			$starSql   = "DELETE FROM wet_star WHERE hash = '$hash' AND sender_id = '$address'";
+			$upContent = "UPDATE $tablename SET star_sum = star_sum - 1 WHERE $whereHash = '$hash'";
+			$upUsers   = "UPDATE wet_users SET star_sum = star_sum - 1 WHERE address = '$address'";
 		}
 
-		else die("star Error");
+		else return "star Error";
 
 		ComModel::db()-> query($starSql);
 		ComModel::db()-> query($upContent);

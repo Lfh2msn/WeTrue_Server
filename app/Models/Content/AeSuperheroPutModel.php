@@ -17,12 +17,16 @@ class AeSuperheroPutModel
 		$this->wet_users 	  = "wet_users";
     }
 
+	public static function isKey($content)
+	{//内容搜索关键词
+		$pKey = strtoupper($content); //转大写
+		$topicTag = preg_match_all("/(刘少|LIU少|刘SHAO|LIUSHAO|牛少|狗曰)/u", $pKey, $keywords);
+		return $topicTag ? true : false;
+	}
+
 	public function putContent($page)
 	{ //获取TipID及内容，并写入数据库
-		$acConfig  = ActiveConfig::config();
-		$getActive = $acConfig['topicActive'];
 		$shApiUrl =  'https://raendom-backend.z52da5wt.xyz'; //超级英雄API节点路径
-
 		$url = "{$shApiUrl}/tips?ordering=latest&page={$page}&blacklist=true";
 		//$url = "{$shApiUrl}/tips?page={$page}&blacklist=true";
 		$post_data = array(
@@ -71,8 +75,16 @@ class AeSuperheroPutModel
 		}
 
 		$toPgArr = DisposeModel::to_pg_val_array($getTipIdArr); //转换为pgsql所需数组
-		$sql     = "SELECT tmp.tip_id FROM (VALUES $toPgArr) AS tmp(tip_id) WHERE tmp.tip_id NOT IN(SELECT tip_id FROM wet_content_sh ORDER BY uid DESC LIMIT 100)";
-		$query   = ComModel::db()-> query($sql);
+		$sql = "SELECT tmp.tip_id 
+					FROM (VALUES $toPgArr) AS tmp(tip_id) 
+					WHERE tmp.tip_id 
+					NOT IN(
+						SELECT tip_id 
+						FROM wet_content_sh 
+						ORDER BY uid DESC 
+						LIMIT 100
+					)";
+		$query = ComModel::db()-> query($sql);
 		$sqlResult = $query-> getResult();
 
 		if (!$sqlResult) {
@@ -86,11 +98,18 @@ class AeSuperheroPutModel
 			$lastResult[] = $value->tip_id;
 		}
 
+		//$acConfig  = ActiveConfig::config();
+		//$getActive = $acConfig['topicActive'];
+
 		foreach ($lastResult as $key => $value) {
 			if ($value == $json[$key]['id']) {
-				$isBloomAddress = ValidModel::isBloomAddress($json[$key]['sender']);
+				
+				$pKey = self::isKey($json[$key]['title']); //关键词过滤
+				if ($pKey) continue; //跳出
+
+				$isBloomAdd  = ValidModel::isBloomAddress($json[$key]['sender']);
 				$isAmountVip = ValidModel::isAmountVip($json[$key]['sender']);
-				if (!$isBloomAddress && !$isAmountVip) { //地址过滤
+				if (!$isBloomAdd && !$isAmountVip) { //地址过滤
 					$insertData = [
 						'tip_id'	  => $json[$key]['id'],
 						'sender_id'	  => $json[$key]['sender'],
@@ -106,9 +125,9 @@ class AeSuperheroPutModel
 					];
 					
 					ComModel::db()->table($this->wet_content_sh)->insert($insertData);
-					UserModel::userActive($json[$key]['sender'], $getActive, $e = true);
-					$upSql = "UPDATE $this->wet_users SET topic_sum = topic_sum + 1 WHERE address = '$json[$key][sender]'";
-					ComModel::db()->query($upSql);
+					//UserModel::userActive($json[$key]['sender'], $getActive, $e = true);
+					//$upSql = "UPDATE $this->wet_users SET topic_sum = topic_sum + 1 WHERE address = '$json[$key][sender]'";
+					//ComModel::db()->query($upSql);
 				}
 			}
 		}

@@ -37,9 +37,10 @@ class AeTokenConfig
 	{
 		$tokenList = self::list();
 		$count = count($tokenList);
+		$sName = strtoupper($name); //转大写
 
 		for($i=0; $i<$count; $i++) {
-			if ($tokenList[$i]['symbol'] == $name) {
+			if ($tokenList[$i]['symbol'] == $sName) {
 				$contract_id = $tokenList[$i]['contract_id'];
 			}
 		}
