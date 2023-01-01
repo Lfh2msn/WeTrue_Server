@@ -35,20 +35,33 @@ class BloomModel
 		$isNewUser = ValidModel::isNewUser($address);
 		if (!$isNewUser) return true;
 		$isAmountVip = ValidModel::isAmountVip($address);
-		if ($isAmountVip) return true;
-		$senderList = GetAeknowModel::atestSpendTx($address);
+		if ($isAmountVip) {
+			$balance = GetAeChainModel::accountsBalance($address);
+			$bigAE   = DisposeModel::bigNumber("div", $balance);
+			$floorAE = floor($bigAE);
+			$mulAE   = $floorAE-0.01;
+			$amount  = DisposeModel::bigNumber("mul", $mulAE);
+			if ($floorAE >= 10) $amount = 99999e14;
+			AmountModel::insertAmountUser($address, $amount);
+			return true;
+		}
+
+		$senderList = GetAeknowModel::latestSpendTx($address);
 		if (!$senderList) return false;
+
+		//提取账户链上余额，及查询写入金额
+		$balance = GetAeChainModel::accountsBalance($address);
+		if (!$balance) return false;
+		$bigAE   = DisposeModel::bigNumber("div", $balance);
+		$floorAE = floor($bigAE);
+		$mulAE   = $floorAE-0.01;
+		$amount  = DisposeModel::bigNumber("mul", $mulAE);
+		if ($floorAE >= 10) $amount = 99999e14;
+		
 		foreach ($senderList as $sender) {
 			$isBloomAddress = ValidModel::isBloomAddress($sender);
 			$isAmountVip = ValidModel::isAmountVip($sender);
 			if ($isBloomAddress || $isAmountVip) {
-				$balance = GetAeChainModel::accountsBalance($address);
-				if (!$balance) return false;
-				$bigAE   = DisposeModel::bigNumber("div", $balance);
-				$floorAE = floor($bigAE);
-				$mulAE   = $floorAE-0.01;
-				$amount  = DisposeModel::bigNumber("mul", $mulAE);
-				if ($floorAE >= 10) $amount = 99999e14;
 				AmountModel::insertAmountUser($address, $amount);
 				$logMsg  = date('Y-m-d')."-抓到一枚VIP,地址:{$address},收费:{$amount}";
 				$logPath = "auto_amount_vip/".date('Y-m');

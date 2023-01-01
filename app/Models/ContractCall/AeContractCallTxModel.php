@@ -44,7 +44,7 @@ class AeContractCallTxModel
 		}
 
 		if ($aekJson['payload']) {
-			$payload = (array) json_decode(base64_decode(base64_decode($aekJson['payload'], true)), true);
+			$payload = (array) json_decode(base64_decode($aekJson['payload'], true), true);
 			$aekJson['payload'] = $payload;
 		}
 
@@ -56,11 +56,11 @@ class AeContractCallTxModel
 		if (!$version)
 		{  //版本号错误或低
 			if(!$WeTrue){ //非WeTrue
-				$this->deleteTemp($hash);
 				DisposeModel::wetFwriteLog("非WeTrue格式:{$hash}");
 				return DisposeModel::wetJsonRt(406,'error_WeTrue');
 			}
 			DisposeModel::wetFwriteLog("版本号异常:{$hash},版本号：{$WeTrue}");
+			$this->deleteTemp($hash);
 			return DisposeModel::wetJsonRt(406,'error_version');
 		}
 

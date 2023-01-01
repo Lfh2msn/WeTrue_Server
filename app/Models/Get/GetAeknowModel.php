@@ -82,48 +82,48 @@ class GetAeknowModel
         }
 
 		$data = $json['data'];
-		$sender = [];
+		$sList = [];
 		foreach ($data as $row){
 			if ($row['recipient_id'] == $address) {
 				$sender[] = $row['tx']['sender_id'];
 			}
 		}
-		$sender = array_unique($sender);
-		$sender = array_values($sender);
-		return $sender;
+		$sList = array_unique($sList);
+		$sList = array_values($sList);
+		return $sList;
 	*/
 
 	//从 aeknow 获取
 		$url = AeknowConfig::urls()[0]['url'].'/api/spendtx/'.$address;
 		@$get = file_get_contents($url);
 		$json = (array) json_decode($get, true);
-		$send = $json['txs'][0]['sender_id'] ?? $json['txs'][1]['sender_id'];
 		$num  = 0;
-		while (!$send && $num < 5) {
+		$sList = [];
+
+		while (!$json && $num < 5) {
 			@$get = file_get_contents($url);
 			$json = (array) json_decode($get, true);
-			$send = $json['txs'][0]['sender_id'] ?? $json['txs'][1]['sender_id'];
 			$num++;
 			sleep(5);
 		}
 
-        if (empty($send)) {
+        if (!$json['txs']) {
 			$logMsg = "latestSpendTx 最新N条发送人读取失败:{$address}";
 			$path   = "aeknow_read/".date('Y-m-d');
 			DisposeModel::wetFwriteLog($logMsg, $path);
-			return;
+			return $sList;
         }
 
 		$data = $json['txs'];
-		$sender = [];
+		
 		foreach ($data as $row){
 			if ($row['recipient_id'] == $address) {
-				$sender[] = $row['sender_id'];
+				$sList[] = $row['sender_id'];
 			}
 		}
-		$sender = array_unique($sender);
-		$sender = array_values($sender);
-		return $sender;
+		$sList = array_unique($sList);
+		$sList = array_values($sList);
+		return $sList;
 	}
 
 	public static function tokenList($address)
