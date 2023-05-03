@@ -42,7 +42,7 @@ class HashReadModel
 	public function hashEvent(){
 	//上链内容出库事件
 		$bsConfig 	= ConfigModel::backendConfig();
-		$delTempSql = "DELETE FROM $this->wet_temp WHERE tp_time <= now()-interval '3 D'";
+		$delTempSql = "DELETE FROM $this->wet_temp WHERE tp_time <= now()-interval '5 D'";
 		ComModel::db()->query($delTempSql);
 
 		$tpSql   = "SELECT tp_hash FROM $this->wet_temp ORDER BY tp_time DESC LIMIT 30";
@@ -63,12 +63,13 @@ class HashReadModel
 			}
 
 			$sender = $json['tx']['sender_id'];
+			/* 临时屏蔽
 			$isContinue = $this->BloomModel-> userCheck($sender); //黑名单账户检查
 			if (!$isContinue) {
 				DisposeModel::wetFwriteLog("黑名单账户:{$sender}");
 				continue;
 			}
-			
+			*/
 			$isBloomAddress = ValidModel::isBloomAddress($sender);
 			if ($isBloomAddress) {
 				DisposeModel::wetFwriteLog("被bloom过滤账户:{$sender},Hash:{$tp_hash}");
@@ -88,29 +89,28 @@ class HashReadModel
 				continue;
 			}
 			$this->AeChainPutModel->decodeContent($json);
-			/*
-			 * 抓取超级英雄数据，及写入
-			 * 服务器9-12小时=中国时间22--00点执行
-			 * 服务器21-23小时=中国时间10--14点执行
-			*/
-			$currentHour = date('H');
-			if (
-				   $currentHour == 2
-				|| $currentHour == 4
-				|| $currentHour == 6
-				|| $currentHour == 8
-				|| $currentHour == 10
-				|| $currentHour == 12
-				|| $currentHour == 14
-				|| $currentHour == 16
-				|| $currentHour == 18
-				|| $currentHour == 20
-				|| $currentHour == 22
-				|| $currentHour == 0
-				) {
-				$this->AeSuperheroPutModel-> putContent(1);
-			}
 		}
+
+		/*
+			* 抓取超级英雄数据，及写入
+			* 服务器9-12小时=中国时间22--00点执行
+			* 服务器21-23小时=中国时间10--14点执行
+		*/
+		$currentHour = date('H');
+		if (
+			$currentHour == 2
+			|| $currentHour == 4
+			|| $currentHour == 6
+			|| $currentHour == 8
+			|| $currentHour == 10
+			|| $currentHour == 12
+			|| $currentHour == 14
+			|| $currentHour == 16
+			|| $currentHour == 18
+			|| $currentHour == 20
+			|| $currentHour == 22
+			|| $currentHour == 0
+		) $this->AeSuperheroPutModel-> putContent(1);
 		return DisposeModel::wetJsonRt(200);
 	}
 

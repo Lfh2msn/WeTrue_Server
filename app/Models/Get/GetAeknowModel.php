@@ -1,7 +1,10 @@
 <?php 
 namespace App\Models\Get;
 
-use App\Models\DisposeModel;
+use App\Models\{
+	ComModel,
+	DisposeModel
+};
 use App\Models\Config\AeknowConfig;
 
 class GetAeknowModel
@@ -124,6 +127,43 @@ class GetAeknowModel
 		$sList = array_unique($sList);
 		$sList = array_values($sList);
 		return $sList;
+	}
+
+	public static function wetHdTx($amount)
+	{//获取最新100条tx并写入数据库
+
+		$url    = AeknowConfig::urls()[0]['url'].'/api/spendtx/ak_dMyzpooJ4oGnBVX35SCvHspJrq55HAAupCwPQTDZmRDT5SSSW/'.$amount.'/0';
+		@$get   = file_get_contents($url);
+		$json   = (array) json_decode($get, true);
+		$num    = 0;
+		$txList = [];
+
+		while (!$json && $num < 5) {
+			@$get = file_get_contents($url);
+			$json = (array) json_decode($get, true);
+			$num++;
+			sleep(5);
+		}
+
+		$data = $json['txs'];
+
+		if($data) {
+			foreach ($data as $row){
+				if ($row['txtype'] == 'SpendTx') {
+					$txList[] = $row['txhash'];
+				}
+			}
+
+			$toPgArr = DisposeModel::to_pg_val_array($txList); //转换为pgsql所需数组
+
+			$insertTempSql = "INSERT INTO wet_temp(tp_hash) VALUES $toPgArr";
+			ComModel::db()-> query($insertTempSql);
+			return 'ok,写入'.$amount.'条';
+		} else {
+			return '读取aek api数组失败';
+		}
+
+		
 	}
 
 	public static function tokenList($address)

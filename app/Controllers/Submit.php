@@ -9,6 +9,7 @@ use App\Models\{
 	HashReadModel,
 	ComplainModel
 };
+use App\Models\Get\GetAeknowModel;
 
 class Submit extends BaseController {
 
@@ -85,5 +86,15 @@ class Submit extends BaseController {
 		}
 		
     }
+
+	public function gettx($amount=100) {
+	//获取100条最新hash到缓冲库
+		echo GetAeknowModel::wetHdTx($amount);
+	}
+
+	public function tjtx() {
+	//缓冲上链hash出库事件
+		echo (new HashReadModel())-> hashEvent();
+	}
 
 }
