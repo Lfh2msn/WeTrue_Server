@@ -27,25 +27,25 @@ class UserModel
 				FROM wet_users WHERE address = '$address' LIMIT 1";
         $query = ComModel::db()->query($sql);
 		$row = $query->getRow();
-		if ($row) {
-			$data['userAddress'] = $address;
-			$nickname = DisposeModel::delete_xss($row->nickname);
-			$nickname = mb_substr($nickname, 0, 15);
-			$defaultAens  = $row->default_aens;
-			$data['nickname']   = $nickname ?? "";
-			$data['defaultAens']= $defaultAens ?? "";
-			$data['sex'] 	    = (int)$row->sex;
-			$userActive 	    = (int)$row->uactive;
-			$userReward   		= $row->reward_sum;
-            $data['active']     = $userActive;
-			$data['userActive'] = DisposeModel::activeGrade($userActive);
-			$data['reward'] 	= $userReward;
-			$data['userReward'] = DisposeModel::rewardGrade($userReward);
-			$data['avatar']     = $row->avatar ?? "";
-			$is_vip = ValidModel::isVipAddress($address);
-			$data['isVip']  	= $is_vip ? true : false;
-			$data['isAuth']  	= $row->is_auth ? true : false;
-        }
+
+		$data['userAddress'] = $address;
+		$nickname = DisposeModel::delete_xss($row->nickname);
+		$nickname = mb_substr($nickname, 0, 15);
+		$defaultAens  = $row->default_aens;
+		$data['nickname']   = $nickname ?? "";
+		$data['defaultAens']= $defaultAens ?? "";
+		$data['sex'] 	    = (int)$row->sex ?? 0;
+		$userActive 	    = (int)$row->uactive;
+		$userReward   		= $row->reward_sum;
+		$data['active']     = $userActive ?? 0;
+		$data['userActive'] = DisposeModel::activeGrade($userActive) ?? 0;;
+		$data['reward'] 	= $userReward ?? 0;
+		$data['userReward'] = DisposeModel::rewardGrade($userReward) ?? 0;;
+		$data['avatar']     = $row->avatar ?? "";
+		$is_vip = ValidModel::isVipAddress($address);
+		$data['isVip']  	= $is_vip ? true : false;
+		$data['isAuth']  	= $row->is_auth ? true : false;
+
 		return $data;
 	}
 
