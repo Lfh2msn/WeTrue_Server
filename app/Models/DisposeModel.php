@@ -293,7 +293,7 @@ class DisposeModel
 			if ( $verListA[$i] > $verListB[$i] ) {
                 return true;
             }
-			if ( $verListA[$i] <= $verListB[$i]) {
+			if ( $verListA[$i] < $verListB[$i]) {
                 return false;
             }
 			if ( $i == ($len-1) ) {
