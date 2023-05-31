@@ -372,7 +372,12 @@ class AeChainPutModel
 
 			elseif ( $data['type'] == 'star' )
 			{//收藏
-				if ($payload['action'] != "true" && $payload['action'] != "false"){
+				if (
+					$payload['action'] != "true" &&
+					$payload['action'] != true &&
+					$payload['action'] != "false" &&
+					$payload['action'] != false
+				){
 					DisposeModel::wetFwriteLog("star action Error:{$data['hash']}");
 					$this->deleteTemp($hash);
 					return;
@@ -416,7 +421,7 @@ class AeChainPutModel
 			return DisposeModel::wetJsonRt(200,'success');
 		} catch (Exception $err) {
 			$this->deleteTemp($hash);
-			DisposeModel::wetFwriteLog("未知错误:{$err}");
+			DisposeModel::wetFwriteLog("未知错误Hash:{$hash}\r\n{$err}");
 			return DisposeModel::wetJsonRt(406,'error');
 		}
     }
