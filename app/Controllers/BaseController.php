@@ -49,7 +49,8 @@ class BaseController extends Controller {
 		//$this->request = service('request');
 		$this->response 	= $response;
 		$this->response->setHeader('Access-Control-Allow-Origin', '*');
-		$this->response->setHeader('Access-Control-Allow-Headers', 'ak-token, chain-id, key');
+		$this->response->setHeader('Access-Control-Allow-Methods', '*');
+		$this->response->setHeader('Access-Control-Allow-Headers', 'chain-id, key');
 		//$this->response->setHeader('Content-Type', 'application/json; charset=utf-8');
 	}
 
