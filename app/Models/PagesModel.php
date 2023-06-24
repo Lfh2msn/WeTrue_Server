@@ -79,8 +79,9 @@ class PagesModel
 		if ( $opt['type'] == 'imageList' )
 		{//图片列表
 			$tablename = "wet_content";
-			$countSql  = "SELECT count(hash) FROM $tablename WHERE img_tx <> ''";
-			$limitSql  = "SELECT hash FROM $tablename WHERE img_tx <> '' 
+			//$countSql  = "SELECT count(hash) FROM $tablename WHERE media_list <> null";
+			$countSql  = "SELECT count(hash) FROM $tablename AS ml WHERE ml.media_list::jsonb notNull";
+			$limitSql  = "SELECT hash FROM $tablename AS ml WHERE ml.media_list::jsonb notNull
 									ORDER BY utctime DESC LIMIT $size OFFSET ".(($page-1) * $size + $offset);
 			$opt['select'] = "content";
 		}
